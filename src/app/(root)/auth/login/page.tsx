@@ -15,41 +15,55 @@ import { useRouter } from "next/navigation";
 import { toast, useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 interface LoginCredentials {
   email: string;
   password: string;
 }
 
+// Function to make the API request
+const login = async (email: string, password: string) => {
+  try {
+    const response = await axios.post("https://apiv.maticalgos.com/token/", {
+      email,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const page = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-    const loginMutation = useMutation({
-      mutationFn: async (credentials: LoginCredentials) => {
-        const response = await login(credentials.email, credentials.password);
-        return response.data;
-      },
-      onSuccess: (data) => {
-        // Store necessary data in sessionStorage
-        sessionStorage.setItem("otpToken", data.otpToken);
-        sessionStorage.setItem("email", email);
-        sessionStorage.setItem("password", password);
-        router.push("/auth/verify-otp");
-      },
-      onError: (error) => {
-        console.log("error", error);
-        toast({
-          title: "Login Failed",
-          description:
-            error instanceof Error
-              ? (error as any).response?.data?.message ?? "Login failed"
-              : "An unexpected error occurred.",
-          variant: "destructive",
-        });
-      },
-    });
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: LoginCredentials) => {
+      const response = await login(credentials.email, credentials.password);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Store necessary data in sessionStorage
+      localStorage.setItem("otpToken", data.otpToken);
+      localStorage.setItem("email", email);
+      localStorage.setItem("password", password);
+      router.push("/auth/verify-otp");
+    },
+    onError: (error) => {
+      console.log("error", error);
+      toast({
+        title: "Login Failed",
+        description:
+          error instanceof Error
+            ? (error as any).response?.data?.message ?? "Login failed"
+            : "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
