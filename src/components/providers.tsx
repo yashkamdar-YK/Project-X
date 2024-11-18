@@ -24,12 +24,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="Light"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider>
           <Toaster />
           {children}
         </ThemeProvider>

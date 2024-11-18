@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import {
   Card,
   CardHeader,
@@ -15,14 +16,12 @@ import { useRouter } from "next/navigation";
 import { toast, useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { useTheme } from "next-themes";
 
 interface LoginCredentials {
   email: string;
   password: string;
 }
 
-// Function to make the API request
 const login = async (email: string, password: string) => {
   try {
     const response = await axios.post("https://apiv.maticalgos.com/token/", {
@@ -35,12 +34,17 @@ const login = async (email: string, password: string) => {
   }
 };
 
-const page = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
@@ -48,7 +52,6 @@ const page = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      // Store necessary data in sessionStorage
       localStorage.setItem("otpToken", data.otpToken);
       localStorage.setItem("email", email);
       localStorage.setItem("password", password);
@@ -71,17 +74,30 @@ const page = () => {
     e.preventDefault();
     loginMutation.mutate({ email, password });
   };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div>
-      <div className="w-32 h-8 pl-8 py-4">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex items-center p-4">
         {theme === "dark" ? (
-          <img src="/logo_black.png" alt="Black Logo" />
+          <img 
+            className="w-32 h-10 object-contain" 
+            src="/logo_white.svg" 
+            alt="White Logo" 
+          />
         ) : (
-          <img src="/logo_white.png" alt="White Logo" />
+          <img 
+            className="w-32 h-10 object-contain" 
+            src="/logo_black.svg" 
+            alt="Black Logo" 
+          />
         )}
       </div>
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="mx-auto w-full max-w-sm">
+      <div className="flex flex-grow items-center justify-center overflow-hidden">
+        <Card className="w-full max-w-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Login</CardTitle>
             <CardDescription>
@@ -102,7 +118,7 @@ const page = () => {
                     required
                   />
                 </div>
-                <div className="space-y-2 ">
+                <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
@@ -117,12 +133,6 @@ const page = () => {
                 </Button>
               </div>
             </form>
-            {/* <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/auth/register" className="underline">
-              Register
-            </Link>
-          </div> */}
           </CardContent>
         </Card>
       </div>
@@ -130,4 +140,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default LoginPage;
