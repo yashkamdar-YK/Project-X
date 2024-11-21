@@ -74,3 +74,13 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+body {
+  @apply transition-colors duration-300 ease-in-out;
+}
+
+.dark {
+  @apply bg-dark-background text-dark-text;
+}
+

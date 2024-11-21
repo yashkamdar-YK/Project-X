@@ -3,6 +3,10 @@
 import { getCookie } from "cookies-next";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import CentreNavbar from "./_component/CentreNavbar";
+import DashboardSidebar from "./_component/DashboardSidebar";
+import DashboardCanvas from "./_component/DashboardCanvas";
+import DashboardNav from "./_component/DashboardNav";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -12,16 +16,9 @@ export default function Dashboard() {
     const checkToken = async () => {
       try {
         const accessToken = await getCookie("access_token");
-
-        // if (!accessToken) {
-        //   router.push('/login');
-        //   return;
-        // }
-
-        // Explicitly set the token as a string
         setToken(accessToken as string);
       } catch (error) {
-        console.log("erron in check token", error);
+        console.error("Error in check token", error);
         router.push("/login");
       }
     };
@@ -29,16 +26,15 @@ export default function Dashboard() {
     checkToken();
   }, [router]);
 
-  //   if (!token) {
-  //     return <div>No Token Present</div>;
-  //   }
-
   return (
-    <div className="p-4 items-center flex text-center mt-40 justify-center">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p>Welcome to your dashboard!</p>
-        {/* <DashboardPage/> */}
+    <div className="flex flex-col h-screen">
+      <DashboardNav />
+      <CentreNavbar />
+
+      {/* Main Content - Flex Layout */}
+      <div className="flex flex-1  overflow-hidden">
+        <DashboardSidebar />
+        <DashboardCanvas />
       </div>
     </div>
   );
