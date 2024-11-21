@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import CentreNavbar from "./_component/CentreNavbar";
 import DashboardSidebar from "./_component/DashboardSidebar";
 import DashboardCanvas from "./_component/DashboardCanvas";
-import DashboardNav from "./_component/DashboardNav";
+import DashboardNav from "./_component/DashboardNAv";
 
 export default function Dashboard() {
   const router = useRouter();

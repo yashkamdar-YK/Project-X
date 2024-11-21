@@ -3,44 +3,18 @@ import React, { useState, useEffect } from "react";
 import { IoSunny } from "react-icons/io5";
 import { WiMoonAltFull } from "react-icons/wi";
 import { RiMoonClearFill } from "react-icons/ri";
-import { Avatar } from "./Avater";
+import {  UserToggle } from "./UserToggle";
 
-import LogoLight from "/logo_white.png"; // Dark mode logo (white)
-import LogoDark from "/logo_black.png"; // Light mode logo (black)
+// import LogoLight from "@/public/logo_white.png"; // Dark mode logo (white)
+// import LogoDark from "@/public/logo_black.png"; // Light mode logo (black)
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import DarkModeSwitch from "./ToggleSwitch";
 
-interface DashboardNavProps {
-  className?: string;
-}
 
-const DashboardNav: React.FC<DashboardNavProps> = ({ className = "" }) => {
+const DashboardNav: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Check for saved preference or system preference
-    const savedTheme = localStorage.getItem("theme");
-    console.log(savedTheme);
-    const prefersDarkMode = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-
-    if (savedTheme === "dark" || (!savedTheme && prefersDarkMode)) {
-      document.documentElement.classList.add("dark");
-      setIsDarkMode(true);
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
+  const pathName = usePathname();
 
   return (
     <div
@@ -49,47 +23,29 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ className = "" }) => {
     >
       <div className="px-4 py-3 flex justify-between items-center">
         <div>
-          <img
-            src={isDarkMode ? LogoLight : LogoDark}
-            alt="Logo"
-            className="h-8" // Adjust height as needed
-          />
+          {/* <Image src={isDarkMode ? LogoLight : LogoDark} alt="Logo" height={32} width={32} /> */}
         </div>
         <div className="flex space-x-8 items-center font-medium">
-          <a href="#" className="hover:text-blue-800">
+          <a href="/dashboard/my-strategies" className={`hover:text-blue-800 font-semibold ${
+            pathName === "/dashboard/my-strategies" ? "text-blue-800" : ""
+          }`}>
             My Strategies
           </a>
-          <a href="#" className="hover:text-blue-800">
+          <a href="/dashboard/explore" className={`hover:text-blue-800 font-semibold ${
+            pathName === "/dashboard/explore" ? "text-blue-800" : ""
+          }`}>
             Explore
           </a>
-          <a href="#" className="hover:text-blue-800">
+          <a href="/dashboard/strategy-builder" className={`hover:text-blue-800 font-semibold ${
+            pathName === "/dashboard/strategy-builder" ? "text-blue-800" : ""
+          }`}>
             Strategy Builder
           </a>
         </div>
 
         <div className="flex items-center space-x-3">
-          <button
-            onClick={toggleDarkMode}
-            className={`focus:outline-none ${
-              isDarkMode ? "text-white" : "text-black"
-            }`}
-          >
-            {isDarkMode ? (
-              <RiMoonClearFill className="text-2xl" />
-            ) : (
-              <IoSunny className="text-2xl" />
-            )}
-          </button>
-          <button>
-            <Avatar />
-          </button>
-          <span
-            className={`${
-              isDarkMode ? "hover:text-gray-400" : "hover:text-gray-600"
-            }`}
-          >
-            Ankit
-          </span>
+         <DarkModeSwitch />
+         <UserToggle />
         </div>
       </div>
     </div>

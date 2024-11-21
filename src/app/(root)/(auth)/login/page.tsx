@@ -42,9 +42,6 @@ const Page = () => {
     },
     onSuccess: (data) => {
       setCookie("access_token", data.access_token, {
-        req: undefined,
-        res: undefined,
-        // Optional: set cookie options
         maxAge: 60 * 60 * 24, //1Day
         path: "/",
         httpOnly: false, // Note: true would require server-side setting
@@ -67,7 +64,8 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ email, password });
+    await loginMutation.mutateAsync({ email, password });
+    router.push("/dashboard");
   };
 
   return (
