@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "./_actions";
 import Spinner from "@/components/shared/spinner";
+import { setCookie } from "cookies-next";
 
 interface LoginCredentials {
   email: string;
@@ -40,8 +41,17 @@ const Page = () => {
       return response;
     },
     onSuccess: (data) => {
-      localStorage.setItem("token", data.access_token);
-      router.push("/dashboard"); // Redirect to dashboard or any other page
+      setCookie("access_token", data.access_token, {
+        req: undefined,
+        res: undefined,
+        // Optional: set cookie options
+        maxAge: 60 * 60 * 24, //1Day
+        path: "/",
+        httpOnly: false, // Note: true would require server-side setting
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+      router.push("/dashboard");
     },
     onError: (error) => {
       toast({

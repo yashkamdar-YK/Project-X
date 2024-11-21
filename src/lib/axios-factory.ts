@@ -4,7 +4,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-// import { getCookie } from "cookies-next";
+// import { getCookie } from "cookies-next"
 
 const BASE_URL =
   process.env.NODE_ENV === "production"
