@@ -91,7 +91,7 @@ const DashboardSidebar: React.FC = () => {
           </SheetTrigger>
           <SheetContent 
             side="left" 
-            className="w-[80%] sm:w-[385px] p-0 !pt-10"
+            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900 "
           >
             <SidebarContent />
           </SheetContent>
