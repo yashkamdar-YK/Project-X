@@ -1,51 +1,48 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { IoSunny } from "react-icons/io5";
-import { WiMoonAltFull } from "react-icons/wi";
-import { RiMoonClearFill } from "react-icons/ri";
-import {  UserToggle } from "./UserToggle";
-
-// import LogoLight from "@/public/logo_white.png"; // Dark mode logo (white)
-// import LogoDark from "@/public/logo_black.png"; // Light mode logo (black)
-import Image from "next/image";
+import React from "react";
 import { usePathname } from "next/navigation";
 import DarkModeSwitch from "./ToggleSwitch";
-
+import { UserToggle } from "./UserToggle";
 
 const DashboardNav: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const pathName = usePathname();
 
+  const navLinks = [
+    { href: "/dashboard/my-strategies", label: "My Strategies" },
+    { href: "/dashboard/explore", label: "Explore" },
+    { href: "/dashboard/strategy-builder", label: "Strategy Builder" },
+  ];
+
   return (
-    <div
-      className="bg-white border-black dark:bg-dark-background text-black dark:text-dark-text 
-    border-b-2 dark:border-white "
-    >
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="px-4 py-3 flex justify-between items-center">
-        <div>
-          {/* <Image src={isDarkMode ? LogoLight : LogoDark} alt="Logo" height={32} width={32} /> */}
+        <div className="w-44" >
+          {/* Logo placeholder */}
+          <span className="text-xl font-bold text-gray-900 dark:text-white">Logo</span>
         </div>
+        
         <div className="flex space-x-8 items-center font-medium">
-          <a href="/dashboard/my-strategies" className={`hover:text-blue-800 font-semibold ${
-            pathName === "/dashboard/my-strategies" ? "text-blue-800" : ""
-          }`}>
-            My Strategies
-          </a>
-          <a href="/dashboard/explore" className={`hover:text-blue-800 font-semibold ${
-            pathName === "/dashboard/explore" ? "text-blue-800" : ""
-          }`}>
-            Explore
-          </a>
-          <a href="/dashboard/strategy-builder" className={`hover:text-blue-800 font-semibold ${
-            pathName === "/dashboard/strategy-builder" ? "text-blue-800" : ""
-          }`}>
-            Strategy Builder
-          </a>
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className={`
+                transition-colors duration-200
+                hover:text-blue-600 dark:hover:text-blue-400
+                font-semibold
+                ${pathName === link.href 
+                  ? "text-blue-600 dark:text-blue-400" 
+                  : "text-gray-700 dark:text-gray-300"}
+              `}
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
 
-        <div className="flex items-center space-x-3">
-         <DarkModeSwitch />
-         <UserToggle />
+        <div className="flex items-center space-x-3 w-44">
+          <DarkModeSwitch />
+          <UserToggle />
         </div>
       </div>
     </div>
