@@ -27,11 +27,11 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
     <nav className={`border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${className}`}>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <Input
-                className="pl-10 pr-4 py-2 w-40 sm:w-48 rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+                className="pl-10 pr-4 py-2 w-28 sm:w-40 md:w-48 rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 transition-all duration-200"
                 type="text"
                 placeholder="NIFTY"
                 aria-label="Search NIFTY"
@@ -39,8 +39,8 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
             </div>
 
             <Select>
-              <SelectTrigger className="w-fit min-w-20 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <SelectValue placeholder="Time frame" />
+              <SelectTrigger className="w-20 sm:w-fit min-w-20 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200">
+                <SelectValue placeholder="Time" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="3m">3m</SelectItem>
@@ -52,7 +52,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Settings">
+                  <Button variant="ghost" size="icon" aria-label="Settings" className="transition-all duration-200">
                     <Settings className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
@@ -63,11 +63,11 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
             </TooltipProvider>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Chart view">
+                  <Button variant="ghost" size="icon" aria-label="Chart view" className="transition-all duration-200">
                     <BarChart2 className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
@@ -77,12 +77,15 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               </Tooltip>
             </TooltipProvider>
 
-            <Button variant="outline" className="flex items-center space-x-2">
+            <Button variant="outline" className="hidden sm:flex items-center space-x-2 transition-all duration-200">
               <Code className="h-4 w-4" />
               <span>Code</span>
             </Button>
 
-            <Button>Save</Button>
+            <Button className="transition-all duration-200">
+              <Save className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Save</span>
+            </Button>
           </div>
         </div>
       </div>
