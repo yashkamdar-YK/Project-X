@@ -1,18 +1,26 @@
 'use client';
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const SignInPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      router.push('/dashboard');
+    }
+  }, [session]);
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       await signIn('google', { 
-        callbackUrl: '/',
+        callbackUrl: '/dashboard',
         redirect: true,
       });
     } catch (error) {

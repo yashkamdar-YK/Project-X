@@ -11,6 +11,8 @@ import {
 import { User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next";
+import { signOut } from 'next-auth/react';
+
 
 export function UserToggle() {
   const router = useRouter();
@@ -18,7 +20,7 @@ export function UserToggle() {
   const handleLogout = async () => {
     try {
       deleteCookie("access_token");
-      // Redirect to login page
+    await  signOut();
       router.push('/login');
     } catch (error) {
       console.error("Logout failed:", error);
