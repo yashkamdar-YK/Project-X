@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import TimeSelector from "./TimeSelector"
 
 interface StrategyNavbarProps {
   className?: string
@@ -38,16 +39,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               />
             </div>
 
-            <Select>
-              <SelectTrigger className="w-20 sm:w-fit min-w-20 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200">
-                <SelectValue placeholder="Time" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3m">3m</SelectItem>
-                <SelectItem value="5m">5m</SelectItem>
-                <SelectItem value="15m">15m</SelectItem>
-              </SelectContent>
-            </Select>
+            <TimeSelector />
 
             <TooltipProvider>
               <Tooltip>
