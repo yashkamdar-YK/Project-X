@@ -23,7 +23,7 @@ const TimeSelector = () => {
   return (
     <div className="flex items-center space-x-1">
       {/* Quick selectors with selected time - Hidden on mobile */}
-      <div className="hidden sm:flex items-center border rounded-md dark:border-gray-700">
+      <div className="hidden sm:flex items-center border rounded-md overflow-hidden dark:border-gray-700">
         {displayOptions.map((time) => (
           <Button
             key={time}
