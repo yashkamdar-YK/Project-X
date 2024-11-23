@@ -1,14 +1,53 @@
+import React, { useCallback } from "react";
+import {
+  ReactFlow,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Node,
+  Connection,
+  Controls,
+  MiniMap,
+  Background,
+  Edge,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
-const StrategyCanvas: React.FC = () => {
-    return (
-      <div className="h-full overflow-auto bg-gray-50 dark:bg-gray-800 p-6 w-full">
-        <div className="min-h-full w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center">
-          <p className="text-gray-500 dark:text-gray-400">
-              --
-          </p>
+const initialNodes = [
+  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
+  { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
+];
+const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+
+const StrategyCanvas = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback(
+    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div className="h-full w-full bg-gray-50 dark:bg-gray-800 p-6">
+      <div className="h-[570px] w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 relative">
+        <div className="absolute inset-0 dark:text-black">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            fitView
+          >
+            <Controls className="dark:text-black" />
+            <MiniMap zoomable pannable />
+            <Background gap={12} size={1} />
+          </ReactFlow>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
-export default StrategyCanvas
+export default StrategyCanvas;
