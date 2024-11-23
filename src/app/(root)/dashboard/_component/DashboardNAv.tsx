@@ -8,12 +8,11 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import DarkModeSwitch from "./ToggleSwitch"
+import DarkModeSwitch from "./DarkModeSwitch"
 import { UserToggle } from "./UserToggle"
 
 const DashboardNav: React.FC = () => {
   const pathName = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navLinks = [
     { href: "/dashboard/my-strategies", label: "My Strategies" },

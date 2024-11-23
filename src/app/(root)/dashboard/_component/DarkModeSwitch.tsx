@@ -1,31 +1,14 @@
 'use client';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/components/providers/theme-provider';
 
 const DarkModeSwitch = () => {
-    const [isDarkMode, setIsDarkMode] = React.useState(false);
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem("theme");
-        const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-        if (savedTheme === "dark" || (!savedTheme && prefersDarkMode)) {
-            document.documentElement.classList.add("dark");
-            setIsDarkMode(true);
-        }
-    }, []);
+    const { theme, setTheme } = useTheme();
+    const isDarkMode = theme === 'dark';
 
     const toggleDarkMode = () => {
-        const newMode = !isDarkMode;
-        setIsDarkMode(newMode);
-
-        if (newMode) {
-            document.documentElement.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
+        setTheme(isDarkMode ? 'light' : 'dark');
     };
 
     return (
@@ -42,7 +25,6 @@ const DarkModeSwitch = () => {
         >
             <span className="sr-only">Toggle dark mode</span>
             
-            {/* Toggle knob with icon */}
             <span
                 className={`
                     ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}

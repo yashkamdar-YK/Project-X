@@ -1,12 +1,11 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { Toaster } from "./ui/toaster";
-import { usePathname } from "next/navigation";
+import { Toaster } from "../ui/toaster";
 import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider } from "./theme-provider";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-  // Create a client
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -18,14 +17,14 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       })
   );
 
-  const pathname = usePathname();
-
   return (
     <SessionProvider>
-    <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
           <Toaster />
           {children}
-    </QueryClientProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </SessionProvider>
   );
 };
