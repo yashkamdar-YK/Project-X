@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Settings, BarChart2, Code, Save } from 'lucide-react';
+import { Search, Settings, BarChart2, Code, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import TimeSelector from "./TimeSelector";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
+import SettingSheet from "./SettingSheet";
 
 interface StrategyNavbarProps {
   className?: string;
@@ -19,21 +20,27 @@ interface StrategyNavbarProps {
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
   const [isCodeSheetOpen, setIsCodeSheetOpen] = React.useState(false);
+  const [isSettingOpen, setIsSettingOpen] = React.useState(false);
 
   const handleSaveStrategy = async () => {
     // Simulate saving strategy
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Strategy saved!');
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log("Strategy saved!");
   };
 
   return (
     <>
-      <nav className={`border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${className}`}>
+      <nav
+        className={`border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${className}`}
+      >
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                />
                 <Input
                   className="pl-10 pr-4 py-2 w-28 sm:w-40 md:w-48 rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 transition-all duration-200"
                   type="text"
@@ -47,7 +54,13 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Settings" className="transition-all duration-200">
+                    <Button
+                      onClick={() => setIsSettingOpen(true)}
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Settings"
+                      className="transition-all duration-200"
+                    >
                       <Settings className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
@@ -62,7 +75,12 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Chart view" className="transition-all duration-200">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Chart view"
+                      className="transition-all duration-200"
+                    >
                       <BarChart2 className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
@@ -72,8 +90,8 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 </Tooltip>
               </TooltipProvider>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="hidden sm:flex items-center space-x-2 transition-all duration-200"
                 onClick={() => setIsCodeSheetOpen(true)}
               >
@@ -81,7 +99,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 <span>Code</span>
               </Button>
 
-              <Button 
+              <Button
                 className="transition-all duration-200"
                 onClick={() => setIsSaveDialogOpen(true)}
               >
@@ -102,6 +120,11 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
       <StrategyCodeSheet
         isOpen={isCodeSheetOpen}
         onClose={() => setIsCodeSheetOpen(false)}
+      />
+
+      <SettingSheet
+        isOpen={isSettingOpen}
+        onClose={() => setIsSettingOpen(false)}
       />
     </>
   );

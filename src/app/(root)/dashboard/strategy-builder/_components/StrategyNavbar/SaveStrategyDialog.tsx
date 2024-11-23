@@ -40,7 +40,7 @@ const SaveStrategyDialog = ({ isOpen, onClose, onConfirm }: SaveStrategyDialogPr
             Are you sure you want to save the current strategy.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex space-x-2 justify-end">
+        <DialogFooter className="flex w-full  sm:space-x-2 justify-end">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
