@@ -10,6 +10,7 @@ import {
   MiniMap,
   Background,
   Edge,
+  ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -30,7 +31,7 @@ const StrategyCanvas = () => {
 
   return (
     <div className="h-full w-full bg-gray-50 dark:bg-gray-800 p-6">
-      <div className="h-[570px] w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 relative">
+      <div className="h-[558px] w-full rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 relative">
         <div className="absolute inset-0 dark:text-black">
           <ReactFlow
             nodes={nodes}
