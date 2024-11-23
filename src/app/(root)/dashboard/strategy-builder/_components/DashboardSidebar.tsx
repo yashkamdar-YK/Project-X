@@ -20,6 +20,8 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
+import { useNodeStore } from "./NodeStore/CanvasNode";
+
 interface AccordionItemType {
   title: string;
   icon: React.ReactNode;
@@ -27,6 +29,8 @@ interface AccordionItemType {
 }
 
 const DashboardSidebar: React.FC = () => {
+  const addNode = useNodeStore((state) => state.addNode);
+
   const [accordionItems] = useState<AccordionItemType[]>([
     {
       title: "Data Points",
@@ -50,9 +54,8 @@ const DashboardSidebar: React.FC = () => {
     },
   ]);
 
-  const onDragStart = (event: React.DragEvent, item: string) => {
-    event.dataTransfer.setData("application/reactflow", item);
-    event.dataTransfer.effectAllowed = "move";
+  const handleAddNode = (itemName: string, category: string) => {
+    addNode(itemName, category);
   };
 
   const SidebarContent = () => (
@@ -90,16 +93,22 @@ const DashboardSidebar: React.FC = () => {
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="mt-1 pl-6 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-700 shadow-sm transition-all duration-200">
+                <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-900  shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item.items.map((subItem, subIndex) => (
                       <div
                         key={subIndex}
-                        draggable
-                        onDragStart={(e) => onDragStart(e, subItem)}
-                        className="pl-6 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-50 dark:hover:bg-gray-600"
+                        className="pl-6 py-2 flex justify-between text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-200 dark:hover:bg-gray-600"
                       >
                         {subItem}
+                        <div className="flex items-center">
+                          <button
+                             onClick={() => handleAddNode(subItem, item.title)}
+                            className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
