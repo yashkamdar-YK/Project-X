@@ -16,6 +16,7 @@ export const useNodeStore = create<NodeStore>((set) => ({
   addNode: (label: string, category: string) => {
     const newNode: Node = {
       id: Date.now().toString(),
+      draggable: false,
       position: {
         // Random position within a reasonable range
         x: Math.random() * 500,

@@ -128,6 +128,8 @@ const StrategyCanvas = () => {
               onDragOver={onDragOver}
               onDrop={onDrop}
               fitView
+              panOnScroll={true}
+              selectionOnDrag={true}
             >
               <Controls className="dark:text-black" />
               <MiniMap zoomable pannable />
