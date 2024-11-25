@@ -14,7 +14,7 @@ import {
   addEdge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useNodeStore } from "./NodeStore/CanvasNode";
+import { useNodeStore } from "./store/CanvasNode";
 
 const initialNodes = [
   { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
