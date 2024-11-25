@@ -20,12 +20,12 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { useNodeStore } from "./NodeStore/CanvasNode";
+import { useNodeStore } from "./store/CanvasNode";
 
 interface AccordionItemType {
   title: string;
   icon: React.ReactNode;
-  items: string[];
+  items?: string[];
 }
 
 const DashboardSidebar: React.FC = () => {
@@ -35,12 +35,10 @@ const DashboardSidebar: React.FC = () => {
     {
       title: "Data Points",
       icon: <Database className="w-4 h-4" />,
-      items: ["User Data", "Sales Data", "Product Data"],
     },
     {
       title: "Indicators",
       icon: <BarChart2 className="w-4 h-4" />,
-      items: ["Revenue Chart", "User Growth", "Conversion Rate"],
     },
     {
       title: "Components",
@@ -50,7 +48,6 @@ const DashboardSidebar: React.FC = () => {
     {
       title: "Actions",
       icon: <Zap className="w-4 h-4" />,
-      items: ["Send Email", "Process Payment", "Update Status"],
     },
   ]);
 
@@ -95,7 +92,7 @@ const DashboardSidebar: React.FC = () => {
               <AccordionContent>
                 <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-900  shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
-                    {item.items.map((subItem, subIndex) => (
+                    {item?.items && item?.items.map((subItem, subIndex) => (
                       <div
                         key={subIndex}
                         className="pl-6 py-2 flex justify-between text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-200 dark:hover:bg-gray-600"
