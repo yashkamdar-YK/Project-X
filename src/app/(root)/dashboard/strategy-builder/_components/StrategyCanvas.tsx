@@ -19,6 +19,15 @@ import "@xyflow/react/dist/style.css";
 // import { useNodeStore } from "./store/CanvasNode";
 import NodeSheet from "./StrategyNavbar/NodeSheet";
 
+// Define the type for your node data
+type NodeData = {
+  label: string;
+};
+
+// Define the custom node type
+type CustomNode = Node<NodeData>;
+
+
 const initialNodes = [
   { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
   { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
@@ -27,7 +36,7 @@ const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
 
 const StrategyCanvas = () => {
   // State to manage selected node and sidebar visibility
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
   const [isNodeSidebarOpen, setIsNodeSidebarOpen] = useState(false);
 
   //Initial Nodes And Edges
@@ -82,6 +91,18 @@ const StrategyCanvas = () => {
   //   [edges, setEdges]
   // );
 
+  // Handle node click with proper typing
+  const onNodeClick = useCallback((event: React.MouseEvent, clickedNode: CustomNode) => {
+    setSelectedNode(clickedNode);
+    setIsNodeSidebarOpen(true);
+  }, []);
+
+  // Handle canvas click (background click)
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setIsNodeSidebarOpen(false);
+  }, []);
+
   return (
     <>
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
@@ -93,7 +114,8 @@ const StrategyCanvas = () => {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
-              onClick={() => setIsNodeSidebarOpen(true)}
+              onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
               fitView
             >
               <Controls className="dark:text-black" />
@@ -106,6 +128,7 @@ const StrategyCanvas = () => {
       <NodeSheet
         isOpen={isNodeSidebarOpen}
         onClose={() => setIsNodeSidebarOpen(false)}
+        node={selectedNode}
       />
     </>
   );
