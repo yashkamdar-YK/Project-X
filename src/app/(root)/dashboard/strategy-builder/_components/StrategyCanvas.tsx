@@ -19,6 +19,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useNodeStore } from "./store/CanvasNode";
 import NodeSheet from "./StrategyNavbar/NodeSheet";
+import CustomControls from "./canvas-Component/customeControl";
 
 const StrategyCanvas = () => {
   // State to manage selected node and sidebar visibility
@@ -116,25 +117,26 @@ const StrategyCanvas = () => {
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
         <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
           <div className="absolute inset-0 dark:text-black">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              onPaneClick={onPaneClick}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              fitView
-              panOnScroll={true}
-              selectionOnDrag={true}
-            >
-              <Controls className="dark:text-black" />
-              <MiniMap zoomable pannable />
-              <Background gap={12} size={1} />
-            </ReactFlow>
+            <ReactFlowProvider>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                fitView
+                panOnScroll={true}
+                selectionOnDrag={true}
+              >
+                {/* <Controls className="dark:text-black" /> */}
+                <CustomControls />
+                {/* <MiniMap zoomable pannable /> */}
+                <Background gap={12} size={1} />
+              </ReactFlow>
             </ReactFlowProvider>
           </div>
         </div>
