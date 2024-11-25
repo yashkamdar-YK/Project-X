@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { DragEvent } from "react";
 import {
   Search,
   ChevronDown,
@@ -51,6 +52,23 @@ const DashboardSidebar: React.FC = () => {
     },
   ]);
 
+  // Handler for when drag starts
+  const onDragStart = (
+    event: DragEvent<HTMLDivElement>,
+    item: string,
+    category: string
+  ) => {
+    // Set the data that will be transferred during drag
+    event.dataTransfer.setData(
+      "application/reactflow",
+      JSON.stringify({
+        item,
+        category,
+      })
+    );
+    event.dataTransfer.effectAllowed = "move";
+  };
+
   const handleAddNode = (itemName: string, category: string) => {
     addNode(itemName, category);
   };
@@ -92,22 +110,25 @@ const DashboardSidebar: React.FC = () => {
               <AccordionContent>
                 <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-900  shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
-                    {item?.items && item?.items.map((subItem, subIndex) => (
-                      <div
-                        key={subIndex}
-                        className="pl-6 py-2 flex justify-between text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-200 dark:hover:bg-gray-600"
-                      >
-                        {subItem}
-                        <div className="flex items-center">
-                          <button
-                             onClick={() => handleAddNode(subItem, item.title)}
-                            className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
+                    {item?.items &&
+                      item?.items.map((subItem, subIndex) => (
+                        <div
+                          key={subIndex}
+                          draggable
+                          onDragStart={(e) => onDragStart(e, subItem, item.title)}
+                          className="pl-6 py-2 flex justify-between text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          {subItem}
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => handleAddNode(subItem, item.title)}
+                              className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               </AccordionContent>

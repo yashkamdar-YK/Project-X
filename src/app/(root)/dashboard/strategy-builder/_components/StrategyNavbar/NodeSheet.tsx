@@ -27,7 +27,7 @@ const NodeSheet: React.FC<NodeSheetProps> = ({ isOpen, onClose, node }) => {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{node ? `Node ${node.data.label}` : 'Node Details'}</SheetTitle>
+          <SheetTitle>{node ? `Node: ${node.data.label}` : 'Something Wrong'}</SheetTitle>
         </SheetHeader>
         {node && (
           <div className="mt-4">
