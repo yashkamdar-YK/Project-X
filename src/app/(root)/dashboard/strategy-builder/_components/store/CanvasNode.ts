@@ -1,6 +1,5 @@
 // Centralized store for managing nodes state
 import { create } from 'zustand';
-import { nanoid } from 'nanoid';
 import { Node, Edge } from '@xyflow/react';
 
 interface NodeStore {
@@ -16,7 +15,7 @@ export const useNodeStore = create<NodeStore>((set) => ({
   edges: [],
   addNode: (label: string, category: string) => {
     const newNode: Node = {
-      id: nanoid(),
+      id: Date.now().toString(),
       position: {
         // Random position within a reasonable range
         x: Math.random() * 500,
