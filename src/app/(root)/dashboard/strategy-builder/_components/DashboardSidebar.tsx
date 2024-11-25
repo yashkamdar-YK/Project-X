@@ -44,7 +44,7 @@ const DashboardSidebar: React.FC = () => {
     {
       title: "Components",
       icon: <Layers className="w-4 h-4" />,
-      items: ["Button", "Card", "Table"],
+      items: ["Entry Condition", "Exit Condition", "Action"],
     },
     {
       title: "Actions",
