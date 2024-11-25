@@ -21,7 +21,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { useNodeStore } from "./store/CanvasNode";
+import { useNodeStore } from "../store/canvasNode";
 
 interface AccordionItemType {
   title: string;
@@ -44,7 +44,12 @@ const DashboardSidebar: React.FC = () => {
     {
       title: "Components",
       icon: <Layers className="w-4 h-4" />,
-      items: ["Entry Condition", "Exit Condition", "Action"],
+      items: [
+        "Entry Condition",  // First item
+        "Entry into ATM",   // Action for Entry
+        "Exit Condition",   // Exit condition
+        "Square off All",   // Action for Exit
+      ],
     },
     {
       title: "Actions",
@@ -70,7 +75,7 @@ const DashboardSidebar: React.FC = () => {
   };
 
   const handleAddNode = (itemName: string, category: string) => {
-    addNode(itemName, category);
+    addNode(itemName);
   };
 
   const SidebarContent = () => (

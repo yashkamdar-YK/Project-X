@@ -92,7 +92,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
 
               <Button
                 variant="outline"
-                className="hidden sm:flex items-center space-x-2 transition-all duration-200"
+                className="hidden sm:flex items-center space-x-2 transition-all duration-200 mt-2"
                 onClick={() => setIsCodeSheetOpen(true)}
               >
                 <Code className="h-4 w-4" />
@@ -100,7 +100,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               </Button>
 
               <Button
-                className="transition-all duration-200"
+                className="transition-all duration-200 mt-2"
                 onClick={() => setIsSaveDialogOpen(true)}
               >
                 <Save className="h-4 w-4 sm:mr-2" />
