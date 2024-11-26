@@ -5,7 +5,6 @@ import {
   BiZoomOut 
 } from 'react-icons/bi';
 import { RxEnterFullScreen } from 'react-icons/rx';
-import { IoHandRightOutline } from 'react-icons/io5';
 import { GoTriangleUp } from 'react-icons/go';
 import { IoAddCircleOutline } from 'react-icons/io5';
 import { cn } from "@/lib/utils";
