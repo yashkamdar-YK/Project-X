@@ -30,7 +30,8 @@ const CustomControls: React.FC<CustomControlsProps> = ({
     "flex items-center justify-center transition-all duration-200",
     "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700",
     "border border-gray-200 dark:border-gray-600",
-    "text-gray-700 dark:text-gray-200"
+    "text-gray-700 dark:text-gray-200",
+    "group" // Added for hover effects
   );
 
   const controlButtonClass = cn(
@@ -55,6 +56,12 @@ const CustomControls: React.FC<CustomControlsProps> = ({
     "w-10 h-10 rounded-md"
   );
 
+  // Icon base classes
+  const iconClass = "transition-colors duration-200 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white";
+  const largeIconClass = cn(iconClass, "w-8 h-8"); // Increased size for desktop
+  const smallIconClass = cn(iconClass, "w-6 h-6"); // Increased size for mobile
+  const actionIconClass = cn(iconClass, "w-6 h-6"); // Size for action buttons
+
   return (
     <>
       {/* Main Controls - Bottom Center on Desktop */}
@@ -68,7 +75,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
             className={controlButtonClass}
             title="Zoom In"
           >
-            <BiZoomIn className="w-7 h-7" />
+            <BiZoomIn className={largeIconClass} />
           </ControlButton>
 
           <ControlButton 
@@ -76,7 +83,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
             className={controlButtonClass}
             title="Zoom Out"
           >
-            <BiZoomOut className="w-7 h-7" />
+            <BiZoomOut className={largeIconClass} />
           </ControlButton>
 
           <ControlButton 
@@ -84,23 +91,15 @@ const CustomControls: React.FC<CustomControlsProps> = ({
             className={controlButtonClass}
             title="Fit View"
           >
-            <RxEnterFullScreen className="w-7 h-7" />
+            <RxEnterFullScreen className={largeIconClass} />
           </ControlButton>
-
-          {/* <ControlButton 
-            onClick={handleLock}
-            className={controlButtonClass}
-            title="Lock"
-          >
-            <IoHandRightOutline className="w-7 h-7" />
-          </ControlButton> */}
 
           <ControlButton 
             onClick={onBoardAction}
             className={wideButtonClass}
             title="On the Board"
           >
-            <GoTriangleUp className="w-5 h-5" />
+            <GoTriangleUp className={actionIconClass} />
             <span className="text-sm font-medium whitespace-nowrap">On the Board</span>
           </ControlButton>
 
@@ -109,7 +108,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
             className={wideButtonClass}
             title="Quick Add"
           >
-            <IoAddCircleOutline className="w-5 h-5" />
+            <IoAddCircleOutline className={actionIconClass} />
             <span className="text-sm font-medium whitespace-nowrap">Quick Add</span>
           </ControlButton>
         </div>
@@ -127,7 +126,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="Zoom In"
             >
-              <BiZoomIn className="w-5 h-5" />
+              <BiZoomIn className={smallIconClass} />
             </ControlButton>
 
             <ControlButton 
@@ -135,7 +134,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="Zoom Out"
             >
-              <BiZoomOut className="w-5 h-5" />
+              <BiZoomOut className={smallIconClass} />
             </ControlButton>
           </div>
 
@@ -145,15 +144,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="Fit View"
             >
-              <RxEnterFullScreen className="w-5 h-5" />
-            </ControlButton>
-
-            <ControlButton 
-              onClick={handleLock}
-              className={mobileButtonClass}
-              title="Lock"
-            >
-              <IoHandRightOutline className="w-5 h-5" />
+              <RxEnterFullScreen className={smallIconClass} />
             </ControlButton>
           </div>
 
@@ -163,7 +154,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="On the Board"
             >
-              <GoTriangleUp className="w-5 h-5" />
+              <GoTriangleUp className={smallIconClass} />
             </ControlButton>
 
             <ControlButton 
@@ -171,7 +162,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="Quick Add"
             >
-              <IoAddCircleOutline className="w-5 h-5" />
+              <IoAddCircleOutline className={smallIconClass} />
             </ControlButton>
           </div>
         </div>
