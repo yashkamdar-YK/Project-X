@@ -116,7 +116,7 @@ const DashboardSidebar: React.FC = () => {
                           key={subIndex}
                           draggable
                           onDragStart={(e) => onDragStart(e, subItem, item.title)}
-                          className="pl-6 py-2 flex justify-between text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 cursor-move hover:bg-gray-200 dark:hover:bg-gray-600"
+                          className="pl-6 py-2 flex justify-between text-sm cursor-pointer text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
                         >
                           {subItem}
                           <div className="flex items-center">
