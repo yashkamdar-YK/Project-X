@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
-import SettingSheet from "./SettingSheet";
+import SettingSheet from "./SettingSheet/SettingSheet";
 
 interface StrategyNavbarProps {
   className?: string;
