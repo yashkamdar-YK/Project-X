@@ -11,12 +11,8 @@ interface NodeData {
 export const StartNode = ({ data }: { data: NodeData }) => {
   return (
     <div className="relative">
-      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer">
-        {data.isRunning ? (
-          <PauseCircle className="w-6 h-6 text-white" />
-        ) : (
+      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer">
           <PlayCircle className="w-6 h-6 text-white" />
-        )}
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>

@@ -1,62 +1,76 @@
 import React, { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
-const OrderOperaction = () => {
-  const [orderOperations, setOrderOperations] = useState("10");
-  const quickOptions = ["10", "0", "YES"];
+interface OrderOperationProps {
+  type?: "entry" | "exit";
+}
 
-  // Create dynamic quick options array that always includes selected time
-  const displayOptions =
-    orderOperations && !quickOptions.includes(orderOperations)
-      ? [orderOperations, ...quickOptions.slice(0, -1)]
-      : quickOptions;
+const OrderOperation: React.FC<OrderOperationProps> = ({ type = "entry" }) => {
+  const [timeLimit, setTimeLimit] = useState("10");
+  const [priceBuffer, setPriceBuffer] = useState("0");
+  const [shouldExecute, setShouldExecute] = useState(true);
+
+  // Handler for number inputs to ensure only numbers are entered
+  const handleNumberInput = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const value = e.target.value;
+    // Allow empty string or numbers (including decimals for price buffer)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setter(value);
+    }
+  };
 
   return (
-    <div className="flex items-center space-x-1">
-      {/* Quick selectors with selected time - Hidden on mobile */}
-      <div className="hidden sm:flex items-center rounded-md overflow-hidden dark:border-gray-700">
-        {displayOptions.map((time) => (
-          <Button
-            key={time}
-            variant="ghost"
-            size="sm"
-            onClick={() => setOrderOperations(time)}
-            className={cn(
-              "px-2 py-1 h-8 text-sm font-medium transition-all border dark:border-gray-700 duration-200 rounded-none",
-              orderOperations === time
-                ? "bg-blue-100 text-blue-700 dark:bg-gray-600  dark:text-blue-300"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-            )}
-          >
-            {time}
-          </Button>
-        ))}
+    <div className="w-full grid grid-cols-3 gap-4 items-center">
+      {/* Time Limit */}
+      <div className="flex flex-col space-y-1.5">
+        <Label className="text-xs text-gray-500 dark:text-gray-400">
+          Time Limit
+        </Label>
+        <Input
+          type="text"
+          inputMode="numeric"
+          value={timeLimit}
+          onChange={(e) => handleNumberInput(e, setTimeLimit)}
+          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 h-10"
+          placeholder="Enter time"
+        />
       </div>
-      <div className="sm:hidden">
-        <Select value={orderOperations} onValueChange={setOrderOperations}>
-          <SelectTrigger className="w-20 min-w-18 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200">
-            <SelectValue>{orderOperations}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {quickOptions.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+      {/* Price Buffer */}
+      <div className="flex flex-col space-y-1.5">
+        <Label className="text-xs text-gray-500 dark:text-gray-400">
+          Price Buffer
+        </Label>
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={priceBuffer}
+          onChange={(e) => handleNumberInput(e, setPriceBuffer)}
+          className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 h-10"
+          placeholder="Enter price"
+        />
+      </div>
+
+      {/* Should Execute Switch */}
+      <div className="flex flex-col space-y-1.5">
+        <Label className="text-xs text-gray-500 dark:text-gray-400">
+          Should Execute
+        </Label>
+        <div className="h-10 flex items-center">
+          <Switch
+            checked={shouldExecute}
+            onCheckedChange={setShouldExecute}
+            className="data-[state=checked]:bg-blue-500"
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-export default OrderOperaction;
+export default OrderOperation;

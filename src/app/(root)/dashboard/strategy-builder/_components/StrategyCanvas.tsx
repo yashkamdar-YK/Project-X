@@ -9,15 +9,17 @@ import {
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
+  Controls,
+  MiniMap,
   Background,
   useNodesState,
   useEdgesState,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, AddNode, ConditionNode, ActionNode } from './nodes/CustomNodes';
+import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import NodeSheet from "./StrategyNavbar/NodeSheet";
-import CustomControls from "./canvas-Component/customeControl";
+import CustomControls from "./canvas/customeControl";
 
 // Define node types mapping
 const nodeTypes = {
@@ -213,31 +215,32 @@ const StrategyCanvas = () => {
     <>
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
         <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-          <div className="absolute inset-0 dark:text-black">
-            <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                // onPaneClick={onPaneClick}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-                fitView
-                panOnScroll={true}
-                selectionOnDrag={true}
-                minZoom={1} // Minimum zoom level
-                maxZoom={1.5} // Maximum zoom level
-              >
-                {/* <Controls className="dark:text-black" /> */}
-                <CustomControls />
+        <div className="absolute inset-0 dark:text-black">
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              // onPaneClick={onPaneClick}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              nodeTypes={nodeTypes}
+              fitView
+              panOnScroll={true}
+              selectionOnDrag={true}
+            >
+               {/* <Controls className="dark:text-black" />
+               <MiniMap zoomable pannable />
+              <Background gap={12} size={1} /> */}
+              <CustomControls />
                 {/* <MiniMap zoomable pannable /> */}
                 <Background gap={12} size={1} />
-              </ReactFlow>
-            </ReactFlowProvider>
-          </div>
+            </ReactFlow>
+          </ReactFlowProvider>
+        </div>
         </div>
       </div>
       <NodeSheet
