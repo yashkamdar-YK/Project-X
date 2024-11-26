@@ -28,16 +28,16 @@ const SettingSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[380px] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800">
+      <SheetContent side="right" className="w-full sm:max-w-[400px] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800">
         <div className="text-gray-900 dark:text-gray-100">
           {/* Title */}
           <div className="items-center flex font-medium justify-center text-2xl mt-6">
             <h1>Settings</h1>
           </div>
 
-          <div className="space-y-6 mt-8">
+          <div className="space-y-1 mt-8">
             {/* Strategy Type */}
-            <div className="flex justify-between items-center">
+            <div className="flex gap-x-4 items-center">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Strategy Type: </p>
               <Button 
                 onClick={toggleStrategy} 
@@ -59,7 +59,7 @@ const SettingSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
             {/* Execution Section */}
             <div className="space-y-1">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Execution</p>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 pt-2">
                 {/* Product Type */}
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Product Type: </p>
@@ -92,7 +92,7 @@ const SettingSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
                     <OrderOperation type="entry" />
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 mt-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Exit Order Operations</p>
                   <div className="pl-0">
                     <OrderOperation type="exit" />

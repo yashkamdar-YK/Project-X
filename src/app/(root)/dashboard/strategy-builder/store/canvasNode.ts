@@ -5,11 +5,9 @@ import { NODE_TYPES, NODE_CONFIG } from '../constants/nodeTypes';
 interface NodeStore {
   nodes: Node[];
   edges: Edge[];
-  isRunning: boolean;
   addNode: (type: string, position?: { x: number; y: number }) => void;
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
-  toggleRunning: () => void;
   initializeCanvas: () => void;
 }
 
@@ -60,7 +58,6 @@ const INITIAL_EDGES: Edge[] = [
 export const useNodeStore = create<NodeStore>((set) => ({
   nodes: INITIAL_NODES,
   edges: INITIAL_EDGES,
-  isRunning: false,
 
   initializeCanvas: () => {
     set({
@@ -118,5 +115,4 @@ export const useNodeStore = create<NodeStore>((set) => ({
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
-  toggleRunning: () => set((state) => ({ isRunning: !state.isRunning })),
 }));
