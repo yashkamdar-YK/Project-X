@@ -21,6 +21,7 @@ import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNo
 import NodeSheet from "./StrategyNavbar/NodeSheet";
 import CustomControls from "./canvas/customeControl";
 
+
 // Define node types mapping
 const nodeTypes = {
   startNode: StartNode,

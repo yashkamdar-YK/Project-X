@@ -25,7 +25,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({
   const weekDays = ["M", "Tu", "W", "Th", "F"];
   const expDays = ["0", "1", "2", "3", "4", "5"];
 
-  const buttonClass = 'transition-colors font-medium bg-blue-500 mt-3 hover:bg-blue-600 text-white';
+  const buttonClass = 'transition-colors font-medium bg-blue-500  hover:bg-blue-600 text-white';
   
   const dayButtonClass = (isSelected: boolean) => cn(
     "px-3 py-1.5 h-8 text-sm font-medium border transition-all duration-200",

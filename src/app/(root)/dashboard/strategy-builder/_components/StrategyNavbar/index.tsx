@@ -12,15 +12,18 @@ import {
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
 import SettingSheet from "./SettingSheet/SettingSheet";
+import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 
 interface StrategyNavbarProps {
   className?: string;
 }
 
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
+
+  const { openSheet } = useSheetStore();
+
   const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
   const [isCodeSheetOpen, setIsCodeSheetOpen] = React.useState(false);
-  const [isSettingOpen, setIsSettingOpen] = React.useState(false);
 
   const handleSaveStrategy = async () => {
     // Simulate saving strategy
@@ -55,7 +58,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      onClick={() => setIsSettingOpen(true)}
+                      onClick={() => openSheet('settings')}
                       variant="ghost"
                       size="icon"
                       aria-label="Settings"
@@ -120,11 +123,6 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
       <StrategyCodeSheet
         isOpen={isCodeSheetOpen}
         onClose={() => setIsCodeSheetOpen(false)}
-      />
-
-      <SettingSheet
-        isOpen={isSettingOpen}
-        onClose={() => setIsSettingOpen(false)}
       />
     </>
   );
