@@ -235,12 +235,8 @@ const StrategyCanvas = () => {
               minZoom={1} // Minimum zoom level
               maxZoom={1.5} // Maximum zoom level
             >
-               {/* <Controls className="dark:text-black" />
-               <MiniMap zoomable pannable />
-              <Background gap={12} size={1} /> */}
               <CustomControls />
-                {/* <MiniMap zoomable pannable /> */}
-                <Background gap={12} size={1} />
+              <Background gap={12} size={1} />
             </ReactFlow>
           </ReactFlowProvider>
         </div>
