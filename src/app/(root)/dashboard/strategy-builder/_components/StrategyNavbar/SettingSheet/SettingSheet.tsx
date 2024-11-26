@@ -59,7 +59,7 @@ const SettingSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
             {/* Execution Section */}
             <div className="space-y-1">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Execution</p>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-3">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
                 {/* Product Type */}
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Product Type: </p>
