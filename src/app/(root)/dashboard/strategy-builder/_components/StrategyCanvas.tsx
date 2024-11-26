@@ -17,8 +17,9 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, AddNode, ConditionNode, ActionNode } from './nodes/CustomNodes';
+import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import NodeSheet from "./StrategyNavbar/NodeSheet";
+import CustomControls from "./canvas/customeControl";
 
 // Define node types mapping
 const nodeTypes = {
@@ -231,9 +232,12 @@ const StrategyCanvas = () => {
               panOnScroll={true}
               selectionOnDrag={true}
             >
-               <Controls className="dark:text-black" />
+               {/* <Controls className="dark:text-black" />
                <MiniMap zoomable pannable />
-              <Background gap={12} size={1} />
+              <Background gap={12} size={1} /> */}
+              <CustomControls />
+                {/* <MiniMap zoomable pannable /> */}
+                <Background gap={12} size={1} />
             </ReactFlow>
           </ReactFlowProvider>
         </div>
