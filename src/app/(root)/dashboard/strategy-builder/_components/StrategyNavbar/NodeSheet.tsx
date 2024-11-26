@@ -19,7 +19,7 @@ type CustomNode = Node<NodeData>;
 interface NodeSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  node: CustomNode | null;
+  node: Node | CustomNode | null;
 }
 
 const NodeSheet: React.FC<NodeSheetProps> = ({ isOpen, onClose, node }) => {
@@ -35,7 +35,8 @@ const NodeSheet: React.FC<NodeSheetProps> = ({ isOpen, onClose, node }) => {
             <p className="text-sm text-gray-500">
               Position: ({node.position.x}, {node.position.y})
             </p>
-            <p className="text-sm text-gray-500">Label: {node.data.label}</p>
+            {/* @ts-ignore */}
+            <p className="text-sm text-gray-500">Label: {node?.data?.label}</p>
             {/* Add more node details as needed */}
           </div>
         )}

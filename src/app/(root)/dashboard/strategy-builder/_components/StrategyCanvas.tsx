@@ -3,147 +3,245 @@ import {
   ReactFlow,
   Node,
   Edge,
-  useNodesState,
-  useEdgesState,
   Connection,
   NodeChange,
   EdgeChange,
+  addEdge,
   applyNodeChanges,
   applyEdgeChanges,
   Controls,
   MiniMap,
   Background,
-  addEdge,
+  useNodesState,
+  useEdgesState,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useNodeStore } from "./store/CanvasNode";
+import { StartNode, AddNode, ConditionNode, ActionNode } from './nodes/CustomNodes';
 import NodeSheet from "./StrategyNavbar/NodeSheet";
-import CustomControls from "./canvas-Component/customeControl";
+
+// Define node types mapping
+const nodeTypes = {
+  startNode: StartNode,
+  addNode: AddNode,
+  conditionNode: ConditionNode,
+  actionNode: ActionNode,
+};
+
+const INITIAL_NODES: Node[] = [
+  {
+    id: 'start',
+    type: 'startNode',
+    position: { x: 350, y: 20 },
+    data: { label: 'Start', isRunning: false },
+  },
+  {
+    id: 'entry-1',
+    type: 'conditionNode',
+    position: { x: 300, y: 120 },
+    data: { 
+      label: 'Supertrend HA condition',
+      category: 'Entry Condition'
+    },
+  },
+  {
+    id: 'add',
+    type: 'addNode',
+    position: { x: 350, y: 250 },
+    data: { label: 'Add' },
+  },
+];
+
+const INITIAL_EDGES: Edge[] = [
+  {
+    id: 'start-entry',
+    source: 'start',
+    target: 'entry-1',
+    type: 'smoothstep',
+  },
+  {
+    id: 'entry-add',
+    source: 'entry-1',
+    target: 'add',
+    type: 'smoothstep',
+  },
+];
 
 const StrategyCanvas = () => {
-  // State to manage selected node and sidebar visibility
-  const [selectedNode, setSelectedNode] = useState<null>(null);
-  const [isNodeSidebarOpen, setIsNodeSidebarOpen] = useState(false);
+  // State for nodes and edges
+  const [nodes, setNodes] = useNodesState(INITIAL_NODES);
+  const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
+  const [isRunning, setIsRunning] = useState(false);
+  
+  // State for selected node
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
-  const nodes = useNodeStore((state) => state.nodes);
-  const edges = useNodeStore((state) => state.edges);
-  const setNodes = useNodeStore((state) => state.setNodes);
-  const setEdges = useNodeStore((state) => state.setEdges);
-
+  // Handle nodes changes
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      setNodes(applyNodeChanges(changes, nodes));
-    },
-    [nodes, setNodes]
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes]
   );
 
+  // Handle edges changes
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => {
-      setEdges(applyEdgeChanges(changes, edges));
-    },
-    [edges, setEdges]
+    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [setEdges]
   );
 
+  // Handle new connections
   const onConnect = useCallback(
-    (connection: Connection) => {
-      const newEdges = addEdge(connection, edges);
-      setEdges(newEdges);
-    },
-    [edges, setEdges]
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
   );
 
-  // functions for drag and drop
+  // Handle node click
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    if (node.type === 'startNode') {
+      setIsRunning(!isRunning);
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === node.id ? { ...n, data: { ...n.data, isRunning: !isRunning } } : n
+        )
+      );
+    } else if (node.type === 'addNode') {
+      // Handle add node click - add new condition/action node
+      const newNodeId = `node-${nodes.length + 1}`;
+      const newNode = {
+        id: newNodeId,
+        type: 'conditionNode',
+        position: { 
+          x: node.position.x - 50,
+          y: node.position.y + 100 
+        },
+        data: { 
+          label: 'New Condition',
+          category: 'Condition'
+        },
+      };
+
+      // Update add node position
+      const updatedNodes = [
+        ...nodes.filter((n) => n.id !== 'add'),
+        newNode,
+        {
+          ...node,
+          position: { 
+            x: node.position.x,
+            y: node.position.y + 150
+          },
+        },
+      ];
+
+      // Add new edges
+      const newEdges = [
+        ...edges,
+        {
+          id: `${nodes[nodes.length - 2].id}-${newNodeId}`,
+          source: nodes[nodes.length - 2].id,
+          target: newNodeId,
+          type: 'smoothstep',
+        },
+        {
+          id: `${newNodeId}-add`,
+          source: newNodeId,
+          target: 'add',
+          type: 'smoothstep',
+        },
+      ];
+
+      setNodes(updatedNodes);
+      setEdges(newEdges);
+    } else {
+      setSelectedNode(node);
+    }
+  }, [nodes, edges, isRunning, setNodes, setEdges]);
+
+  // Handle drag over
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
+    event.dataTransfer.dropEffect = 'move';
   }, []);
 
+  // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
 
-      // Get the position where the node was dropped
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
       const position = {
-        x: event.clientX - reactFlowBounds.left,
+        x: event.clientX - reactFlowBounds.left - 100,
         y: event.clientY - reactFlowBounds.top,
       };
 
-      try {
-        // Get the dragged data
-        const data = JSON.parse(
-          event.dataTransfer.getData("application/reactflow")
-        );
+      const dataTransfer = event.dataTransfer.getData('application/reactflow');
+      
+      if (dataTransfer) {
+        const { item, category } = JSON.parse(dataTransfer);
+        const newNodeId = `node-${nodes.length + 1}`;
+        
+        const newNode = {
+          id: newNodeId,
+          type: category.includes('Condition') ? 'conditionNode' : 'actionNode',
+          position,
+          data: { label: item, category },
+        };
 
-        // Create and add the new node
-        if (data.item && data.category) {
-          const newNode: Node = {
-            id: Date.now().toString(),
-            position,
-            data: {
-              label: data.item,
-              category: data.category,
-            },
-          };
-
-          // setNodes((nds:) => [...nds, newNode]);
-          useNodeStore.getState().addNode(data.item, data.category);
-        }
-      } catch (error) {
-        console.error("Error adding node:", error);
+        setNodes([...nodes.filter(n => n.id !== 'add'), newNode, nodes.find(n => n.id === 'add')!]);
+        
+        // Update edges to maintain flow
+        const lastNodeId = nodes[nodes.length - 2].id;
+        setEdges([
+          ...edges.filter(e => e.target !== 'add'),
+          {
+            id: `${lastNodeId}-${newNodeId}`,
+            source: lastNodeId,
+            target: newNodeId,
+            type: 'smoothstep',
+          },
+          {
+            id: `${newNodeId}-add`,
+            source: newNodeId,
+            target: 'add',
+            type: 'smoothstep',
+          },
+        ]);
       }
     },
-    [setNodes]
+    [nodes, edges, setNodes, setEdges]
   );
-
-  // Handle node click with proper typing
-  const onNodeClick = useCallback(
-    (event: React.MouseEvent, clickedNode: any) => {
-      setSelectedNode(clickedNode);
-      setIsNodeSidebarOpen(true);
-    },
-    []
-  );
-
-  // Handle canvas click (background click)
-  const onPaneClick = useCallback(() => {
-    setSelectedNode(null);
-    setIsNodeSidebarOpen(false);
-  }, []);
 
   return (
     <>
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
         <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-          <div className="absolute inset-0 dark:text-black">
-            <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                onPaneClick={onPaneClick}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-                fitView
-                panOnScroll={true}
-                selectionOnDrag={true}
-              >
-                {/* <Controls className="dark:text-black" /> */}
-                <CustomControls />
-                {/* <MiniMap zoomable pannable /> */}
-                <Background gap={12} size={1} />
-              </ReactFlow>
-            </ReactFlowProvider>
-          </div>
+        <div className="absolute inset-0 dark:text-black">
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              // onPaneClick={onPaneClick}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              nodeTypes={nodeTypes}
+              fitView
+              panOnScroll={true}
+              selectionOnDrag={true}
+            >
+               <Controls className="dark:text-black" />
+               <MiniMap zoomable pannable />
+              <Background gap={12} size={1} />
+            </ReactFlow>
+          </ReactFlowProvider>
+        </div>
         </div>
       </div>
       <NodeSheet
-        isOpen={isNodeSidebarOpen}
-        onClose={() => setIsNodeSidebarOpen(false)}
+        isOpen={!!selectedNode}
+        onClose={() => setSelectedNode(null)}
         node={selectedNode}
       />
     </>
