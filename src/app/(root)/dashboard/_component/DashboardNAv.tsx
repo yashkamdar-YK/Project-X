@@ -14,6 +14,7 @@ import { UserToggle } from "./UserToggle"
 const DashboardNav: React.FC = () => {
   const pathName = usePathname()
 
+
   const navLinks = [
     { href: "/dashboard/my-strategies", label: "My Strategies" },
     { href: "/dashboard/explore", label: "Explore" },

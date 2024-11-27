@@ -1,47 +1,46 @@
-import React from "react";
-import { Node } from "@xyflow/react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 
-// Define the type for node data
-type NodeData = {
-  label: string;
-};
+const NodeSheet = () => {
+  const { closeSheet, type, selectedItem } = useSheetStore();
 
-// Define the custom node type
-type CustomNode = Node<NodeData>;
+  if (type !== 'node' || !selectedItem) return null;
 
-// Define props interface for NodeSheet
-interface NodeSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  node: Node | CustomNode | null;
-}
-
-const NodeSheet: React.FC<NodeSheetProps> = ({ isOpen, onClose, node }) => {
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{node ? `Node: ${node.data.label}` : 'Something Wrong'}</SheetTitle>
-        </SheetHeader>
-        {node && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-500">Node ID: {node.id}</p>
-            <p className="text-sm text-gray-500">
-              Position: ({node.position.x}, {node.position.y})
-            </p>
-            {/* @ts-ignore */}
-            <p className="text-sm text-gray-500">Label: {node?.data?.label}</p>
-            {/* Add more node details as needed */}
+    <div className={`h-full md:w-[480px]`}>
+      <div className="h-full border-l-2 overflow-y-auto">
+        <div className="p-6 text-gray-900 dark:text-gray-100">
+          <button
+            onClick={closeSheet}
+            className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+            aria-label="Close node"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+
+          <div className="items-center flex font-medium justify-center text-2xl mt-6">
+            <h1>Node Details</h1>
           </div>
-        )}
-      </SheetContent>
-    </Sheet>
+
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Node ID: {selectedItem.id}</p>
+            <p className="text-sm text-gray-500">
+              Position: ({selectedItem.position.x}, {selectedItem.position.y})
+            </p>
+            <p className="text-sm text-gray-500">Label: {selectedItem?.data?.label}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
