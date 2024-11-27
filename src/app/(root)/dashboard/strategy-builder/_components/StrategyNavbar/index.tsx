@@ -98,7 +98,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                   <DropdownMenuItem>
                     <div className="flex w-[300px] gap-1 dark:text-gray-300 text-gray-800 items-center  ">
                       <div>
-                      <LayoutPanelTop size={100} />
+                      <LayoutPanelTop size={80} />
                       </div>
                       <div>
                         <h1 className="text-2xl">Starter Templates</h1>
