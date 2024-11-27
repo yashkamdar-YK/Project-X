@@ -96,7 +96,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 >
                   {/* Addind Items  */}
                   <DropdownMenuItem>
-                    <div className="flex w-[300px] gap-x-3 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
+                    <div className="flex w-[230px] gap-x-4 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
                       <div>
                       <GoProjectTemplate className="h-10 w-10" />
                       </div>
