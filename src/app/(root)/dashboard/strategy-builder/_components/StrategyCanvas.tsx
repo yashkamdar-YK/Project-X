@@ -49,7 +49,7 @@ const INITIAL_NODES: Node[] = [
     id: 'add',
     type: 'addNode',
     position: { x: 350, y: 250 },
-    data: { label: 'Add' },
+    data: { label: 'Add', onAddNode: () => {} },
   },
 ];
 
