@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 interface DaySelectorProps {
   onStateChange?: (state: "days" | "daily" | "exp") => void;
@@ -21,14 +22,17 @@ const DaySelector: React.FC<DaySelectorProps> = ({
   const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("days");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [selectedExp, setSelectedExp] = useState<string>("0");
+  const [currentExpPage, setCurrentExpPage] = useState(0);
 
-  const weekDays = ["M", "Tu", "W", "Th", "F"];
-  const expDays = ["0", "1", "2", "3", "4", "5"];
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const allExpDays = Array.from({ length: 31 }, (_, i) => i.toString());
+  const itemsPerPage = 5; // Show 6 items (0-5) per page
+  const totalPages = Math.ceil(allExpDays.length / itemsPerPage);
 
-  const buttonClass = 'transition-colors font-medium bg-blue-500  hover:bg-blue-600 text-white';
+  const buttonClass = 'transition-colors font-medium bg-blue-500 hover:bg-blue-600 text-white';
   
   const dayButtonClass = (isSelected: boolean) => cn(
-    "px-3 py-1.5 h-8 text-sm font-medium border transition-all duration-200",
+    "px-3 py-1.5 h-8 text-sm font-medium transition-all duration-200 whitespace-nowrap",
     isSelected
       ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600"
       : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -43,6 +47,8 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         : "days";
     setSelectorState(newState);
     onStateChange?.(newState);
+    // Reset to first page when changing states
+    setCurrentExpPage(0);
   };
 
   const handleDaySelect = (day: string) => {
@@ -52,6 +58,21 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         : [...prev, day]
     );
   };
+
+  const nextExpPage = () => {
+    setCurrentExpPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
+
+  const prevExpPage = () => {
+    setCurrentExpPage((prev) => Math.max(prev - 1, 0));
+  };
+
+  const getCurrentPageItems = () => {
+    const start = currentExpPage * itemsPerPage;
+    return allExpDays.slice(start, start + itemsPerPage);
+  };
+
+  const navigationButtonClass = "h-8 w-8 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700";
 
   return (
     <div className="flex items-center justify-between space-x-2">
@@ -68,11 +89,11 @@ const DaySelector: React.FC<DaySelectorProps> = ({
           : "Exp"}
       </Button>
 
-      {/* Days Selection Section */}
-      {(selectorState === "days" || (selectorState === "daily" && showDaysInDaily)) && (
+      {/* Days Selection Section - Only shown in days mode */}
+      {selectorState === "days" && (
         <>
           {/* Desktop View */}
-          <div className="hidden sm:flex items-center rounded-md overflow-hidden">
+          <div className="hidden sm:flex items-center rounded-md overflow-hidden border ">
             {weekDays.map((day) => (
               <button
                 key={day}
@@ -105,12 +126,25 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         </>
       )}
 
-      {/* Expiry Days Selection */}
+      {/* Expiry Days Selection with Fixed Carousel */}
       {selectorState === "exp" && (
-        <>
-          {/* Desktop View */}
-          <div className="hidden sm:flex items-center rounded-md overflow-hidden">
-            {expDays.map((day) => (
+        <div className="flex items-center space-x-1">
+          {/* Back Button */}
+          {currentExpPage > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={prevExpPage}
+              className={navigationButtonClass}
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
+
+          {/* Numbers */}
+          <div className="flex items-center rounded-md border overflow-hidden">
+            {getCurrentPageItems().map((day) => (
               <button
                 key={day}
                 onClick={() => setSelectedExp(day)}
@@ -121,22 +155,19 @@ const DaySelector: React.FC<DaySelectorProps> = ({
             ))}
           </div>
 
-          {/* Mobile View */}
-          <div className="sm:hidden">
-            <Select value={selectedExp} onValueChange={setSelectedExp}>
-              <SelectTrigger className="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {expDays.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {day}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </>
+          {/* Forward Button */}
+          {currentExpPage < totalPages - 1 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={nextExpPage}
+              className={navigationButtonClass}
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

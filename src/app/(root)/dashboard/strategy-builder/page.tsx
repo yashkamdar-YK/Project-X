@@ -25,7 +25,7 @@ export default function StrategyBuilder() {
         <DashboardSidebar />
 
         {/* Flexible width canvas container */}
-        <div className="flex-1 relative border border-red-400">
+        <div className="flex-1 relative">
           {/* Canvas with dynamic width */}
           <div
             className={`

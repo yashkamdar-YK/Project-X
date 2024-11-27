@@ -41,7 +41,7 @@ const SettingSheet = () => {
   return (
     <div
       className={`
-        h-full w-[400px]
+        h-full md:w-[480px]
       `}
     >
       <div className="h-full border-l-2 overflow-y-auto">
