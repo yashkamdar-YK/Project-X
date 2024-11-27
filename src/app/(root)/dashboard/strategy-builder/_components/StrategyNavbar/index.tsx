@@ -87,7 +87,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="dark:bg-gray-900">
-                    Templates <GoProjectTemplate className="ml-2 h-4 w-4" />
+                  <LayoutPanelTop size={14} />Templates
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -96,13 +96,13 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 >
                   {/* Addind Items  */}
                   <DropdownMenuItem>
-                    <div className="flex w-[300px] gap-1 dark:text-gray-300 text-gray-800 items-center  ">
+                    <div className="flex w-[300px] gap-x-3 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
                       <div>
-                      <LayoutPanelTop size={80} />
+                      <GoProjectTemplate className="h-10 w-10" />
                       </div>
                       <div>
-                        <h1 className="text-2xl">Starter Templates</h1>
-                        <p className="text-sm">Never write from scratch again. Go from idea to blog in minutes.</p>
+                        <h1 className="text-lg font-semibold text-black dark:text-white">Starter Templates</h1>
+                        <p className="text-xs text-gray-300">Never write from scratch again. Go from idea to blog in minutes.</p>
                       </div>
                     </div>
                   </DropdownMenuItem>
