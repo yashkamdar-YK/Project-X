@@ -22,6 +22,7 @@ import { GoProjectTemplate } from "react-icons/go";
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
+import { LayoutPanelTop } from 'lucide-react';
 
 interface StrategyNavbarProps {
   className?: string;
@@ -89,9 +90,22 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                     Templates <GoProjectTemplate className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="min-w-[140px] dark:bg-gray-900">
-                  <DropdownMenuItem>Starter Templates</DropdownMenuItem>
-                  <DropdownMenuItem>AI Builder</DropdownMenuItem>
+                <DropdownMenuContent
+                  align="center"
+                  className="min-w-[140px] dark:bg-gray-900"
+                >
+                  {/* Addind Items  */}
+                  <DropdownMenuItem>
+                    <div className="flex w-[300px] gap-1 dark:text-gray-300 text-gray-800 items-center  ">
+                      <div>
+                      <LayoutPanelTop size={100} />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl">Starter Templates</h1>
+                        <p className="text-sm">Never write from scratch again. Go from idea to blog in minutes.</p>
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
