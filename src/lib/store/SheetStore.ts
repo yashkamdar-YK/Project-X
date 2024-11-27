@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type SheetType = 'settings' | 'code' | null
+type SheetType = 'settings' | 'code' | 'node' | null
 
 interface SheetStore {
   isOpen: boolean

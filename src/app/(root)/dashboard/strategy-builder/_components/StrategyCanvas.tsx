@@ -9,8 +9,6 @@ import {
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
-  Controls,
-  MiniMap,
   Background,
   useNodesState,
   useEdgesState,
@@ -18,8 +16,9 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
-import NodeSheet from "./StrategyNavbar/NodeSheet";
 import CustomControls from "./canvas/customeControl";
+import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
+
 
 
 // Define node types mapping
@@ -74,6 +73,8 @@ const StrategyCanvas = () => {
   const [nodes, setNodes] = useNodesState(INITIAL_NODES);
   const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
   const [isRunning, setIsRunning] = useState(false);
+
+  const { openSheet } = useSheetStore();
   
   // State for selected node
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -97,66 +98,72 @@ const StrategyCanvas = () => {
   );
 
   // Handle node click
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    if (node.type === 'startNode') {
-      setIsRunning(!isRunning);
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === node.id ? { ...n, data: { ...n.data, isRunning: !isRunning } } : n
-        )
-      );
-    } else if (node.type === 'addNode') {
-      // Handle add node click - add new condition/action node
-      const newNodeId = `node-${nodes.length + 1}`;
-      const newNode = {
-        id: newNodeId,
-        type: 'conditionNode',
-        position: { 
-          x: node.position.x - 50,
-          y: node.position.y + 100 
-        },
-        data: { 
-          label: 'New Condition',
-          category: 'Condition'
-        },
-      };
-
-      // Update add node position
-      const updatedNodes = [
-        ...nodes.filter((n) => n.id !== 'add'),
-        newNode,
-        {
-          ...node,
-          position: { 
-            x: node.position.x,
-            y: node.position.y + 150
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.stopPropagation(); // Prevent event bubbling
+  
+      // Open the sheet based on node type
+      if (node.type === 'node') {
+        setIsRunning(!isRunning);
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.id === node.id ? { ...n, data: { ...n.data, isRunning: !isRunning } } : n
+          )
+        );
+      } else if (node.type === 'addNode') {
+        // Handle add node logic
+        const newNodeId = `node-${nodes.length + 1}`;
+        const newNode = {
+          id: newNodeId,
+          type: 'conditionNode',
+          position: {
+            x: node.position.x - 50,
+            y: node.position.y + 100,
           },
-        },
-      ];
-
-      // Add new edges
-      const newEdges = [
-        ...edges,
-        {
-          id: `${nodes[nodes.length - 2].id}-${newNodeId}`,
-          source: nodes[nodes.length - 2].id,
-          target: newNodeId,
-          type: 'smoothstep',
-        },
-        {
-          id: `${newNodeId}-add`,
-          source: newNodeId,
-          target: 'add',
-          type: 'smoothstep',
-        },
-      ];
-
-      setNodes(updatedNodes);
-      setEdges(newEdges);
-    } else {
-      setSelectedNode(node);
-    }
-  }, [nodes, edges, isRunning, setNodes, setEdges]);
+          data: {
+            label: 'New Condition',
+            category: 'Condition',
+          },
+        };
+  
+        const updatedNodes = [
+          ...nodes.filter((n) => n.id !== 'add'),
+          newNode,
+          {
+            ...node,
+            position: {
+              x: node.position.x,
+              y: node.position.y + 150,
+            },
+          },
+        ];
+  
+        const newEdges = [
+          ...edges,
+          {
+            id: `${nodes[nodes.length - 2].id}-${newNodeId}`,
+            source: nodes[nodes.length - 2].id,
+            target: newNodeId,
+            type: 'smoothstep',
+          },
+          {
+            id: `${newNodeId}-add`,
+            source: newNodeId,
+            target: 'add',
+            type: 'smoothstep',
+          },
+        ];
+  
+        setNodes(updatedNodes);
+        setEdges(newEdges);
+      } else {
+        // For other nodes, open the NodeSheet
+        openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
+      }
+    },
+    [nodes, edges, isRunning, setNodes, setEdges, openSheet]
+  );
+  
 
   // Handle drag over
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -242,11 +249,6 @@ const StrategyCanvas = () => {
         </div>
         </div>
       </div>
-      <NodeSheet
-        isOpen={!!selectedNode}
-        onClose={() => setSelectedNode(null)}
-        node={selectedNode}
-      />
     </>
   );
 };

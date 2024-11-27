@@ -6,6 +6,7 @@ import StrategyCanvas from './_components/StrategyCanvas';
 import SettingSheet from './_components/StrategyNavbar/SettingSheet/SettingSheet';
 import { useSheetStore } from '@/lib/store/SheetStore';
 import CustomSheet from '@/components/shared/custom-sheet';
+import NodeSheet from './_components/StrategyNavbar/NodeSheet';
 
 export default function StrategyBuilder() {
   return (
@@ -38,6 +39,7 @@ export default function StrategyBuilder() {
 
           {/* Sheet */}
           <CustomSheet />
+          <NodeSheet/>
         </div>
       </div>
     </div>

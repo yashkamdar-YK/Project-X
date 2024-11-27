@@ -1,4 +1,6 @@
 import SettingSheet from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/SettingSheet/SettingSheet';
+import NodeSheet from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet';
+// import StrategyCodeSheet from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/StrategyCodeSheet';
 import { useSheetStore } from '@/lib/store/SheetStore';
 import React from 'react'
 
@@ -12,6 +14,8 @@ const CustomSheet = () => {
         ${isOpen ? "translate-x-0" : "translate-x-full"} z-50 w-fit h-full`}>
 
             {type === 'settings' ? <SettingSheet /> : null}
+            {type === 'node' ? <NodeSheet /> : null}
+            {/* {type === 'code' ? <StrategyCodeSheet/> : null} */}
         
         </div>
     )
