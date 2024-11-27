@@ -1,42 +1,34 @@
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
-import { NODE_TYPES, NODE_CONFIG } from '../constants/nodeTypes';
+import { NODE_CONFIG, TNode } from "../types/nodeTypes";
+
 
 interface NodeStore {
   nodes: Node[];
   edges: Edge[];
-  addNode: (type: string, position?: { x: number; y: number }) => void;
+  addNode: (type: TNode, position?: { x: number; y: number }) => void;
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
   initializeCanvas: () => void;
 }
 
-const INITIAL_NODES: Node[] = [
+const INITIAL_NODES : TNode[] = [
   {
     id: 'start',
-    type: NODE_TYPES.startNode,
+    type: "START",
     position: { x: 250, y: 0 },
     data: { label: 'Start' },
     draggable: false,
-    style: NODE_CONFIG[NODE_TYPES.startNode].style,
+    style: NODE_CONFIG["START"],
   },
   {
     id: 'initial-entry',
-    type: NODE_TYPES.conditionNode,
     position: { x: 180, y: 100 },
+    type:"CONDITION",
     data: { 
       label: 'Entry Condition',
-      category: NODE_CONFIG[NODE_TYPES.conditionNode].category,
     },
-    style: NODE_CONFIG[NODE_TYPES.conditionNode].style,
-  },
-  {
-    id: 'end',
-    type: NODE_TYPES.addNode,
-    position: { x: 250, y: 200 },
-    data: { label: 'Add' },
-    draggable: false,
-    style: NODE_CONFIG[NODE_TYPES.addNode].style,
+    style: NODE_CONFIG['CONDITION'],
   },
 ];
 
@@ -45,12 +37,6 @@ const INITIAL_EDGES: Edge[] = [
     id: 'start-entry',
     source: 'start',
     target: 'initial-entry',
-    type: 'smoothstep',
-  },
-  {
-    id: 'entry-end',
-    source: 'initial-entry',
-    target: 'end',
     type: 'smoothstep',
   },
 ];
@@ -66,23 +52,22 @@ export const useNodeStore = create<NodeStore>((set) => ({
     });
   },
 
-  addNode: (type, position) => {
+  addNode: (item, position) => {
     const newPosition = position || { x: 250, y: 0 };
     const newNode: Node = {
-      id: `${type}-${Date.now()}`,
-      type,
+      id: `${item.type}-${Date.now()}`,
+      type: item.type,
       position: newPosition,
       data: {
-        label: NODE_CONFIG[type as keyof typeof NODE_TYPES].label,
-        category: NODE_CONFIG[type as keyof typeof NODE_TYPES].category,
+        label: item.data.label,
       },
-      style: NODE_CONFIG[type as keyof typeof NODE_TYPES].style,
+      style: NODE_CONFIG[item.type],
     };
 
     set((state) => {
       // Add node and connect it to the last node in the chain
-      const lastNode = state.nodes.find(node => node.type !== NODE_TYPES.addNode);
-      const endNode = state.nodes.find(node => node.type === NODE_TYPES.addNode);
+      const lastNode = state.nodes[state.nodes.length - 2];
+      const endNode = state.nodes[state.nodes.length - 1];
       
       const newEdges = [...state.edges];
       if (lastNode && endNode) {
@@ -105,7 +90,7 @@ export const useNodeStore = create<NodeStore>((set) => ({
         });
 
         return {
-          nodes: [...state.nodes.filter(n => n.type !== NODE_TYPES.addNode), newNode, endNode],
+          nodes: [...state.nodes.filter(n => n.type !== "START"), newNode, endNode],
           edges: filteredEdges,
         };
       }

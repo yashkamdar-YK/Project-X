@@ -18,6 +18,7 @@ import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
+import { TNode } from "../types/nodeTypes";
 
 
 
@@ -72,12 +73,10 @@ const StrategyCanvas = () => {
   // State for nodes and edges
   const [nodes, setNodes] = useNodesState(INITIAL_NODES);
   const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
-  const [isRunning, setIsRunning] = useState(false);
 
   const { openSheet } = useSheetStore();
   
   // State for selected node
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   // Handle nodes changes
   const onNodesChange = useCallback(
@@ -101,67 +100,10 @@ const StrategyCanvas = () => {
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation(); // Prevent event bubbling
-  
-      // Open the sheet based on node type
-      if (node.type === 'node') {
-        setIsRunning(!isRunning);
-        setNodes((nds) =>
-          nds.map((n) =>
-            n.id === node.id ? { ...n, data: { ...n.data, isRunning: !isRunning } } : n
-          )
-        );
-      } else if (node.type === 'addNode') {
-        // Handle add node logic
-        const newNodeId = `node-${nodes.length + 1}`;
-        const newNode = {
-          id: newNodeId,
-          type: 'conditionNode',
-          position: {
-            x: node.position.x - 50,
-            y: node.position.y + 100,
-          },
-          data: {
-            label: 'New Condition',
-            category: 'Condition',
-          },
-        };
-  
-        const updatedNodes = [
-          ...nodes.filter((n) => n.id !== 'add'),
-          newNode,
-          {
-            ...node,
-            position: {
-              x: node.position.x,
-              y: node.position.y + 150,
-            },
-          },
-        ];
-  
-        const newEdges = [
-          ...edges,
-          {
-            id: `${nodes[nodes.length - 2].id}-${newNodeId}`,
-            source: nodes[nodes.length - 2].id,
-            target: newNodeId,
-            type: 'smoothstep',
-          },
-          {
-            id: `${newNodeId}-add`,
-            source: newNodeId,
-            target: 'add',
-            type: 'smoothstep',
-          },
-        ];
-  
-        setNodes(updatedNodes);
-        setEdges(newEdges);
-      } else {
-        // For other nodes, open the NodeSheet
+
         openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
-      }
     },
-    [nodes, edges, isRunning, setNodes, setEdges, openSheet]
+    [nodes, edges, setNodes, setEdges, openSheet]
   );
   
 
@@ -185,14 +127,16 @@ const StrategyCanvas = () => {
       const dataTransfer = event.dataTransfer.getData('application/reactflow');
       
       if (dataTransfer) {
-        const { item, category } = JSON.parse(dataTransfer);
+        const { item }:{
+          item:TNode
+        } = JSON.parse(dataTransfer);
         const newNodeId = `node-${nodes.length + 1}`;
         
         const newNode = {
           id: newNodeId,
-          type: category.includes('Condition') ? 'conditionNode' : 'actionNode',
+          type: item.type,
           position,
-          data: { label: item, category },
+          data: { label: item.data.label },
         };
 
         setNodes([...nodes.filter(n => n.id !== 'add'), newNode, nodes.find(n => n.id === 'add')!]);

@@ -6,12 +6,7 @@ import { DragEvent } from "react";
 import {
   Search,
   ChevronDown,
-  Database,
-  BarChart2,
-  Layers,
-  Zap,
   Plus,
-  Menu,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -21,61 +16,26 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { useNodeStore } from "../store/canvasNode";
-
-interface AccordionItemType {
-  title: string;
-  icon: React.ReactNode;
-  items?: string[];
-}
+import { useNodeStore } from "../store/nodeStore";
+import { SIDEBAR_SECTIONS } from "../constants/menu";
+import { TNode } from "../types/nodeTypes";
 
 const DashboardSidebar: React.FC = () => {
   const addNode = useNodeStore((state) => state.addNode);
 
-  const [accordionItems] = useState<AccordionItemType[]>([
-    {
-      title: "Data Points",
-      icon: <Database className="w-4 h-4" />,
-    },
-    {
-      title: "Indicators",
-      icon: <BarChart2 className="w-4 h-4" />,
-    },
-    {
-      title: "Components",
-      icon: <Layers className="w-4 h-4" />,
-      items: [
-        "Entry Condition",  // First item
-        "Entry into ATM",   // Action for Entry
-        "Exit Condition",   // Exit condition
-        "Square off All",   // Action for Exit
-      ],
-    },
-    {
-      title: "Actions",
-      icon: <Zap className="w-4 h-4" />,
-    },
-  ]);
-
   // Handler for when drag starts
   const onDragStart = (
     event: DragEvent<HTMLDivElement>,
-    item: string,
-    category: string
+    item: TNode
   ) => {
     // Set the data that will be transferred during drag
     event.dataTransfer.setData(
       "application/reactflow",
       JSON.stringify({
-        item,
-        category,
+        item
       })
     );
     event.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleAddNode = (itemName: string, category: string) => {
-    addNode(itemName);
   };
 
   const SidebarContent = () => (
@@ -98,11 +58,11 @@ const DashboardSidebar: React.FC = () => {
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
         <Accordion type="multiple" className="space-y-2">
-          {accordionItems.map((item, index) => (
+          {SIDEBAR_SECTIONS.map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
-                  {item.icon}
+                  {<item.icon />}
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">
@@ -120,13 +80,13 @@ const DashboardSidebar: React.FC = () => {
                         <div
                           key={subIndex}
                           draggable
-                          onDragStart={(e) => onDragStart(e, subItem, item.title)}
+                          onDragStart={(e) => onDragStart(e, subItem)}
                           className="pl-6 py-2 flex justify-between text-sm cursor-grab text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-600"
                         >
-                          {subItem}
+                          {subItem.data.label}
                           <div className="flex items-center">
                             <button
-                              onClick={() => handleAddNode(subItem, item.title)}
+                              onClick={() => addNode(subItem)}
                               className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                             >
                               <Plus className="w-3 h-3" />
