@@ -84,7 +84,7 @@ const TimePicker = () => {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-56 p-0">
-            <div className="max-h-[300px] overflow-auto">
+            <div className="max-h-[300px] overflow-auto hide-scrollbar">
               {timeOptions.map((option) => (
                 <div
                   key={option.value}
