@@ -41,10 +41,7 @@ const SettingSheet = () => {
   return (
     <div
       className={`
-        fixed right-0 top-0 h-full w-[400px] 
-        bg-white dark:bg-gray-900 shadow-lg 
-        transform transition-transform duration-300 ease-in-out z-50
-        ${isOpen ? "translate-x-0" : "translate-x-full"}
+        h-full w-[400px]
       `}
     >
       <div className="h-full border-l-2 overflow-y-auto">
@@ -147,7 +144,7 @@ const SettingSheet = () => {
                       <div className="pl-0">
                         <OrderOperation
                           type="entry"
-                          // onComplete={closeSheet}
+                        // onComplete={closeSheet}
                         />
                       </div>
                     </div>
@@ -158,7 +155,7 @@ const SettingSheet = () => {
                       <div className="pl-0">
                         <OrderOperation
                           type="exit"
-                          // onComplete={closeSheet}
+                        // onComplete={closeSheet}
                         />
                       </div>
                     </div>
