@@ -9,9 +9,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { GoProjectTemplate } from "react-icons/go";
+
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
-import SettingSheet from "./SettingSheet/SettingSheet";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 
 interface StrategyNavbarProps {
@@ -19,7 +28,6 @@ interface StrategyNavbarProps {
 }
 
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
-
   const { openSheet } = useSheetStore();
 
   const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
@@ -58,7 +66,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      onClick={() => openSheet('settings')}
+                      onClick={() => openSheet("settings")}
                       variant="ghost"
                       size="icon"
                       aria-label="Settings"
@@ -72,6 +80,20 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            </div>
+
+            <div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="dark:bg-gray-900">
+                    Templates <GoProjectTemplate className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="min-w-[140px] dark:bg-gray-900">
+                  <DropdownMenuItem>Starter Templates</DropdownMenuItem>
+                  <DropdownMenuItem>AI Builder</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
