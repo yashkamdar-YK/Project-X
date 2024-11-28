@@ -34,9 +34,17 @@ const DashboardSidebar: React.FC = () => {
   // Handler for adding node through button
   const handleAddNode = (item: Node) => {
     const newNodeId = `node-${nodes.length + 1}`;
+    
+    // Find the most recent condition node
+    const recentConditionNode = [...nodes]
+      .reverse()
+      .find(node => node.type === NodeTypes.CONDITION);
+    
+    // Position the new node relative to the reference node
+    const referenceNode = recentConditionNode || nodes[nodes.length - 1];
     const position = {
-      x: nodes[nodes.length - 1].position.x + 200,
-      y: nodes[nodes.length - 1].position.y,
+      x: referenceNode.position.x + 200,
+      y: referenceNode.position.y + (item.type === NodeTypes.CONDITION ? 0 : 100),
     };
   
     const newNode = {
@@ -48,20 +56,22 @@ const DashboardSidebar: React.FC = () => {
   
     setNodes([...nodes, newNode]);
   
-    // Add an edge only if it's a node type is CONDITION 
+    // Only create edge if it's a condition node
     if (item.type === NodeTypes.CONDITION) {
-      const lastNodeId = nodes[nodes.length - 1].id;
+      // Connect to the most recent condition node if it exists
+      const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
       setEdges([
         ...edges,
         {
-          id: `${lastNodeId}-${newNodeId}`,
-          source: lastNodeId,
+          id: `${sourceNodeId}-${newNodeId}`,
+          source: sourceNodeId,
           target: newNodeId,
           type: "smoothstep",
         },
       ]);
     }
   };
+  
   
 
   const SidebarContent = () => (

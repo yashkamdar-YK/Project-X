@@ -13,7 +13,7 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
+import { StartNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
@@ -21,10 +21,9 @@ import { NodeTypes } from "../types/nodeTypes";
 
 // Define node types mapping
 const nodeTypes = {
-  startNode: StartNode,
-  addNode: AddNode,
-  conditionNode: ConditionNode,
-  actionNode: ActionNode,
+  [NodeTypes.START]: StartNode,
+  [NodeTypes.CONDITION]: ConditionNode,
+  [NodeTypes.ACTION]: ActionNode,
 };
 
 const StrategyCanvas = () => {
@@ -93,26 +92,24 @@ const StrategyCanvas = () => {
           data: { label: item.data.label },
         };
   
+        // Find most recent condition node
+        const recentConditionNode = [...nodes]
+          .reverse()
+          .find(node => node.type === NodeTypes.CONDITION);
+  
         setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
-
-        //Adding edges according to node type
+  
+        // Only create edge for condition nodes
         if (item.type === NodeTypes.CONDITION) {
-          //node.lenght -1 so we get last node to connect
-          const lastNodeId = nodes[nodes.length - 1].id;
+          const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
           setEdges([
             ...edges.filter((e) => e.target !== "add"),
             {
-              id: `${lastNodeId}-${newNodeId}`,
-              source: lastNodeId,
+              id: `${sourceNodeId}-${newNodeId}`,
+              source: sourceNodeId,
               target: newNodeId,
               type: "smoothstep",
-            },
-            {
-              id: `${newNodeId}-add`,
-              source: newNodeId,
-              target: "add",
-              type: "smoothstep",
-            },
+            }
           ]);
         }
       }
