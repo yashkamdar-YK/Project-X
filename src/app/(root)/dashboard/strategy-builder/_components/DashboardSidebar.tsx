@@ -3,11 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
-import {
-  Search,
-  ChevronDown,
-  Plus,
-} from "lucide-react";
+import { Search, ChevronDown, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -18,23 +14,42 @@ import {
 
 import { SIDEBAR_SECTIONS } from "../constants/menu";
 import { Node } from "@xyflow/react";
+import { NODE_CONFIG } from "../types/nodeTypes";
+import { useNodeStore } from "@/lib/store/nodeStore"; // Import NodeStore
 
 const DashboardSidebar: React.FC = () => {
+  const { addNodeWithEdge } = useNodeStore();
 
   // Handler for when drag starts
-  const onDragStart = (
-    event: DragEvent<HTMLDivElement>,
-    item: Node
-  ) => {
-    // Set the data that will be transferred during drag
+  const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
     event.dataTransfer.setData(
       "application/reactflow",
       JSON.stringify({
-        item
+        item,
       })
     );
     event.dataTransfer.effectAllowed = "move";
   };
+
+    // Handler for adding node via button
+  const handleAddNode = (item: Node) => {
+    const newNode: Node = {
+      id: Date.now().toString(),
+      type: item.type,
+      position: { 
+        x: Math.random() * 200, 
+        y: Math.random() * 200 
+      },
+      data: { 
+        label: item.data.label 
+      },
+      style: NODE_CONFIG[item.type as keyof typeof NODE_CONFIG]
+    };
+
+    // Add node and connect to start node
+    addNodeWithEdge(newNode);
+  };
+
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -84,8 +99,9 @@ const DashboardSidebar: React.FC = () => {
                           {/* @ts-ignore */}
                           <span>{subItem.data.label}</span>
                           <div className="flex items-center">
+                            {/* Button to add node in canvas */}
                             <button
-                              onClick={() => { }}
+                              onClick={() => handleAddNode(subItem)}
                               className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                             >
                               <Plus className="w-3 h-3" />

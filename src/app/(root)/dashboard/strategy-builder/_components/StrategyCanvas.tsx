@@ -10,17 +10,14 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   Background,
-  useNodesState,
-  useEdgesState,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-import { INITIAL_EDGES, INITIAL_NODES } from "../constants/menu";
 
-
+import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
 
 // Define node types mapping
 const nodeTypes = {
@@ -31,40 +28,37 @@ const nodeTypes = {
 };
 
 const StrategyCanvas = () => {
-  // State for nodes and edges
-  const [nodes, setNodes] = useNodesState(INITIAL_NODES);
-  const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
+
+  const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const { openSheet } = useSheetStore();
 
-  // State for selected node
-
   // Handle nodes changes
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
+    (changes: NodeChange[]) => setNodes(applyNodeChanges(changes, nodes)),
+    [nodes, setNodes]
   );
 
   // Handle edges changes
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
+    (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
+    [edges, setEdges]
   );
 
   // Handle new connections
   const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
+    (connection: Connection) => setEdges(addEdge(connection, edges)),
+    [edges, setEdges]
   );
 
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      event.stopPropagation(); // Prevent event bubbling
+      event.stopPropagation(); 
 
-      openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
+      openSheet('node', node);
     },
-    [nodes, edges, setNodes, setEdges, openSheet]
+    [openSheet]
   );
 
 
@@ -100,9 +94,13 @@ const StrategyCanvas = () => {
           data: { label: item.data.label },
         };
 
-        setNodes([...nodes.filter(n => n.id !== 'add'), newNode]);
+        // Use the nodestore method to add node
+        setNodes([
+          ...nodes.filter(n => n.id !== 'add'), 
+          newNode
+        ]);
 
-        // Update edges to maintain flow
+        // Update edges
         const lastNodeId = nodes[nodes.length - 2].id;
         setEdges([
           ...edges.filter(e => e.target !== 'add'),
@@ -137,7 +135,6 @@ const StrategyCanvas = () => {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
-                // onPaneClick={onPaneClick}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 nodeTypes={nodeTypes}
