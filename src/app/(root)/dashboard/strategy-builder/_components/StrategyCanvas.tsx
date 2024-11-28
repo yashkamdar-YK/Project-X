@@ -18,7 +18,7 @@ import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-import { TNode } from "../types/nodeTypes";
+import { INITIAL_EDGES, INITIAL_NODES } from "../constants/menu";
 
 
 
@@ -30,52 +30,13 @@ const nodeTypes = {
   actionNode: ActionNode,
 };
 
-const INITIAL_NODES: Node[] = [
-  {
-    id: 'start',
-    type: 'startNode',
-    position: { x: 350, y: 20 },
-    data: { label: 'Start', isRunning: false },
-  },
-  {
-    id: 'entry-1',
-    type: 'conditionNode',
-    position: { x: 300, y: 120 },
-    data: { 
-      label: 'Supertrend HA condition',
-      category: 'Entry Condition'
-    },
-  },
-  {
-    id: 'add',
-    type: 'addNode',
-    position: { x: 350, y: 250 },
-    data: { label: 'Add', onAddNode: () => {} },
-  },
-];
-
-const INITIAL_EDGES: Edge[] = [
-  {
-    id: 'start-entry',
-    source: 'start',
-    target: 'entry-1',
-    type: 'smoothstep',
-  },
-  {
-    id: 'entry-add',
-    source: 'entry-1',
-    target: 'add',
-    type: 'smoothstep',
-  },
-];
-
 const StrategyCanvas = () => {
   // State for nodes and edges
   const [nodes, setNodes] = useNodesState(INITIAL_NODES);
   const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
 
   const { openSheet } = useSheetStore();
-  
+
   // State for selected node
 
   // Handle nodes changes
@@ -101,11 +62,11 @@ const StrategyCanvas = () => {
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation(); // Prevent event bubbling
 
-        openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
+      openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
     },
     [nodes, edges, setNodes, setEdges, openSheet]
   );
-  
+
 
   // Handle drag over
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -125,13 +86,13 @@ const StrategyCanvas = () => {
       };
 
       const dataTransfer = event.dataTransfer.getData('application/reactflow');
-      
+
       if (dataTransfer) {
-        const { item }:{
-          item:TNode
+        const { item }: {
+          item: Node
         } = JSON.parse(dataTransfer);
         const newNodeId = `node-${nodes.length + 1}`;
-        
+        console.log("item : ", item)
         const newNode = {
           id: newNodeId,
           type: item.type,
@@ -139,8 +100,8 @@ const StrategyCanvas = () => {
           data: { label: item.data.label },
         };
 
-        setNodes([...nodes.filter(n => n.id !== 'add'), newNode, nodes.find(n => n.id === 'add')!]);
-        
+        setNodes([...nodes.filter(n => n.id !== 'add'), newNode]);
+
         // Update edges to maintain flow
         const lastNodeId = nodes[nodes.length - 2].id;
         setEdges([
@@ -167,30 +128,30 @@ const StrategyCanvas = () => {
     <>
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
         <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-        <div className="absolute inset-0 dark:text-black">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              // onPaneClick={onPaneClick}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              nodeTypes={nodeTypes}
-              fitView
-              panOnScroll={true}
-              selectionOnDrag={true}
-              minZoom={1} // Minimum zoom level
-              maxZoom={1.5} // Maximum zoom level
-            >
-              <CustomControls />
-              <Background gap={12} size={1} />
-            </ReactFlow>
-          </ReactFlowProvider>
-        </div>
+          <div className="absolute inset-0 dark:text-black">
+            <ReactFlowProvider>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                // onPaneClick={onPaneClick}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                nodeTypes={nodeTypes}
+                fitView
+                panOnScroll={true}
+                selectionOnDrag={true}
+                minZoom={1} // Minimum zoom level
+                maxZoom={1.5} // Maximum zoom level
+              >
+                <CustomControls />
+                <Background gap={12} size={1} />
+              </ReactFlow>
+            </ReactFlowProvider>
+          </div>
         </div>
       </div>
     </>
