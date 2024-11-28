@@ -1,12 +1,12 @@
 import { Database, BarChart2, Layers, Zap } from 'lucide-react';
-import { NODE_CONFIG, TNode } from '../types/nodeTypes';
-import { Edge } from '@xyflow/react';
+import { NODE_CONFIG, NodeTypes } from '../types/nodeTypes';
+import { Edge, Node } from '@xyflow/react';
 
-const DEFAULT_NODE_TEMPLATES : TNode[] = [
+const DEFAULT_NODE_TEMPLATES : Node[] = [
   {
     id: '1',
     position: { x: 0, y: 0 },
-    type: "CONDITION",
+    type: NodeTypes.CONDITION,
     data:{
       label: 'Entry Condition',
     }
@@ -14,7 +14,7 @@ const DEFAULT_NODE_TEMPLATES : TNode[] = [
   {
     id: '2',
     position: { x: 0, y: 0 },
-    type: "ACTION",
+    type: NodeTypes.ACTION,
     data:{
       label: 'Square off All',
     }
@@ -22,7 +22,7 @@ const DEFAULT_NODE_TEMPLATES : TNode[] = [
   {
     id: '3',
     position: { x: 0, y: 0 },
-    type: "CONDITION",
+    type: NodeTypes.CONDITION,
     data:{
       label: 'Exit Condition',
     }
@@ -30,7 +30,7 @@ const DEFAULT_NODE_TEMPLATES : TNode[] = [
   {
     id: '4',
     position: { x: 0, y: 0 },
-    type: "ACTION",
+    type: NodeTypes.ACTION,
     data:{
       label: 'Buy',
     }
@@ -58,10 +58,10 @@ export const SIDEBAR_SECTIONS = [
 ];
 
 
-export const INITIAL_NODES : TNode[] = [
+export const INITIAL_NODES : Node[] = [
   {
     id: 'start',
-    type: "START",
+    type: NodeTypes.START,
     position: { x: 250, y: 0 },
     data: { label: 'Start' },
     // draggable: false,
@@ -70,7 +70,7 @@ export const INITIAL_NODES : TNode[] = [
   {
     id: 'initial-entry',
     position: { x: 180, y: 100 },
-    type:"CONDITION",
+    type: NodeTypes.CONDITION,
     data: { 
       label: 'Entry Condition',
     },

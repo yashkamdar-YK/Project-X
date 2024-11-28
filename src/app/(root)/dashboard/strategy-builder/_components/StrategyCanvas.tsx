@@ -18,7 +18,6 @@ import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-import { TNode } from "../types/nodeTypes";
 import { INITIAL_EDGES, INITIAL_NODES } from "../constants/menu";
 
 
@@ -37,12 +36,11 @@ const StrategyCanvas = () => {
   const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
 
   const { openSheet } = useSheetStore();
-  
+
   // State for selected node
 
   // Handle nodes changes
   const onNodesChange = useCallback(
-    //@ts-ignore
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [setNodes]
   );
@@ -64,18 +62,18 @@ const StrategyCanvas = () => {
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation(); // Prevent event bubbling
 
-        openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
+      openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
     },
     [nodes, edges, setNodes, setEdges, openSheet]
   );
-  
+
 
   // Handle drag over
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
-console.log("nodes ",nodes)
+
   // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -88,13 +86,13 @@ console.log("nodes ",nodes)
       };
 
       const dataTransfer = event.dataTransfer.getData('application/reactflow');
-      
+
       if (dataTransfer) {
-        const { item }:{
-          item:TNode
+        const { item }: {
+          item: Node
         } = JSON.parse(dataTransfer);
         const newNodeId = `node-${nodes.length + 1}`;
-        console.log("item : ",item)
+        console.log("item : ", item)
         const newNode = {
           id: newNodeId,
           type: item.type,
@@ -103,7 +101,7 @@ console.log("nodes ",nodes)
         };
 
         setNodes([...nodes.filter(n => n.id !== 'add'), newNode]);
-        
+
         // Update edges to maintain flow
         const lastNodeId = nodes[nodes.length - 2].id;
         setEdges([
@@ -130,30 +128,30 @@ console.log("nodes ",nodes)
     <>
       <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
         <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-        <div className="absolute inset-0 dark:text-black">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              // onPaneClick={onPaneClick}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              nodeTypes={nodeTypes}
-              fitView
-              panOnScroll={true}
-              selectionOnDrag={true}
-              minZoom={1} // Minimum zoom level
-              maxZoom={1.5} // Maximum zoom level
-            >
-              <CustomControls />
-              <Background gap={12} size={1} />
-            </ReactFlow>
-          </ReactFlowProvider>
-        </div>
+          <div className="absolute inset-0 dark:text-black">
+            <ReactFlowProvider>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                // onPaneClick={onPaneClick}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                nodeTypes={nodeTypes}
+                fitView
+                panOnScroll={true}
+                selectionOnDrag={true}
+                minZoom={1} // Minimum zoom level
+                maxZoom={1.5} // Maximum zoom level
+              >
+                <CustomControls />
+                <Background gap={12} size={1} />
+              </ReactFlow>
+            </ReactFlowProvider>
+          </div>
         </div>
       </div>
     </>
