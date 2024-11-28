@@ -14,11 +14,11 @@ import {
 
 import { SIDEBAR_SECTIONS } from "../constants/menu";
 import { Node } from "@xyflow/react";
-import { NODE_CONFIG } from "../types/nodeTypes";
+import { NodeTypes } from "../types/nodeTypes";
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import NodeStore
 
 const DashboardSidebar: React.FC = () => {
-  const { addNodeWithEdge } = useNodeStore();
+  const { nodes, setNodes, edges, setEdges } = useNodeStore();
 
   // Handler for when drag starts
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
@@ -31,25 +31,38 @@ const DashboardSidebar: React.FC = () => {
     event.dataTransfer.effectAllowed = "move";
   };
 
-    // Handler for adding node via button
+  // Handler for adding node through button
   const handleAddNode = (item: Node) => {
-    const newNode: Node = {
-      id: Date.now().toString(),
-      type: item.type,
-      position: { 
-        x: Math.random() * 200, 
-        y: Math.random() * 200 
-      },
-      data: { 
-        label: item.data.label 
-      },
-      style: NODE_CONFIG[item.type as keyof typeof NODE_CONFIG]
+    const newNodeId = `node-${nodes.length + 1}`;
+    const position = {
+      x: nodes[nodes.length - 1].position.x + 200,
+      y: nodes[nodes.length - 1].position.y,
     };
-
-    // Add node and connect to start node
-    addNodeWithEdge(newNode);
+  
+    const newNode = {
+      id: newNodeId,
+      type: item.type,
+      position,
+      data: { label: item.data.label },
+    };
+  
+    setNodes([...nodes, newNode]);
+  
+    // Add an edge only if it's a node type is CONDITION 
+    if (item.type === NodeTypes.CONDITION) {
+      const lastNodeId = nodes[nodes.length - 1].id;
+      setEdges([
+        ...edges,
+        {
+          id: `${lastNodeId}-${newNodeId}`,
+          source: lastNodeId,
+          target: newNodeId,
+          type: "smoothstep",
+        },
+      ]);
+    }
   };
-
+  
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">

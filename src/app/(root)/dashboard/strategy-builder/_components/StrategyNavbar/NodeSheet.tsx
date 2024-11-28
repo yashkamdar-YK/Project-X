@@ -6,7 +6,7 @@ const NodeSheet = () => {
   if (type !== 'node' || !selectedItem) return null;
 
   return (
-    <div className={`h-full md:w-[480px]`}>
+    <div className={`h-full md:w-[380px]`}>
       <div className="h-full border-l-2 overflow-y-auto">
         <div className="p-6 text-gray-900 dark:text-gray-100">
           <button

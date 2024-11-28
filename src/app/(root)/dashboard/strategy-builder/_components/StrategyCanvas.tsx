@@ -16,8 +16,8 @@ import "@xyflow/react/dist/style.css";
 import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
+import { NodeTypes } from "../types/nodeTypes";
 
 // Define node types mapping
 const nodeTypes = {
@@ -68,59 +68,58 @@ const StrategyCanvas = () => {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+
   // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-
+  
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
       const position = {
         x: event.clientX - reactFlowBounds.left - 100,
         y: event.clientY - reactFlowBounds.top,
       };
-
-      const dataTransfer = event.dataTransfer.getData('application/reactflow');
-
+  
+      const dataTransfer = event.dataTransfer.getData("application/reactflow");
+  
       if (dataTransfer) {
-        const { item }: {
-          item: Node
-        } = JSON.parse(dataTransfer);
+        const { item }: { item: Node } = JSON.parse(dataTransfer);
+  
         const newNodeId = `node-${nodes.length + 1}`;
-        console.log("item : ", item)
         const newNode = {
           id: newNodeId,
           type: item.type,
           position,
           data: { label: item.data.label },
         };
+  
+        setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
 
-        // Use the nodestore method to add node
-        setNodes([
-          ...nodes.filter(n => n.id !== 'add'), 
-          newNode
-        ]);
-
-        // Update edges
-        const lastNodeId = nodes[nodes.length - 2].id;
-        setEdges([
-          ...edges.filter(e => e.target !== 'add'),
-          {
-            id: `${lastNodeId}-${newNodeId}`,
-            source: lastNodeId,
-            target: newNodeId,
-            type: 'smoothstep',
-          },
-          {
-            id: `${newNodeId}-add`,
-            source: newNodeId,
-            target: 'add',
-            type: 'smoothstep',
-          },
-        ]);
+        //Adding edges according to node type
+        if (item.type === NodeTypes.CONDITION) {
+          //node.lenght -1 so we get last node to connect
+          const lastNodeId = nodes[nodes.length - 1].id;
+          setEdges([
+            ...edges.filter((e) => e.target !== "add"),
+            {
+              id: `${lastNodeId}-${newNodeId}`,
+              source: lastNodeId,
+              target: newNodeId,
+              type: "smoothstep",
+            },
+            {
+              id: `${newNodeId}-add`,
+              source: newNodeId,
+              target: "add",
+              type: "smoothstep",
+            },
+          ]);
+        }
       }
     },
     [nodes, edges, setNodes, setEdges]
   );
+  
 
   return (
     <>
