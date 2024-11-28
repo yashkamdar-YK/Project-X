@@ -1,8 +1,8 @@
 import { Database, BarChart2, Layers, Zap } from 'lucide-react';
-import { NODE_CONFIG, NodeTypes } from '../types/nodeTypes';
+import {  NodeTypes } from '../_utils/nodeTypes';
 import { Edge, Node } from '@xyflow/react';
 
-const DEFAULT_NODE_TEMPLATES : Node[] = [
+export const DEFAULT_NODE_TEMPLATES : Node[] = [
   {
     id: '1',
     position: { x: 0, y: 0 },
@@ -62,19 +62,17 @@ export const INITIAL_NODES : Node[] = [
   {
     id: 'start',
     type: NodeTypes.START,
-    position: { x: 250, y: 0 },
+    position: { x: 281, y: 0 },
     data: { label: 'Start' },
     // draggable: false,
-    style: NODE_CONFIG["START"],
   },
   {
     id: 'initial-entry',
-    position: { x: 180, y: 100 },
+    position: { x: 180, y: 200 },
     type: NodeTypes.CONDITION,
     data: { 
       label: 'Entry Condition',
     },
-    style: NODE_CONFIG['CONDITION'],
   },
 ];
 

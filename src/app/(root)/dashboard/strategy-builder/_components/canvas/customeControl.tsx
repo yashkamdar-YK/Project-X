@@ -2,12 +2,21 @@ import React from 'react';
 import { Panel, useReactFlow, ControlButton } from '@xyflow/react';
 import { 
   BiZoomIn, 
-  BiZoomOut 
+  BiZoomOut,
+  BiExpand,
+  BiPointer,
+  BiPlus,
 } from 'react-icons/bi';
-import { RxEnterFullScreen } from 'react-icons/rx';
-import { GoTriangleUp } from 'react-icons/go';
-import { IoAddCircleOutline } from 'react-icons/io5';
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNodeStore } from "@/lib/store/nodeStore";
+import { DEFAULT_NODE_TEMPLATES } from '../../constants/menu';
+import { handleAddNode } from '../../_utils/nodeTypes';
 
 interface CustomControlsProps {
   onAddNode?: () => void;
@@ -15,117 +24,155 @@ interface CustomControlsProps {
 }
 
 const CustomControls: React.FC<CustomControlsProps> = ({ 
-  onAddNode, 
   onBoardAction 
 }) => {
   const { zoomIn, zoomOut, fitView, setViewport } = useReactFlow();
+  const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const handleZoomIn = () => zoomIn();
   const handleZoomOut = () => zoomOut();
   const handleFitView = () => fitView();
-  const handleLock = () => setViewport({ x: 0, y: 0, zoom: 1 });
+
+  const onAdd = (item: any) => {
+    const { newNode, newEdges } = handleAddNode(nodes, edges, item);
+    setNodes([...nodes, newNode]);
+    setEdges(newEdges);
+  };
 
   const baseButtonClass = cn(
     "flex items-center justify-center transition-all duration-200",
-    "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700",
-    "border border-gray-200 dark:border-gray-600",
+    "bg-white/80 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800",
+    "border border-gray-200/50 dark:border-gray-700/50",
     "text-gray-700 dark:text-gray-200",
-    "group" // Added for hover effects
+    "backdrop-blur-sm",
+    "group"
   );
 
   const controlButtonClass = cn(
     baseButtonClass,
-    "w-14 h-14 rounded-md"
+    "w-11 h-11 rounded-lg",
+    "hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/20",
+    "hover:translate-y-[-1px]"
   );
 
   const wideButtonClass = cn(
     baseButtonClass,
-    "gap-2 px-4 py-2 rounded-md min-w-[120px]"
+    "gap-2 px-4 py-2 rounded-lg min-w-[130px]",
+    "hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/20",
+    "hover:translate-y-[-1px]"
   );
 
   const containerClass = cn(
-    "bg-white dark:bg-gray-800",
-    "border border-gray-200 dark:border-gray-700",
-    "shadow-lg dark:shadow-gray-900/30",
-    "rounded-lg"
+    "bg-white/80 dark:bg-gray-800/90",
+    "border border-gray-200/50 dark:border-gray-700/50",
+    "shadow-lg shadow-black/5 dark:shadow-black/20",
+    "backdrop-blur-sm",
+    "rounded-2xl"
   );
 
   const mobileButtonClass = cn(
     baseButtonClass,
-    "w-10 h-10 rounded-md"
+    "w-10 h-10 rounded-lg"
   );
 
-  // Icon base classes
-  const iconClass = "transition-colors duration-200 text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white";
-  const largeIconClass = cn(iconClass, "w-8 h-8"); // Increased size for desktop
-  const smallIconClass = cn(iconClass, "w-6 h-6"); // Increased size for mobile
-  const actionIconClass = cn(iconClass, "w-6 h-6"); // Size for action buttons
+  const iconClass = cn(
+    "transition-all duration-200",
+    "text-gray-600 dark:text-gray-300",
+    "group-hover:text-blue-600 dark:group-hover:text-blue-400",
+    "group-hover:scale-110"
+  );
+
+  const dropdownItemClass = cn(
+    "flex items-center gap-2 cursor-pointer",
+    "text-gray-700 dark:text-gray-200",
+    "hover:text-blue-600 dark:hover:text-blue-400",
+    "focus:text-blue-600 dark:focus:text-blue-400"
+  );
+
+  const largeIconClass = cn(iconClass, "w-5 h-5");
+  const smallIconClass = cn(iconClass, "w-4 h-4");
+  const actionIconClass = cn(iconClass, "w-4 h-4");
 
   return (
     <>
-      {/* Main Controls - Bottom Center on Desktop */}
-      <Panel position="bottom-center" className="hidden sm:block">
+      {/* Desktop Controls */}
+      <Panel position="bottom-center" className="hidden sm:block mb-6">
         <div className={cn(
           containerClass,
-          "flex flex-row items-center gap-3 justify-center py-3 min-w-[450px]"
+          "flex flex-row items-center gap-3 justify-center py-3 px-4"
         )}>
-          <ControlButton 
-            onClick={handleZoomIn}
-            className={controlButtonClass}
-            title="Zoom In"
-          >
-            <BiZoomIn className={largeIconClass} />
-          </ControlButton>
+          <div className="flex items-center gap-2 pr-3 border-r border-gray-200/50 dark:border-gray-700/50">
+            <ControlButton 
+              onClick={handleZoomIn}
+              className={controlButtonClass}
+              title="Zoom In"
+            >
+              <BiZoomIn size={20} className={largeIconClass} />
+            </ControlButton>
 
-          <ControlButton 
-            onClick={handleZoomOut}
-            className={controlButtonClass}
-            title="Zoom Out"
-          >
-            <BiZoomOut className={largeIconClass} />
-          </ControlButton>
+            <ControlButton 
+              onClick={handleZoomOut}
+              className={controlButtonClass}
+              title="Zoom Out"
+            >
+              <BiZoomOut size={20} className={largeIconClass} />
+            </ControlButton>
 
-          <ControlButton 
-            onClick={handleFitView}
-            className={controlButtonClass}
-            title="Fit View"
-          >
-            <RxEnterFullScreen className={largeIconClass} />
-          </ControlButton>
+            <ControlButton 
+              onClick={handleFitView}
+              className={controlButtonClass}
+              title="Fit View"
+            >
+              <BiExpand size={20} className={largeIconClass} />
+            </ControlButton>
+          </div>
 
           <ControlButton 
             onClick={onBoardAction}
             className={wideButtonClass}
             title="On the Board"
           >
-            <GoTriangleUp className={actionIconClass} />
-            <span className="text-sm font-medium whitespace-nowrap">On the Board</span>
+            <BiPointer size={16} className={actionIconClass} />
+            <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">On the Board</span>
           </ControlButton>
 
-          <ControlButton 
-            onClick={onAddNode}
-            className={wideButtonClass}
-            title="Quick Add"
-          >
-            <IoAddCircleOutline className={actionIconClass} />
-            <span className="text-sm font-medium whitespace-nowrap">Quick Add</span>
-          </ControlButton>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={wideButtonClass}>
+                <BiPlus size={16} className={actionIconClass} />
+                <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">Quick Add</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-48 p-2">
+              {DEFAULT_NODE_TEMPLATES.map((item, index) => (
+                <DropdownMenuItem 
+                  key={index} 
+                  className={dropdownItemClass}
+                  onClick={() => onAdd(item)}
+                >
+                  <BiPlus size={16} className="text-blue-500" />
+                  {/* @ts-ignore */}
+                  <span>{item.data.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </Panel>
 
-      {/* Mobile Controls - Bottom Right */}
-      <Panel position="bottom-right" className="sm:hidden">
+      {/* Mobile Controls */}
+      <Panel position="bottom-right" className="sm:hidden mb-4 mr-4">
         <div className={cn(
           containerClass,
           "flex gap-2 p-2"
         )}>
-          <div className="flex flex-row gap-2">
+          <div className="flex gap-2">
             <ControlButton 
               onClick={handleZoomIn}
               className={mobileButtonClass}
               title="Zoom In"
             >
-              <BiZoomIn className={smallIconClass} />
+              <BiZoomIn size={16} className={smallIconClass} />
             </ControlButton>
 
             <ControlButton 
@@ -133,36 +180,49 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               className={mobileButtonClass}
               title="Zoom Out"
             >
-              <BiZoomOut className={smallIconClass} />
+              <BiZoomOut size={16} className={smallIconClass} />
             </ControlButton>
-          </div>
 
-          <div className="flex flex-row gap-2">
             <ControlButton 
               onClick={handleFitView}
               className={mobileButtonClass}
               title="Fit View"
             >
-              <RxEnterFullScreen className={smallIconClass} />
+              <BiExpand size={16} className={smallIconClass} />
             </ControlButton>
           </div>
 
-          <div className="flex flex-row gap-2">
+          <div className="w-px bg-gray-200/50 dark:bg-gray-700/50" />
+
+          <div className="flex gap-2">
             <ControlButton 
               onClick={onBoardAction}
               className={mobileButtonClass}
               title="On the Board"
             >
-              <GoTriangleUp className={smallIconClass} />
+              <BiPointer size={16} className={smallIconClass} />
             </ControlButton>
 
-            <ControlButton 
-              onClick={onAddNode}
-              className={mobileButtonClass}
-              title="Quick Add"
-            >
-              <IoAddCircleOutline className={smallIconClass} />
-            </ControlButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={mobileButtonClass}>
+                  <BiPlus size={16} className={smallIconClass} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 p-2">
+                {DEFAULT_NODE_TEMPLATES.map((item, index) => (
+                  <DropdownMenuItem 
+                    key={index} 
+                    className={dropdownItemClass}
+                    onClick={() => onAdd(item)}
+                  >
+                    <BiPlus size={16} className="text-blue-500" />
+                    {/* @ts-ignore */}
+                    <span>{item.data.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </Panel>

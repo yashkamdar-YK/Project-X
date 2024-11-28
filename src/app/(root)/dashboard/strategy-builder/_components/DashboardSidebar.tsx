@@ -3,11 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
-import {
-  Search,
-  ChevronDown,
-  Plus,
-} from "lucide-react";
+import { Search, ChevronDown, Plus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -18,22 +14,39 @@ import {
 
 import { SIDEBAR_SECTIONS } from "../constants/menu";
 import { Node } from "@xyflow/react";
+import { handleAddNode, NodeTypes } from "../_utils/nodeTypes";
+import { useNodeStore } from "@/lib/store/nodeStore";
 
 const DashboardSidebar: React.FC = () => {
+  const { nodes, setNodes, edges, setEdges } = useNodeStore();
+  // Track expanded accordion items
+  const [expandedItems, setExpandedItems] = useState<string[]>(['item-2']); // Default to components section open
 
   // Handler for when drag starts
-  const onDragStart = (
-    event: DragEvent<HTMLDivElement>,
-    item: Node
-  ) => {
-    // Set the data that will be transferred during drag
+  const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
+    event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.setData(
       "application/reactflow",
       JSON.stringify({
-        item
+        item,
       })
     );
     event.dataTransfer.effectAllowed = "move";
+  };
+
+  // Handler for adding node through button
+  const onAdd = (event: React.MouseEvent, item: Node) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const { newNode, newEdges } = handleAddNode(nodes, edges, item);
+    setNodes([...nodes, newNode]);
+    setEdges(newEdges);
+  };
+
+  // Handler for accordion state changes
+  const handleAccordionChange = (value: string[]) => {
+    setExpandedItems(value);
   };
 
   const SidebarContent = () => (
@@ -55,23 +68,34 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
-        <Accordion type="multiple" className="space-y-2">
+        <Accordion 
+          type="multiple" 
+          className="space-y-2"
+          value={expandedItems}
+          onValueChange={handleAccordionChange}
+        >
           {SIDEBAR_SECTIONS.map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
-                  {<item.icon />}
+                  {<item.icon size={16} />}
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">
-                  <button className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2">
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
+                  >
                     <Plus className="w-3 h-3" />
                   </button>
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-900  shadow-sm transition-all duration-200">
+                <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item?.items &&
                       item?.items.map((subItem, subIndex) => (
@@ -85,7 +109,7 @@ const DashboardSidebar: React.FC = () => {
                           <span>{subItem.data.label}</span>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { }}
+                              onClick={(e) => onAdd(e, subItem)}
                               className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                             >
                               <Plus className="w-3 h-3" />
@@ -103,6 +127,7 @@ const DashboardSidebar: React.FC = () => {
     </div>
   );
 
+  // Rest of the component remains the same...
   return (
     <>
       {/* Desktop Sidebar */}
@@ -123,7 +148,7 @@ const DashboardSidebar: React.FC = () => {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900 "
+            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900"
           >
             <SidebarContent />
           </SheetContent>

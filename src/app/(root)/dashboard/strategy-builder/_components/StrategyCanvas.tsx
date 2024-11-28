@@ -10,61 +10,59 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   Background,
-  useNodesState,
-  useEdgesState,
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
+import { StartNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-import { INITIAL_EDGES, INITIAL_NODES } from "../constants/menu";
-
-
+import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
+import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
+import CustomEdge from "./canvas/CustomEdge";
 
 // Define node types mapping
 const nodeTypes = {
-  startNode: StartNode,
-  addNode: AddNode,
-  conditionNode: ConditionNode,
-  actionNode: ActionNode,
+  [NodeTypes.START]: StartNode,
+  [NodeTypes.CONDITION]: ConditionNode,
+  [NodeTypes.ACTION]: ActionNode,
+};
+
+const edgeTypes = {
+  smoothstep: CustomEdge
 };
 
 const StrategyCanvas = () => {
-  // State for nodes and edges
-  const [nodes, setNodes] = useNodesState(INITIAL_NODES);
-  const [edges, setEdges] = useEdgesState(INITIAL_EDGES);
+
+  const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const { openSheet } = useSheetStore();
 
-  // State for selected node
-
   // Handle nodes changes
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
+    (changes: NodeChange[]) => setNodes(applyNodeChanges(changes, nodes)),
+    [nodes, setNodes]
   );
 
   // Handle edges changes
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
+    (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
+    [edges, setEdges]
   );
 
   // Handle new connections
   const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
+    (connection: Connection) => setEdges(addEdge(connection, edges)),
+    [edges, setEdges]
   );
 
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      event.stopPropagation(); // Prevent event bubbling
+      event.stopPropagation(); 
 
-      openSheet('node', node); // Pass the type as 'node' and the clicked node as selectedItem
+      openSheet('node', node);
     },
-    [nodes, edges, setNodes, setEdges, openSheet]
+    [openSheet]
   );
 
 
@@ -74,51 +72,20 @@ const StrategyCanvas = () => {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+
   // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-      const position = {
-        x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top,
-      };
-
-      const dataTransfer = event.dataTransfer.getData('application/reactflow');
-
+      const dataTransfer = event.dataTransfer.getData("application/reactflow");
+    
       if (dataTransfer) {
-        const { item }: {
-          item: Node
-        } = JSON.parse(dataTransfer);
-        const newNodeId = `node-${nodes.length + 1}`;
-        console.log("item : ", item)
-        const newNode = {
-          id: newNodeId,
-          type: item.type,
-          position,
-          data: { label: item.data.label },
-        };
-
-        setNodes([...nodes.filter(n => n.id !== 'add'), newNode]);
-
-        // Update edges to maintain flow
-        const lastNodeId = nodes[nodes.length - 2].id;
-        setEdges([
-          ...edges.filter(e => e.target !== 'add'),
-          {
-            id: `${lastNodeId}-${newNodeId}`,
-            source: lastNodeId,
-            target: newNodeId,
-            type: 'smoothstep',
-          },
-          {
-            id: `${newNodeId}-add`,
-            source: newNodeId,
-            target: 'add',
-            type: 'smoothstep',
-          },
-        ]);
+        const { item }: { item: Node } = JSON.parse(dataTransfer);
+        const { newNode, newEdges } = handleDrop(event, nodes, edges, item, reactFlowBounds);
+        
+        setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
+        setEdges(newEdges);
       }
     },
     [nodes, edges, setNodes, setEdges]
@@ -137,15 +104,15 @@ const StrategyCanvas = () => {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
-                // onPaneClick={onPaneClick}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 nodeTypes={nodeTypes}
-                fitView
+                edgeTypes={edgeTypes}
+                // fitView
                 panOnScroll={true}
                 selectionOnDrag={true}
-                minZoom={1} // Minimum zoom level
-                maxZoom={1.5} // Maximum zoom level
+                minZoom={0.5} // Minimum zoom level
+                maxZoom={2} // Maximum zoom level
               >
                 <CustomControls />
                 <Background gap={12} size={1} />

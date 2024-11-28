@@ -83,7 +83,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               </TooltipProvider>
             </div>
 
-            <div>
+            <div className="md:block hidden" >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="dark:bg-gray-900">
@@ -96,7 +96,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 >
                   {/* Addind Items  */}
                   <DropdownMenuItem>
-                    <div className="flex w-[300px] gap-x-3 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
+                    <div className="flex w-[230px] gap-x-4 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
                       <div>
                       <GoProjectTemplate className="h-10 w-10" />
                       </div>
@@ -131,7 +131,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
 
               <Button
                 variant="outline"
-                className="hidden sm:flex items-center space-x-2 transition-all duration-200 mt-2"
+                className="hidden sm:flex items-center space-x-2 transition-all duration-200"
                 onClick={() => setIsCodeSheetOpen(true)}
               >
                 <Code className="h-4 w-4" />
@@ -139,10 +139,10 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               </Button>
 
               <Button
-                className="transition-all duration-200 mt-2"
+                className="transition-all duration-200"
                 onClick={() => setIsSaveDialogOpen(true)}
               >
-                <Save className="h-4 w-4 sm:mr-2" />
+                <Save className="h-4 w-4" />
                 <span className="hidden sm:inline">Save</span>
               </Button>
             </div>
