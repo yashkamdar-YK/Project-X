@@ -7,7 +7,6 @@ import React from 'react'
 const CustomSheet = () => {
     const { isOpen, type } = useSheetStore();
 
-    if (!isOpen) return null;
     return (
         <div className={`fixed right-0 top-0 bg-white dark:bg-gray-900 shadow-lg 
         transform transition-transform duration-300 ease-in-out z-50
