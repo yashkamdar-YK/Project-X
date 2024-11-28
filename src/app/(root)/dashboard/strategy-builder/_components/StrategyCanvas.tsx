@@ -19,6 +19,7 @@ import { StartNode, AddNode, ConditionNode, ActionNode } from './canvas/CustomNo
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { TNode } from "../types/nodeTypes";
+import { INITIAL_EDGES, INITIAL_NODES } from "../constants/menu";
 
 
 
@@ -29,45 +30,6 @@ const nodeTypes = {
   conditionNode: ConditionNode,
   actionNode: ActionNode,
 };
-
-const INITIAL_NODES: Node[] = [
-  {
-    id: 'start',
-    type: 'startNode',
-    position: { x: 350, y: 20 },
-    data: { label: 'Start', isRunning: false },
-  },
-  {
-    id: 'entry-1',
-    type: 'conditionNode',
-    position: { x: 300, y: 120 },
-    data: { 
-      label: 'Supertrend HA condition',
-      category: 'Entry Condition'
-    },
-  },
-  {
-    id: 'add',
-    type: 'addNode',
-    position: { x: 350, y: 250 },
-    data: { label: 'Add', onAddNode: () => {} },
-  },
-];
-
-const INITIAL_EDGES: Edge[] = [
-  {
-    id: 'start-entry',
-    source: 'start',
-    target: 'entry-1',
-    type: 'smoothstep',
-  },
-  {
-    id: 'entry-add',
-    source: 'entry-1',
-    target: 'add',
-    type: 'smoothstep',
-  },
-];
 
 const StrategyCanvas = () => {
   // State for nodes and edges
@@ -80,6 +42,7 @@ const StrategyCanvas = () => {
 
   // Handle nodes changes
   const onNodesChange = useCallback(
+    //@ts-ignore
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [setNodes]
   );
@@ -112,7 +75,7 @@ const StrategyCanvas = () => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
-
+console.log("nodes ",nodes)
   // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -131,7 +94,7 @@ const StrategyCanvas = () => {
           item:TNode
         } = JSON.parse(dataTransfer);
         const newNodeId = `node-${nodes.length + 1}`;
-        
+        console.log("item : ",item)
         const newNode = {
           id: newNodeId,
           type: item.type,
@@ -139,7 +102,7 @@ const StrategyCanvas = () => {
           data: { label: item.data.label },
         };
 
-        setNodes([...nodes.filter(n => n.id !== 'add'), newNode, nodes.find(n => n.id === 'add')!]);
+        setNodes([...nodes.filter(n => n.id !== 'add'), newNode]);
         
         // Update edges to maintain flow
         const lastNodeId = nodes[nodes.length - 2].id;

@@ -16,12 +16,10 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { useNodeStore } from "../store/nodeStore";
 import { SIDEBAR_SECTIONS } from "../constants/menu";
 import { TNode } from "../types/nodeTypes";
 
 const DashboardSidebar: React.FC = () => {
-  const addNode = useNodeStore((state) => state.addNode);
 
   // Handler for when drag starts
   const onDragStart = (
@@ -86,7 +84,7 @@ const DashboardSidebar: React.FC = () => {
                           {subItem.data.label}
                           <div className="flex items-center">
                             <button
-                              onClick={() => addNode(subItem)}
+                              onClick={() => {}}
                               className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                             >
                               <Plus className="w-3 h-3" />
