@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -23,16 +23,17 @@ const DaySelector: React.FC<DaySelectorProps> = ({
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [selectedExp, setSelectedExp] = useState<string>("0");
   const [currentExpPage, setCurrentExpPage] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const allExpDays = Array.from({ length: 31 }, (_, i) => i.toString());
-  const itemsPerPage = 5; // Show 6 items (0-5) per page
+  const itemsPerPage = 4;
   const totalPages = Math.ceil(allExpDays.length / itemsPerPage);
 
   const buttonClass = 'transition-colors font-medium bg-blue-500 hover:bg-blue-600 text-white';
   
   const dayButtonClass = (isSelected: boolean) => cn(
-    "px-3 py-1.5 h-8 text-sm font-medium transition-all duration-200 whitespace-nowrap",
+    "px-3 py-1.5 h-8 text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0",
     isSelected
       ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600"
       : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -47,7 +48,6 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         : "days";
     setSelectorState(newState);
     onStateChange?.(newState);
-    // Reset to first page when changing states
     setCurrentExpPage(0);
   };
 
@@ -59,24 +59,32 @@ const DaySelector: React.FC<DaySelectorProps> = ({
     );
   };
 
-  const nextExpPage = () => {
-    setCurrentExpPage((prev) => Math.min(prev + 1, totalPages - 1));
+  const scrollToPage = (page: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = page * (container.clientWidth);
+    container.scrollTo({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+    setCurrentExpPage(page);
   };
 
-  const prevExpPage = () => {
-    setCurrentExpPage((prev) => Math.max(prev - 1, 0));
-  };
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-  const getCurrentPageItems = () => {
-    const start = currentExpPage * itemsPerPage;
-    return allExpDays.slice(start, start + itemsPerPage);
+    const newPage = Math.round(container.scrollLeft / container.clientWidth);
+    if (newPage !== currentExpPage) {
+      setCurrentExpPage(newPage);
+    }
   };
 
   const navigationButtonClass = "h-8 w-8 p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700";
 
   return (
     <div className="flex items-center justify-between space-x-2">
-      {/* State Toggle Button */}
       <Button 
         onClick={handleStateChange} 
         variant="outline"
@@ -89,11 +97,9 @@ const DaySelector: React.FC<DaySelectorProps> = ({
           : "Exp"}
       </Button>
 
-      {/* Days Selection Section - Only shown in days mode */}
       {selectorState === "days" && (
         <>
-          {/* Desktop View */}
-          <div className="hidden sm:flex items-center rounded-md overflow-hidden border ">
+          <div className="hidden sm:flex items-center rounded-md overflow-hidden border">
             {weekDays.map((day) => (
               <button
                 key={day}
@@ -105,13 +111,12 @@ const DaySelector: React.FC<DaySelectorProps> = ({
             ))}
           </div>
 
-          {/* Mobile View */}
           <div className="sm:hidden">
             <Select
               value={selectedDays[0] || weekDays[0]}
               onValueChange={handleDaySelect}
             >
-              <SelectTrigger className="w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <SelectTrigger className="w-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -126,15 +131,13 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         </>
       )}
 
-      {/* Expiry Days Selection with Fixed Carousel */}
       {selectorState === "exp" && (
-        <div className="flex items-center space-x-1">
-          {/* Back Button */}
+        <div className="flex items-center space-x-1 border rounded-md overflow-hidden">
           {currentExpPage > 0 && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={prevExpPage}
+              onClick={() => scrollToPage(currentExpPage - 1)}
               className={navigationButtonClass}
               aria-label="Previous page"
             >
@@ -142,25 +145,37 @@ const DaySelector: React.FC<DaySelectorProps> = ({
             </Button>
           )}
 
-          {/* Numbers */}
-          <div className="flex items-center rounded-md border overflow-hidden">
-            {getCurrentPageItems().map((day) => (
-              <button
-                key={day}
-                onClick={() => setSelectedExp(day)}
-                className={dayButtonClass(selectedExp === day)}
-              >
-                {day}
-              </button>
-            ))}
+          <div className="relative w-[200px] overflow-hidden">
+            <div
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="flex overflow-x-auto scrollbar-none snap-x snap-mandatory"
+              style={{
+                scrollSnapType: 'x mandatory',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+            >
+              {allExpDays.map((day) => (
+                <button
+                  key={day}
+                  onClick={() => setSelectedExp(day)}
+                  className={cn(
+                    dayButtonClass(selectedExp === day),
+                    "snap-center"
+                  )}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Forward Button */}
           {currentExpPage < totalPages - 1 && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={nextExpPage}
+              onClick={() => scrollToPage(currentExpPage + 1)}
               className={navigationButtonClass}
               aria-label="Next page"
             >

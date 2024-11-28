@@ -27,7 +27,7 @@ export const StartNode = ({ data }: { data: NodeData }) => {
 
 export const ConditionNode = ({ data }: { data: NodeData }) => {
   return (
-    <div className="group">
+    <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
@@ -65,7 +65,7 @@ export const ConditionNode = ({ data }: { data: NodeData }) => {
 
 export const ActionNode = ({ data }: { data: NodeData }) => {
   return (
-    <div className="group">
+    <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />

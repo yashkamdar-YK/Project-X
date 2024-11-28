@@ -1,167 +1,130 @@
-'use client'
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import DaySelector from "./DaySelector";
-import OrderOperation from "./OrderOperaction";
 import { useSheetStore } from "@/lib/store/SheetStore";
+import { X, Settings2, Calendar, Briefcase, LayoutGrid } from "lucide-react";
+import OrderOperation from "./OrderOperation";
 
 const SettingSheet = () => {
-  const { isOpen, closeSheet, type } = useSheetStore();
-
-  const [strategyType, setStrategyType] = useState<"Intraday" | "Positional">(
-    "Intraday"
-  );
-  const [productType, setProductType] = useState<"Intraday" | "Delivery">(
-    "Intraday"
-  );
+  const { closeSheet, type } = useSheetStore();
+  const [strategyType, setStrategyType] = useState<"Intraday" | "Positional">("Intraday");
+  const [productType, setProductType] = useState<"Intraday" | "Delivery">("Intraday");
   const [orderType, setOrderType] = useState<"Limit" | "Market">("Limit");
-  const [tradeState, setTradeState] = useState<"days" | "daily" | "exp">(
-    "days"
-  );
-
-  const toggleStrategy = () => {
-    setStrategyType((prev) =>
-      prev === "Intraday" ? "Positional" : "Intraday"
-    );
-  };
-
-  const toggleProduct = () => {
-    setProductType((prev) => (prev === "Intraday" ? "Delivery" : "Intraday"));
-  };
-
-  const toggleOrder = () => {
-    setOrderType((prev) => (prev === "Limit" ? "Market" : "Limit"));
-  };
-
-  const buttonClass =
-    "transition-colors font-medium mt-0 bg-blue-500 hover:bg-blue-600 text-white";
+  const [tradeState, setTradeState] = useState<"days" | "daily" | "exp">("days");
 
   if (type !== "settings") return null;
 
-  return (
-    <div
-      className={`
-        h-full md:w-[480px]
-      `}
-    >
-      <div className="h-full border-l-2 overflow-y-auto">
-        <div className="p-6 text-gray-900 dark:text-gray-100">
-          {/* Close button */}
-          <button
-            onClick={closeSheet}
-            className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-            aria-label="Close settings"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
+  const buttonClass = "h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-blue-500/20";
+  const sectionClass = "space-y-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl md:border border-gray-100 dark:border-gray-800";
+  const labelClass = "text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2";
 
-          {/* Title */}
-          <div className="items-center flex font-medium justify-center text-2xl mt-6">
-            <h1>Settings</h1>
+  return (
+    <div className="h-full md:w-[480px] w-full">
+      <div className="h-full border-l border-gray-200 dark:border-gray-800 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-3">
+              <Settings2 className="w-5 h-5 text-blue-500" />
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                Settings
+              </h1>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={closeSheet}
+              className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
 
-          <div className="mt-8 space-y-6">
-            {/* Strategy Type */}
-            <div className="flex justify-between items-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Strategy Type:{" "}
-              </p>
+          {/* Strategy Type Section */}
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between">
+              <span className={labelClass}>
+                <Briefcase className="w-4 h-4 text-gray-500" />
+                Strategy Type
+              </span>
               <Button
-                onClick={toggleStrategy}
-                variant="outline"
+                onClick={() => setStrategyType(prev => prev === "Intraday" ? "Positional" : "Intraday")}
                 className={buttonClass}
               >
                 {strategyType}
               </Button>
             </div>
+          </div>
 
-            {/* Trade On */}
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Trade On:{" "}
-              </p>
-              <div className="flex items-center gap-2">
-                <DaySelector
-                  onStateChange={(state) => {
-                    setTradeState(state);
-                  }}
-                  showDaysInDaily={true}
-                />
+          {/* Trade On Section */}
+          <div className={sectionClass}>
+            <div className="">
+              <span className={labelClass}>
+                <Calendar className="w-4 h-4 text-gray-500" />
+                Trade On
+              </span>
+              <div className="flex justify-end mt-2">
+              <DaySelector
+                onStateChange={setTradeState}
+                showDaysInDaily={true}
+              />
               </div>
             </div>
+          </div>
 
-            {/* Execution Section */}
-            <div className="">
-              <p className="text-sm font-medium mt-4 text-gray-700 dark:text-gray-300">
+          {/* Execution Section */}
+          <div className={sectionClass}>
+            <div className="flex items-center gap-2 mb-4">
+              <LayoutGrid className="w-4 h-4 text-gray-500" />
+              <h2 className="text-base font-medium text-gray-900 dark:text-gray-100">
                 Execution
-              </p>
-              <div className="bg-gray-50 space-y-6 dark:bg-gray-800 mt-4 rounded-lg px-6 pt-3 pb-6">
-                {/* Product Type */}
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Product Type:{" "}
-                  </p>
-                  <Button
-                    onClick={toggleProduct}
-                    variant="outline"
-                    className={buttonClass}
-                  >
-                    {productType}
-                  </Button>
-                </div>
+              </h2>
+            </div>
 
-                {/* Order Type */}
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Order Type:{" "}
-                  </p>
-                  <Button
-                    onClick={toggleOrder}
-                    variant="outline"
-                    className={buttonClass}
-                  >
-                    {orderType}
-                  </Button>
-                </div>
-
-                {/* Operations */}
-                {orderType === "Limit" && (
-                  <>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Entry Order Operations
-                      </p>
-                      <div className="pl-0">
-                        <OrderOperation
-                          type="entry"
-                        // onComplete={closeSheet}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Exit Order Operations
-                      </p>
-                      <div className="pl-0">
-                        <OrderOperation
-                          type="exit"
-                        // onComplete={closeSheet}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
+            <div className="space-y-4">
+              {/* Product Type */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Product Type
+                </span>
+                <Button
+                  onClick={() => setProductType(prev => prev === "Intraday" ? "Delivery" : "Intraday")}
+                  className={buttonClass}
+                >
+                  {productType}
+                </Button>
               </div>
+
+              {/* Order Type */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Order Type
+                </span>
+                <Button
+                  onClick={() => setOrderType(prev => prev === "Limit" ? "Market" : "Limit")}
+                  className={buttonClass}
+                >
+                  {orderType}
+                </Button>
+              </div>
+
+              {/* Operations */}
+              {orderType === "Limit" && (
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                      Entry Order Operations
+                    </h3>
+                    <OrderOperation type="entry" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                      Exit Order Operations
+                    </h3>
+                    <OrderOperation type="exit" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
