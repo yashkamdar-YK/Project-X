@@ -1,8 +1,8 @@
 import { Database, BarChart2, Layers, Zap } from 'lucide-react';
-import {  NodeTypes } from '../types/nodeTypes';
+import {  NodeTypes } from '../_utils/nodeTypes';
 import { Edge, Node } from '@xyflow/react';
 
-const DEFAULT_NODE_TEMPLATES : Node[] = [
+export const DEFAULT_NODE_TEMPLATES : Node[] = [
   {
     id: '1',
     position: { x: 0, y: 0 },
@@ -62,7 +62,7 @@ export const INITIAL_NODES : Node[] = [
   {
     id: 'start',
     type: NodeTypes.START,
-    position: { x: 250, y: 0 },
+    position: { x: 281, y: 0 },
     data: { label: 'Start' },
     // draggable: false,
   },

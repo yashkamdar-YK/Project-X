@@ -14,14 +14,18 @@ import {
 
 import { SIDEBAR_SECTIONS } from "../constants/menu";
 import { Node } from "@xyflow/react";
-import { NodeTypes } from "../types/nodeTypes";
-import { useNodeStore } from "@/lib/store/nodeStore"; // Import NodeStore
+import { handleAddNode, NodeTypes } from "../_utils/nodeTypes";
+import { useNodeStore } from "@/lib/store/nodeStore";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
+  // Track expanded accordion items
+  const [expandedItems, setExpandedItems] = useState<string[]>(['item-2']); // Default to components section open
 
   // Handler for when drag starts
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
+    event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.setData(
       "application/reactflow",
       JSON.stringify({
@@ -32,47 +36,18 @@ const DashboardSidebar: React.FC = () => {
   };
 
   // Handler for adding node through button
-  const handleAddNode = (item: Node) => {
-    const newNodeId = `node-${nodes.length + 1}`;
-    
-    // Find the most recent condition node
-    const recentConditionNode = [...nodes]
-      .reverse()
-      .find(node => node.type === NodeTypes.CONDITION);
-    
-    // Position the new node relative to the reference node
-    const referenceNode = recentConditionNode || nodes[nodes.length - 1];
-    const position = {
-      x: referenceNode.position.x + 200,
-      y: referenceNode.position.y + (item.type === NodeTypes.CONDITION ? 0 : 100),
-    };
-  
-    const newNode = {
-      id: newNodeId,
-      type: item.type,
-      position,
-      data: { label: item.data.label },
-    };
-  
+  const onAdd = (event: React.MouseEvent, item: Node) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const { newNode, newEdges } = handleAddNode(nodes, edges, item);
     setNodes([...nodes, newNode]);
-  
-    // Only create edge if it's a condition node
-    if (item.type === NodeTypes.CONDITION) {
-      // Connect to the most recent condition node if it exists
-      const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
-      setEdges([
-        ...edges,
-        {
-          id: `${sourceNodeId}-${newNodeId}`,
-          source: sourceNodeId,
-          target: newNodeId,
-          type: "smoothstep",
-        },
-      ]);
-    }
+    setEdges(newEdges);
   };
-  
-  
+
+  // Handler for accordion state changes
+  const handleAccordionChange = (value: string[]) => {
+    setExpandedItems(value);
+  };
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -93,7 +68,12 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
-        <Accordion type="multiple" className="space-y-2">
+        <Accordion 
+          type="multiple" 
+          className="space-y-2"
+          value={expandedItems}
+          onValueChange={handleAccordionChange}
+        >
           {SIDEBAR_SECTIONS.map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
@@ -102,14 +82,20 @@ const DashboardSidebar: React.FC = () => {
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">
-                  <button className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2">
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
+                  >
                     <Plus className="w-3 h-3" />
                   </button>
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white  rounded-md dark:bg-gray-900  shadow-sm transition-all duration-200">
+                <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item?.items &&
                       item?.items.map((subItem, subIndex) => (
@@ -122,9 +108,8 @@ const DashboardSidebar: React.FC = () => {
                           {/* @ts-ignore */}
                           <span>{subItem.data.label}</span>
                           <div className="flex items-center">
-                            {/* Button to add node in canvas */}
                             <button
-                              onClick={() => handleAddNode(subItem)}
+                              onClick={(e) => onAdd(e, subItem)}
                               className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                             >
                               <Plus className="w-3 h-3" />
@@ -142,6 +127,7 @@ const DashboardSidebar: React.FC = () => {
     </div>
   );
 
+  // Rest of the component remains the same...
   return (
     <>
       {/* Desktop Sidebar */}
@@ -162,7 +148,7 @@ const DashboardSidebar: React.FC = () => {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900 "
+            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900"
           >
             <SidebarContent />
           </SheetContent>

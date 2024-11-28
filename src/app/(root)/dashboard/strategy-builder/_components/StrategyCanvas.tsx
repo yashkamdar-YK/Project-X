@@ -17,7 +17,7 @@ import { StartNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
-import { NodeTypes } from "../types/nodeTypes";
+import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
 
 // Define node types mapping
 const nodeTypes = {
@@ -72,51 +72,19 @@ const StrategyCanvas = () => {
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-  
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-      const position = {
-        x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top,
-      };
-  
       const dataTransfer = event.dataTransfer.getData("application/reactflow");
-  
+    
       if (dataTransfer) {
         const { item }: { item: Node } = JSON.parse(dataTransfer);
-  
-        const newNodeId = `node-${nodes.length + 1}`;
-        const newNode = {
-          id: newNodeId,
-          type: item.type,
-          position,
-          data: { label: item.data.label },
-        };
-  
-        // Find most recent condition node
-        const recentConditionNode = [...nodes]
-          .reverse()
-          .find(node => node.type === NodeTypes.CONDITION);
-  
+        const { newNode, newEdges } = handleDrop(event, nodes, edges, item, reactFlowBounds);
+        
         setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
-  
-        // Only create edge for condition nodes
-        if (item.type === NodeTypes.CONDITION) {
-          const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
-          setEdges([
-            ...edges.filter((e) => e.target !== "add"),
-            {
-              id: `${sourceNodeId}-${newNodeId}`,
-              source: sourceNodeId,
-              target: newNodeId,
-              type: "smoothstep",
-            }
-          ]);
-        }
+        setEdges(newEdges);
       }
     },
     [nodes, edges, setNodes, setEdges]
   );
-  
 
   return (
     <>
@@ -134,7 +102,7 @@ const StrategyCanvas = () => {
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 nodeTypes={nodeTypes}
-                fitView
+                // fitView
                 panOnScroll={true}
                 selectionOnDrag={true}
                 minZoom={0.5} // Minimum zoom level
