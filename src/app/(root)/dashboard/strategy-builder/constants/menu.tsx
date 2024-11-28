@@ -1,5 +1,6 @@
 import { Database, BarChart2, Layers, Zap } from 'lucide-react';
-import { TNode } from '../types/nodeTypes';
+import { NODE_CONFIG, TNode } from '../types/nodeTypes';
+import { Edge } from '@xyflow/react';
 
 const DEFAULT_NODE_TEMPLATES : TNode[] = [
   {
@@ -53,5 +54,35 @@ export const SIDEBAR_SECTIONS = [
   {
     title: "Actions",
     icon: Zap,
+  },
+];
+
+
+export const INITIAL_NODES : TNode[] = [
+  {
+    id: 'start',
+    type: "START",
+    position: { x: 250, y: 0 },
+    data: { label: 'Start' },
+    // draggable: false,
+    style: NODE_CONFIG["START"],
+  },
+  {
+    id: 'initial-entry',
+    position: { x: 180, y: 100 },
+    type:"CONDITION",
+    data: { 
+      label: 'Entry Condition',
+    },
+    style: NODE_CONFIG['CONDITION'],
+  },
+];
+
+export const INITIAL_EDGES: Edge[] = [
+  {
+    id: 'start-entry',
+    source: 'start',
+    target: 'initial-entry',
+    type: 'smoothstep',
   },
 ];
