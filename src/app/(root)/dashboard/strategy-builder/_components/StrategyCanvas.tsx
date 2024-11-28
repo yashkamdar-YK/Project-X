@@ -18,12 +18,17 @@ import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
+import CustomEdge from "./canvas/CustomEdge";
 
 // Define node types mapping
 const nodeTypes = {
   [NodeTypes.START]: StartNode,
   [NodeTypes.CONDITION]: ConditionNode,
   [NodeTypes.ACTION]: ActionNode,
+};
+
+const edgeTypes = {
+  smoothstep: CustomEdge
 };
 
 const StrategyCanvas = () => {
@@ -102,6 +107,7 @@ const StrategyCanvas = () => {
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 // fitView
                 panOnScroll={true}
                 selectionOnDrag={true}

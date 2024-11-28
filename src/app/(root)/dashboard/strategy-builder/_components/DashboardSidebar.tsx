@@ -78,7 +78,7 @@ const DashboardSidebar: React.FC = () => {
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
-                  {<item.icon />}
+                  {<item.icon size={16} />}
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">

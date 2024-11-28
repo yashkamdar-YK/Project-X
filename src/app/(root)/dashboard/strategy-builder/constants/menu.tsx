@@ -68,7 +68,7 @@ export const INITIAL_NODES : Node[] = [
   },
   {
     id: 'initial-entry',
-    position: { x: 180, y: 100 },
+    position: { x: 180, y: 200 },
     type: NodeTypes.CONDITION,
     data: { 
       label: 'Entry Condition',
