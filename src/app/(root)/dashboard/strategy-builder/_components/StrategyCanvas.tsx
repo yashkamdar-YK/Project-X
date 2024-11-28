@@ -137,8 +137,8 @@ const StrategyCanvas = () => {
                 fitView
                 panOnScroll={true}
                 selectionOnDrag={true}
-                minZoom={1} // Minimum zoom level
-                maxZoom={1.5} // Maximum zoom level
+                minZoom={0.5} // Minimum zoom level
+                maxZoom={2} // Maximum zoom level
               >
                 <CustomControls />
                 <Background gap={12} size={1} />
