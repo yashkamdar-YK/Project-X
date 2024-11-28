@@ -14,8 +14,11 @@ const CustomEdge = ({
   targetPosition,
   source,
   target,
-  style = {}
-}: EdgeProps) => {
+  style = {},
+  targetNode, // Add this prop
+}: EdgeProps &{
+  targetNode : any
+}) => {
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,
     sourceY,
@@ -27,12 +30,15 @@ const CustomEdge = ({
 
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
+  // Check if the target node is an action node
+  const isTargetAction = targetNode?.type === NodeTypes.ACTION;
+
   const handleAddNode = () => {
     const newNodeId = `node-${nodes.length + 1}`;
     const newNode = {
       id: newNodeId,
       type: NodeTypes.CONDITION,
-      position: { x: centerX - 125, y: centerY - 25 }, // Adjust position to center the node
+      position: { x: centerX - 125, y: centerY - 25 },
       data: { label: 'New Condition' },
     };
 
@@ -68,24 +74,26 @@ const CustomEdge = ({
         className="react-flow__edge-path stroke-gray-300 dark:stroke-gray-600"
         d={edgePath}
       />
-      {/* Add button in the middle of the edge */}
-      <foreignObject
-        width={24}
-        height={24}
-        x={centerX - 12}
-        y={centerY - 12}
-        className="overflow-visible"
-      >
-        <button
-          className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-600 hover:border border-gray-300 text-white shadow-md transition-all duration-200 hover:scale-110"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAddNode();
-          }}
+      {/* Only render the plus button if target is not an action node */}
+      {!isTargetAction && (
+        <foreignObject
+          width={24}
+          height={24}
+          x={centerX - 12}
+          y={centerY - 12}
+          className="overflow-visible"
         >
-          <Plus className="w-4 h-4 text-blue-500" />
-        </button>
-      </foreignObject>
+          <button
+            className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-600 hover:border border-gray-300 text-white shadow-md transition-all duration-200 hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddNode();
+            }}
+          >
+            <Plus className="w-4 h-4 text-blue-500" />
+          </button>
+        </foreignObject>
+      )}
     </>
   );
 };

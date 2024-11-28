@@ -11,6 +11,8 @@ import {
   applyEdgeChanges,
   Background,
   ReactFlowProvider,
+  getBezierPath,
+  EdgeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { StartNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
@@ -20,6 +22,35 @@ import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStor
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
 import CustomEdge from "./canvas/CustomEdge";
 
+const DefaultEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+}: EdgeProps) => {
+  const [edgePath] = getBezierPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  return (
+    <path
+      id={id}
+      style={style}
+      className="react-flow__edge-path stroke-gray-300 dark:stroke-gray-600"
+      d={edgePath}
+    />
+  );
+};
+
 // Define node types mapping
 const nodeTypes = {
   [NodeTypes.START]: StartNode,
@@ -27,8 +58,10 @@ const nodeTypes = {
   [NodeTypes.ACTION]: ActionNode,
 };
 
+// Define edge types mapping
 const edgeTypes = {
-  smoothstep: CustomEdge
+  default: DefaultEdge,
+  smoothstep: CustomEdge,
 };
 
 const StrategyCanvas = () => {
@@ -51,8 +84,18 @@ const StrategyCanvas = () => {
 
   // Handle new connections
   const onConnect = useCallback(
-    (connection: Connection) => setEdges(addEdge(connection, edges)),
-    [edges, setEdges]
+    (connection: Connection) => {
+      const targetNode = nodes.find(node => node.id === connection.target);
+      const edgeType = targetNode?.type === NodeTypes.ACTION ? 'default' : 'smoothstep';
+      
+      const edge = {
+        ...connection,
+        type: edgeType,
+      };
+      
+      setEdges(addEdge(edge, edges));
+    },
+    [nodes, edges, setEdges]
   );
 
   // Handle node click
@@ -107,6 +150,7 @@ const StrategyCanvas = () => {
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 nodeTypes={nodeTypes}
+                //@ts-ignore
                 edgeTypes={edgeTypes}
                 // fitView
                 panOnScroll={true}

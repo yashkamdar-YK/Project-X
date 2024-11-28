@@ -2,14 +2,14 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { PlayCircle, Settings2, Zap, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNodeStore } from '@/lib/store/nodeStore';
 
 interface NodeData {
   label: string;
   category?: string;
   isRunning?: boolean;
-  onAddNode?: (item: string, category: string) => void;
 }
+
+const handleStyles = "w-3 h-3 border-2 border-white";
 
 export const StartNode = ({ data }: { data: NodeData }) => {
   return (
@@ -20,29 +20,24 @@ export const StartNode = ({ data }: { data: NodeData }) => {
       <Handle 
         type="source" 
         position={Position.Bottom}
-        className="w-3 h-3 bg-blue-500 border-2 border-white" 
+        className={cn(handleStyles, "bg-blue-500")}
       />
     </div>
   );
 };
 
 export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
-  const { nodes, edges } = useNodeStore();
-  const isLastConditionNode = React.useMemo(() => {
-    const conditionNodes = nodes.filter(node => node.type === 'CONDITION');
-    return id === conditionNodes[conditionNodes.length - 1]?.id;
-  }, [nodes, id]);
-
   return (
-    <div className="group cursor-pointer">
+    <div className="group cursor-pointer relative">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
-        {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
         
+        {/* Input handle at top */}
         <Handle 
           type="target" 
           position={Position.Top}
-          className="w-3 h-3 bg-indigo-500 border-2 border-white" 
+          id={`${id}-top`}
+          className={cn(handleStyles, "bg-indigo-500")}
         />
         
         <div className="flex items-center space-x-3">
@@ -60,31 +55,39 @@ export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
           <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
 
+        {/* Output handles */}
         <Handle 
           type="source" 
           position={Position.Bottom}
-          className="w-3 h-3 bg-indigo-500 border-2 border-white" 
-          isConnectableStart={!isLastConditionNode}  // Disable connecting from this handle if it's not the last node
+          id={`${id}-bottom`}
+          className={cn(handleStyles, "bg-indigo-500")}
+        />
+        <Handle 
+          type="source" 
+          position={Position.Right}
+          id={`${id}-right`}
+          className={cn(handleStyles, "bg-indigo-500")}
         />
       </div>
     </div>
   );
 };
 
-export const ActionNode = ({ data }: { data: NodeData }) => {
+export const ActionNode = ({ data, id }: { data: NodeData; id: string }) => {
   return (
-    <div className="group cursor-pointer">
+    <div className="group cursor-pointer relative">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
-        {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />
         
+        {/* Left handle for action nodes */}
         <Handle 
           type="target" 
-          position={Position.Top}
-          className="w-3 h-3 bg-emerald-500 border-2 border-white" 
+          position={Position.Left}
+          id={`${id}-left`}
+          className={cn(handleStyles, "bg-emerald-500")}
         />
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 pl-1">
           <div className="flex-shrink-0">
             <Zap className="w-5 h-5 text-emerald-500" />
           </div>

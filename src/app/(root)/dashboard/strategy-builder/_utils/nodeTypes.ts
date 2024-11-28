@@ -50,40 +50,80 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined) => {
   return { x: 250, y: 100 };
 };
 
+export enum EdgeTypes {
+  DEFAULT = "default",
+  CONDITION_TO_ACTION = "conditionToAction",
+  CONDITION_TO_CONDITION = "conditionToCondition"
+}
+
+// Helper for determining correct edge type and handle positions
+const getEdgeConfiguration = (
+  sourceType: string | undefined,
+  targetType: string
+): { type: EdgeTypes; sourceHandle?: string; targetHandle?: string } => {
+  if (sourceType === NodeTypes.CONDITION && targetType === NodeTypes.ACTION) {
+    return {
+      type: EdgeTypes.CONDITION_TO_ACTION,
+      sourceHandle: 'right',
+      targetHandle: 'left'
+    };
+  }
+  if (sourceType === NodeTypes.CONDITION && targetType === NodeTypes.CONDITION) {
+    return {
+      type: EdgeTypes.CONDITION_TO_CONDITION,
+      sourceHandle: 'bottom',
+      targetHandle: 'top'
+    };
+  }
+  // For START node connections
+  return {
+    type: EdgeTypes.DEFAULT,
+    sourceHandle: 'bottom',
+    targetHandle: 'top'
+  };
+};
+
 // Updated handler for adding node through button
-const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
+export const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const newNodeId = `node-${nodes.length + 1}`;
   const position = getNodePosition(nodes, item.type);
-
+  
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
     data: { label: item.data.label },
   };
-
+  
   let newEdges = [...edges];
-
-  // Add edge only for condition nodes
-  if (item.type === NodeTypes.CONDITION) {
-    const recentConditionNode = [...nodes]
-      .reverse()
-      .find(node => node.type === NodeTypes.CONDITION);
-
-    const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
-    newEdges.push({
-      id: `${sourceNodeId}-${newNodeId}`,
-      source: sourceNodeId,
-      target: newNodeId,
-      type: "smoothstep",
+  
+  // Add edge based on node types
+  if (item.type === NodeTypes.CONDITION || item.type === NodeTypes.ACTION) {
+    const sourceNode = [...nodes].reverse().find(node => {
+      if (item.type === NodeTypes.ACTION) {
+        return node.type === NodeTypes.CONDITION;
+      }
+      return node.type === NodeTypes.CONDITION || node.type === NodeTypes.START;
     });
+    
+    if (sourceNode) {
+      const edgeConfig = getEdgeConfiguration(sourceNode.type, item.type);
+      newEdges.push({
+        id: `${sourceNode.id}-${newNodeId}`,
+        source: sourceNode.id,
+        target: newNodeId,
+        type: edgeConfig.type,
+        sourceHandle: edgeConfig.sourceHandle,
+        targetHandle: edgeConfig.targetHandle
+      });
+    }
   }
-
+  
   return { newNode, newEdges };
 };
 
-// Updated handler for drop positioning
-const handleDrop = (
+// Updated drop handler
+export const handleDrop = (
   event: React.DragEvent,
   nodes: Node[],
   edges: Edge[],
@@ -92,31 +132,40 @@ const handleDrop = (
 ) => {
   const position = getNodePosition(nodes, item.type);
   const newNodeId = `node-${nodes.length + 1}`;
-
+  
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
     data: { label: item.data.label },
   };
-
+  
   let newEdges = [...edges];
-
-  if (item.type === NodeTypes.CONDITION) {
-    const recentConditionNode = [...nodes]
-      .reverse()
-      .find(node => node.type === NodeTypes.CONDITION);
-
-    const sourceNodeId = recentConditionNode ? recentConditionNode.id : nodes[0].id;
-    newEdges.push({
-      id: `${sourceNodeId}-${newNodeId}`,
-      source: sourceNodeId,
-      target: newNodeId,
-      type: "smoothstep",
+  
+  // Add edge based on node types
+  if (item.type === NodeTypes.CONDITION || item.type === NodeTypes.ACTION) {
+    const sourceNode = [...nodes].reverse().find(node => {
+      if (item.type === NodeTypes.ACTION) {
+        return node.type === NodeTypes.CONDITION;
+      }
+      return node.type === NodeTypes.CONDITION || node.type === NodeTypes.START;
     });
+    
+    if (sourceNode) {
+      const edgeConfig = getEdgeConfiguration(sourceNode.type, item.type);
+      newEdges.push({
+        id: `${sourceNode.id}-${newNodeId}`,
+        source: sourceNode.id,
+        target: newNodeId,
+        type: edgeConfig.type,
+        sourceHandle: edgeConfig.sourceHandle,
+        targetHandle: edgeConfig.targetHandle
+      });
+    }
   }
-
+  
   return { newNode, newEdges };
 };
 
-export { getNodePosition, handleAddNode, handleDrop };
+
+export { getNodePosition };
