@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { PlayCircle, Settings2, Zap, AlertCircle } from 'lucide-react';
+import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNodeStore } from '@/lib/store/nodeStore';
 
@@ -27,15 +27,124 @@ export const StartNode = ({ data }: { data: NodeData }) => {
 };
 
 export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
-  const { nodes, edges } = useNodeStore();
-  const isLastConditionNode = React.useMemo(() => {
-    const conditionNodes = nodes.filter(node => node.type === 'CONDITION');
-    return id === conditionNodes[conditionNodes.length - 1]?.id;
-  }, [nodes, id]);
+  const { nodes, edges, setNodes, setEdges } = useNodeStore();
+  
+  const conditionNodes = React.useMemo(() => {
+    return nodes
+      .filter(node => node.type === 'CONDITION')
+      .sort((a, b) => a.position.y - b.position.y);
+  }, [nodes]);
+
+  const nodeIndex = React.useMemo(() => {
+    return conditionNodes.findIndex(node => node.id === id);
+  }, [conditionNodes, id]);
+
+  const isFirstConditionNode = nodeIndex === 0;
+  const isLastConditionNode = nodeIndex === conditionNodes.length - 1;
+
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    // Find incoming and outgoing edges for the node being deleted
+    const incomingEdge = edges.find(edge => edge.target === id);
+    const outgoingEdge = edges.find(edge => edge.source === id);
+
+    let updatedEdges = edges.filter(edge => edge.source !== id && edge.target !== id);
+
+    // If node had both incoming and outgoing connections, create a new edge to bridge the gap
+    if (incomingEdge && outgoingEdge) {
+      const newEdge = {
+        id: `${incomingEdge.source}-${outgoingEdge.target}`,
+        source: incomingEdge.source,
+        target: outgoingEdge.target,
+        type: 'smoothstep'
+      };
+      updatedEdges = [...updatedEdges, newEdge];
+    }
+
+    setNodes(nodes.filter(node => node.id !== id));
+    setEdges(updatedEdges);
+  };
+
+
+  const switchNodes = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    const currentNode = conditionNodes[nodeIndex];
+    const switchIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
+    const switchNode = conditionNodes[switchIndex];
+    
+    if (!switchNode) return;
+
+    // Store positions
+    const currentPos = { ...currentNode.position };
+    const switchPos = { ...switchNode.position };
+
+    // Update nodes with switched positions
+    const updatedNodes = nodes.map(node => {
+      if (node.id === currentNode.id) {
+        return { ...node, position: switchPos };
+      }
+      if (node.id === switchNode.id) {
+        return { ...node, position: currentPos };
+      }
+      return node;
+    });
+
+    // Update edges to maintain connections
+    const updatedEdges = edges.map(edge => {
+      let newEdge = { ...edge };
+      
+      // Update source connections
+      if (edge.source === currentNode.id) newEdge.source = switchNode.id;
+      else if (edge.source === switchNode.id) newEdge.source = currentNode.id;
+      
+      // Update target connections
+      if (edge.target === currentNode.id) newEdge.target = switchNode.id;
+      else if (edge.target === switchNode.id) newEdge.target = currentNode.id;
+      
+      return newEdge;
+    });
+
+    setNodes(updatedNodes);
+    setEdges(updatedEdges);
+  };
 
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
+        {/* Control buttons */}
+        <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {/* Delete button */}
+          
+          {/* Up arrow - show only if not first condition node */}
+          {!isFirstConditionNode && (
+            <button
+              onClick={switchNodes('up')}
+              className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          <button
+            onClick={handleDelete}
+            className="p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          
+          {/* Down arrow - show only if not last condition node */}
+          {!isLastConditionNode && (
+            <button
+              onClick={switchNodes('down')}
+              className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
         
@@ -64,17 +173,33 @@ export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
           type="source" 
           position={Position.Bottom}
           className="w-3 h-3 bg-indigo-500 border-2 border-white" 
-          isConnectableStart={!isLastConditionNode}  // Disable connecting from this handle if it's not the last node
+          isConnectableStart={!isLastConditionNode}
         />
       </div>
     </div>
   );
 };
 
-export const ActionNode = ({ data }: { data: NodeData }) => {
+export const ActionNode = ({ data, id }: { data: NodeData; id: string }) => {
+  const { nodes, edges, setNodes, setEdges } = useNodeStore();
+
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setNodes(nodes.filter(node => node.id !== id));
+    setEdges(edges.filter(edge => edge.source !== id && edge.target !== id));
+  };
+
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
+        {/* Delete button */}
+        <button
+          onClick={handleDelete}
+          className="absolute -right-2 -top-2 p-1.5 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+        
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />
         

@@ -63,7 +63,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
   );
 
   const containerClass = cn(
-    "bg-white/80 dark:bg-gray-800/90",
+    "bg-white/60 dark:bg-gray-800/50",
     "border border-gray-200/50 dark:border-gray-700/50",
     "shadow-lg shadow-black/5 dark:shadow-black/20",
     "backdrop-blur-sm",
