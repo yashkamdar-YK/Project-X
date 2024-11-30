@@ -13,7 +13,7 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, ConditionNode, ActionNode } from './canvas/CustomNodes';
+import { StartNode, ConditionNode, ActionNode } from "./canvas/CustomNodes";
 import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
@@ -28,11 +28,10 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  smoothstep: CustomEdge
+  smoothstep: CustomEdge,
 };
 
 const StrategyCanvas = () => {
-
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const { openSheet } = useSheetStore();
@@ -58,32 +57,34 @@ const StrategyCanvas = () => {
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      event.stopPropagation(); 
+      event.stopPropagation();
 
-      openSheet('node', node);
+      openSheet("node", node);
     },
     [openSheet]
   );
 
-
   // Handle drag over
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = "move";
   }, []);
 
-
-  // Handle drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      const reactFlowBounds = event.currentTarget.getBoundingClientRect();
       const dataTransfer = event.dataTransfer.getData("application/reactflow");
-    
+      // console.log("Drop Data:", dataTransfer);
       if (dataTransfer) {
         const { item }: { item: Node } = JSON.parse(dataTransfer);
-        const { newNode, newEdges } = handleDrop(event, nodes, edges, item, reactFlowBounds);
-        
+        // console.log("Parsed Item:", item);
+        const { newNode, newEdges } = handleDrop(
+          event,
+          nodes,
+          edges,
+          item,
+          event.currentTarget.getBoundingClientRect()
+        );
         setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
         setEdges(newEdges);
       }

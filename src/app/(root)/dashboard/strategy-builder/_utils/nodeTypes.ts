@@ -93,7 +93,6 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   return { newNode, newEdges };
 };
 
-// Updated handler for drop positioning
 const handleDrop = (
   event: React.DragEvent,
   nodes: Node[],
@@ -103,7 +102,7 @@ const handleDrop = (
 ) => {
   const position = getNodePosition(nodes, item.type, edges);
   const newNodeId = `node-${nodes.length + 1}`;
-
+  const position = getNodePosition(nodes, item.type);
   const newNode = {
     id: newNodeId,
     type: item.type,
@@ -113,7 +112,7 @@ const handleDrop = (
 
   let newEdges = [...edges];
 
-  // UPDATED: Connect new Node with that node how has only single connection
+  // Find node with a single connection
   const nodeWithSingleConnection = nodes.find((node) => {
     const incomingEdge = edges.find((edge) => edge.target === node.id);
     const outgoingEdge = edges.find((edge) => edge.source === node.id);
@@ -131,5 +130,6 @@ const handleDrop = (
 
   return { newNode, newEdges };
 };
+
 
 export { getNodePosition, handleAddNode, handleDrop };
