@@ -102,7 +102,6 @@ const handleDrop = (
 ) => {
   const position = getNodePosition(nodes, item.type, edges);
   const newNodeId = `node-${nodes.length + 1}`;
-  const position = getNodePosition(nodes, item.type);
   const newNode = {
     id: newNodeId,
     type: item.type,
