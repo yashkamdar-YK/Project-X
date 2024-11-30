@@ -86,6 +86,8 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
       source: nodeWithSingleConnection.id,
       target: newNodeId,
+      sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Specify bottom handle
+      targetHandle: `${newNodeId}-top`, // Target top handle of new node
       type: "smoothstep",
     });
   }
