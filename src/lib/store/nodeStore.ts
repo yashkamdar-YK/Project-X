@@ -42,7 +42,7 @@
 
 import { create } from 'zustand';
 import { Node, Edge } from '@xyflow/react';
-import { INITIAL_NODES, INITIAL_EDGES } from '../../app/(root)/dashboard/strategy-builder/constants/menu';
+import { INITIAL_EDGES, INITIAL_NODES } from '@/app/(root)/dashboard/strategy-builder/constants/menu';
 
 
 interface NodeState {
