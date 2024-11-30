@@ -20,17 +20,14 @@ import { useNodeStore } from "@/lib/store/nodeStore";
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   // Track expanded accordion items
-  const [expandedItems, setExpandedItems] = useState<string[]>(['item-2']); // Default to components section open
+  const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]); // Default to components section open
 
-  // Handler for when drag starts
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
-    event.preventDefault();
-    event.stopPropagation();
+    // console.log("Drag Start:", item);
+      event.stopPropagation();
     event.dataTransfer.setData(
       "application/reactflow",
-      JSON.stringify({
-        item,
-      })
+      JSON.stringify({ item })
     );
     event.dataTransfer.effectAllowed = "move";
   };
@@ -68,8 +65,8 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
-        <Accordion 
-          type="multiple" 
+        <Accordion
+          type="multiple"
           className="space-y-2"
           value={expandedItems}
           onValueChange={handleAccordionChange}
@@ -82,7 +79,7 @@ const DashboardSidebar: React.FC = () => {
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
