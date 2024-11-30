@@ -48,17 +48,22 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
 
     // If node had both incoming and outgoing connections, create a new edge to bridge the gap
     if (incomingEdge && outgoingEdge) {
+      // Get source node type to determine correct handle
+      const sourceNode = nodes.find(node => node.id === incomingEdge.source);
+      const sourceHandle = sourceNode?.type === 'CONDITION' ? `${incomingEdge.source}-bottom` : undefined;
+      
       const newEdge = {
         id: `${incomingEdge.source}-${outgoingEdge.target}`,
         source: incomingEdge.source,
         target: outgoingEdge.target,
+        sourceHandle, // Use bottom handle for condition nodes
+        targetHandle: outgoingEdge.targetHandle, // Preserve target handle
         type: 'smoothstep'
       };
       updatedEdges = [...updatedEdges, newEdge];
     }
 
     setEdges(updatedEdges);
-    //remove the node
     setNodes(nodes.filter(node => node.id !== id));
   };
 
