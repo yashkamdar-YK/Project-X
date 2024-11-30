@@ -1,23 +1,18 @@
 import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Position } from '@xyflow/react';
 import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNodeStore } from '@/lib/store/nodeStore';
+import CustomHandle from './CustomHandle';
 
-interface NodeData {
-  label: string;
-  category?: string;
-  isRunning?: boolean;
-  onAddNode?: (item: string, category: string) => void;
-}
 
-export const StartNode = ({ data }: { data: NodeData }) => {
+export const StartNode = () => {
   return (
     <div className="relative group">
       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-blue-500/25 transition-all duration-300 cursor-pointer">
         <PlayCircle className="w-7 h-7 text-white transform group-hover:scale-110 transition-transform duration-200" />
       </div>
-      <Handle 
+      <CustomHandle 
         type="source" 
         position={Position.Bottom}
         className="w-3 h-3 bg-blue-500 border-2 border-white" 
@@ -26,7 +21,7 @@ export const StartNode = ({ data }: { data: NodeData }) => {
   );
 };
 
-export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
+export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   
   const conditionNodes = React.useMemo(() => {
@@ -150,10 +145,11 @@ export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
         
-        <Handle 
+        <CustomHandle 
           type="target" 
           position={Position.Top}
           className="w-3 h-3 bg-indigo-500 border-2 border-white" 
+          id={`${id}-top`}
         />
         
         <div className="flex items-center space-x-3">
@@ -165,24 +161,33 @@ export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
               Condition
             </div>
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {/* @ts-ignore */}
               {data.label}
             </div>
           </div>
           <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
-
-        <Handle 
+        <CustomHandle 
+          type="source" 
+          position={Position.Right}
+          id={`${id}-right`}
+          // className="w-3 h-3 bg-indigo-500 border-2 border-white" 
+          // isConnectableStart={!isLastConditionNode}
+        />
+        <CustomHandle 
           type="source" 
           position={Position.Bottom}
-          className="w-3 h-3 bg-indigo-500 border-2 border-white" 
-          isConnectableStart={!isLastConditionNode}
+          id={`${id}-bottom`}
+          // className="w-3 h-3 bg-indigo-500 border-2 border-white" 
+          // isConnectableStart={!isLastConditionNode}
         />
+        
       </div>
     </div>
   );
 };
 
-export const ActionNode = ({ data, id }: { data: NodeData; id: string }) => {
+export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const handleDelete = (event: React.MouseEvent) => {
@@ -205,9 +210,9 @@ export const ActionNode = ({ data, id }: { data: NodeData; id: string }) => {
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />
         
-        <Handle 
+        <CustomHandle 
           type="target" 
-          position={Position.Top}
+          position={Position.Left}
           className="w-3 h-3 bg-emerald-500 border-2 border-white" 
         />
         
@@ -220,6 +225,7 @@ export const ActionNode = ({ data, id }: { data: NodeData; id: string }) => {
               Action
             </div>
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {/* @ts-ignore */}
               {data.label}
             </div>
           </div>

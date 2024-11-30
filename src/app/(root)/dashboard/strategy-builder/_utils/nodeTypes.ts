@@ -1,4 +1,4 @@
-import { Edge, Node } from "@xyflow/react";
+import { Edge, Node, Position } from "@xyflow/react";
 
 export const NodeTypes = {
   CONDITION: "CONDITION",
@@ -7,13 +7,17 @@ export const NodeTypes = {
 };
 
 // Helper functions for node positioning
-const getNodePosition = (nodes: Node[], newNodeType: string | undefined) => {
+const getNodePosition = (nodes: Node[], newNodeType: string | undefined, edges: Edge[]) => {
   // For condition nodes
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
-    const nodeWithSingleConnection = [...nodes]
-      .reverse()
-      .find((node) => node.type === NodeTypes.CONDITION);
+    const nodeWithSingleConnection = nodes.find((node) => {
+      if (node.type === NodeTypes.CONDITION) {
+        const incomingEdge = edges.find((edge) => edge.target === node.id);
+        const outgoingEdge = edges.find((edge) => edge.source === node.id);
+        return incomingEdge && !outgoingEdge;
+      }
+    });
 
     if (nodeWithSingleConnection) {
       return {
@@ -49,7 +53,6 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined) => {
       };
     }
   }
-
   // Default positioning if no reference nodes found
   return { x: 250, y: 100 };
 };
@@ -57,14 +60,16 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined) => {
 
 // UPDATED: Connect new Node with that node how has only single connection
 const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
-  const newNodeId = `node-${nodes.length + 1}`;
-  const position = getNodePosition(nodes, item.type);
+  const newNodeId = `node-${Date.now()}`;
+  const position = getNodePosition(nodes, item.type, edges);
 
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
     data: { label: item.data.label },
+    sourcePosition:Position.Bottom,
+    targetPosition:Position.Top
   };
 
   let newEdges = [...edges];
@@ -88,8 +93,14 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   return { newNode, newEdges };
 };
 
-// UPDATED : handler for drop positioning
-const handleDrop = ( event: React.DragEvent, nodes: Node[], edges: Edge[], item: Node, bounds: DOMRect ) => {
+const handleDrop = (
+  event: React.DragEvent,
+  nodes: Node[],
+  edges: Edge[],
+  item: Node,
+  bounds: DOMRect
+) => {
+  const position = getNodePosition(nodes, item.type, edges);
   const newNodeId = `node-${nodes.length + 1}`;
   const position = getNodePosition(nodes, item.type);
   const newNode = {

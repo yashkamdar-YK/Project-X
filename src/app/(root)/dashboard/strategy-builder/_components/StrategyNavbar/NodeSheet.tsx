@@ -1,7 +1,9 @@
+import { useNodeStore } from "@/lib/store/nodeStore";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 
 const NodeSheet = () => {
   const { closeSheet, type, selectedItem } = useSheetStore();
+  const {nodes,edges} = useNodeStore();
 
   if (type !== 'node' || !selectedItem) return null;
 
@@ -37,6 +39,11 @@ const NodeSheet = () => {
               Position: ({selectedItem.position.x}, {selectedItem.position.y})
             </p>
             <p className="text-sm text-gray-500">Label: {selectedItem?.data?.label}</p>
+          </div>
+
+          <div className="">
+            <span className="text-lg">DEBUG: </span>
+            <pre className="text-xs" >{JSON.stringify({nodes,edges}, null, 2)}</pre>
           </div>
         </div>
       </div>
