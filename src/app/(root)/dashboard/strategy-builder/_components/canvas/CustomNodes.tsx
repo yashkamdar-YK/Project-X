@@ -62,11 +62,13 @@ export const ConditionNode = ({ data, id }: { data: NodeData; id: string }) => {
       updatedEdges = [...updatedEdges, newEdge];
     }
 
-    setNodes(nodes.filter(node => node.id !== id));
     setEdges(updatedEdges);
+    //remove the node
+    setNodes(nodes.filter(node => node.id !== id));
   };
 
 
+  //basicly here we are switching the nodes position
   const switchNodes = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
     event.stopPropagation();
     
