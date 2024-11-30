@@ -57,8 +57,6 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined, edges: 
   return { x: 250, y: 100 };
 };
 
-
-// UPDATED: Connect new Node with that node how has only single connection
 const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const newNodeId = `node-${Date.now()}`;
   const position = getNodePosition(nodes, item.type, edges);
@@ -68,8 +66,8 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
     type: item.type,
     position,
     data: { label: item.data.label },
-    sourcePosition:Position.Bottom,
-    targetPosition:Position.Top
+    sourcePosition: Position.Bottom,
+    targetPosition: Position.Top
   };
 
   let newEdges = [...edges];
@@ -86,8 +84,8 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
       source: nodeWithSingleConnection.id,
       target: newNodeId,
-      sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Specify bottom handle
-      targetHandle: `${newNodeId}-top`, // Target top handle of new node
+      sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
+      targetHandle: `${newNodeId}-top`,
       type: "smoothstep",
     });
   }
@@ -109,6 +107,8 @@ const handleDrop = (
     type: item.type,
     position,
     data: { label: item.data.label },
+    sourcePosition: Position.Bottom, // Add default positions
+    targetPosition: Position.Top
   };
 
   let newEdges = [...edges];
@@ -125,12 +125,13 @@ const handleDrop = (
       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
       source: nodeWithSingleConnection.id,
       target: newNodeId,
+      sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Add specific handle
+      targetHandle: `${newNodeId}-top`, // Add specific handle
       type: "smoothstep",
     });
   }
 
   return { newNode, newEdges };
 };
-
 
 export { getNodePosition, handleAddNode, handleDrop };
