@@ -1,8 +1,13 @@
 import React from 'react';
-import { getBezierPath, EdgeProps } from '@xyflow/react';
+import { getBezierPath, EdgeProps, Edge } from '@xyflow/react';
 import { Plus } from 'lucide-react';
 import { useNodeStore } from '@/lib/store/nodeStore';
 import { NodeTypes } from '../../_utils/nodeTypes';
+
+interface CustomEdgeProps extends EdgeProps {
+  sourceHandle?: string;
+  targetHandle?: string;
+}
 
 const CustomEdge = ({
   id,
@@ -14,43 +19,52 @@ const CustomEdge = ({
   targetPosition,
   source,
   target,
+  sourceHandle,
+  targetHandle,
   style = {}
-}: EdgeProps) => {
+}: CustomEdgeProps) => {
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
+    targetPosition,
     targetX,
     targetY,
-    targetPosition,
   });
 
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const handleAddNode = () => {
-    const newNodeId = `node-${nodes.length + 1}`;
+    const newNodeId = `node-${Date.now()}`;
+    const sourceNode = nodes.find(node => node.id === source);
+    
     const newNode = {
       id: newNodeId,
       type: NodeTypes.CONDITION,
-      position: { x: centerX - 125, y: centerY - 25 }, // Adjust position to center the node
+      position: { x: centerX - 125, y: centerY - 25 },
       data: { label: 'New Condition' },
     };
 
     // Remove the original edge
     const updatedEdges = edges.filter(edge => edge.id !== id);
 
-    // Add two new edges connecting the new node
-    const newEdges = [
+    // Create new edges with explicit handle connections
+    const newEdges: Edge[] = [
       {
         id: `${source}-${newNodeId}`,
-        source: source,
+        source,
         target: newNodeId,
+        targetHandle: `${newNodeId}-top`,
+        // Always use bottom handle for source if it's a condition node
+        sourceHandle: sourceNode?.type === NodeTypes.CONDITION ? `${source}-bottom` : undefined,
         type: 'smoothstep',
       },
       {
         id: `${newNodeId}-${target}`,
         source: newNodeId,
-        target: target,
+        target,
+        sourceHandle: `${newNodeId}-bottom`,
+        targetHandle,
         type: 'smoothstep',
       },
       ...updatedEdges,
@@ -68,7 +82,6 @@ const CustomEdge = ({
         className="react-flow__edge-path stroke-gray-300 dark:stroke-gray-600"
         d={edgePath}
       />
-      {/* Add button in the middle of the edge */}
       <foreignObject
         width={24}
         height={24}
