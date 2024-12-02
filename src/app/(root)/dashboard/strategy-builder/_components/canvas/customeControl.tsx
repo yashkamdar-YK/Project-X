@@ -72,7 +72,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
 
   const mobileButtonClass = cn(
     baseButtonClass,
-    "w-10 h-10 rounded-lg"
+    "w-7 h-7 rounded-lg"
   );
 
   const iconClass = cn(
@@ -206,7 +206,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={mobileButtonClass}>
-                  <BiPlus size={16} className={smallIconClass} />
+                  <BiPlus size={12} className={smallIconClass} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 p-2">
