@@ -149,7 +149,6 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
         <CustomHandle 
           type="target" 
           position={Position.Top}
-          className="w-3 h-3 bg-indigo-500 border-2 border-white" 
           id={`${id}-top`}
         />
         
@@ -177,7 +176,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
             id={`${id}-right`}
             className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !cursor-cell !z-10"
           >
-            <ArrowRight className="!w-5 !h-5 text-white pointer-events-none" />
+            <Zap className="!w-4 !h-5 text-white pointer-events-none" />
           </CustomHandle>
         </div>
 
@@ -217,7 +216,7 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
         <CustomHandle 
           type="target" 
           position={Position.Left}
-          className="w-3 h-3 bg-emerald-500 border-2 border-white" 
+          className="!w-3 !h-3 md:!w-[10px] md:!h-[10px] sm:!w-4 sm:!h-4 !bg-green-600 !border-1 !border-indigo-600" 
         />
         
         <div className="flex items-center space-x-3">

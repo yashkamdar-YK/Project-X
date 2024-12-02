@@ -80,7 +80,7 @@ const ConditionEdge = ({
       <path
         id={id}
         style={style}
-        className="react-flow__edge-path stroke-gray-300 dark:stroke-gray-600"
+        className="react-flow__edge-path stroke-indigo-300 dark:stroke-indigo-600"
         d={edgePath}
       />
       <foreignObject

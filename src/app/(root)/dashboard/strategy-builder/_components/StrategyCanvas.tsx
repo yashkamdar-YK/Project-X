@@ -18,7 +18,7 @@ import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
-import ConditionEdge from "./canvas/conditionEdge";
+import ConditionEdge from "./canvas/ConditionEdge";
 import ActionEdge from "./canvas/ActionEdge";
 
 // Define node types mapping
@@ -141,8 +141,8 @@ const StrategyCanvas = () => {
                 minZoom={0.5} // Minimum zoom level
                 maxZoom={2} // Maximum zoom level
               >
-                <CustomControls />
                 <Background gap={12} size={1} />
+                <CustomControls />
               </ReactFlow>
             </ReactFlowProvider>
           </div>
