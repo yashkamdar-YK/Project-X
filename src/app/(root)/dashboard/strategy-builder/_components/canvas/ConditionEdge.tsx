@@ -4,12 +4,12 @@ import { Plus } from 'lucide-react';
 import { useNodeStore } from '@/lib/store/nodeStore';
 import { NodeTypes } from '../../_utils/nodeTypes';
 
-interface CustomEdgeProps extends EdgeProps {
+interface ConditionEdgeProps extends EdgeProps {
   sourceHandle?: string;
   targetHandle?: string;
 }
 
-const CustomEdge = ({
+const ConditionEdge = ({
   id,
   sourceX,
   sourceY,
@@ -22,7 +22,7 @@ const CustomEdge = ({
   sourceHandle,
   targetHandle,
   style = {}
-}: CustomEdgeProps) => {
+}: ConditionEdgeProps) => {
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,
     sourceY,
@@ -104,4 +104,4 @@ const CustomEdge = ({
   );
 };
 
-export default CustomEdge;
+export default ConditionEdge;
