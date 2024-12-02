@@ -48,27 +48,56 @@ const StrategyCanvas = () => {
     [edges, setEdges]
   );
 
-  // Handle Connection 
-const onConnect = useCallback(
+  // Handle Connection
+  // const onConnect = useCallback(
+  //     (connection: Connection) => {
+  //       const sourceNode = nodes.find((node) => node.id === connection.source);
+  //       const targetNode = nodes.find((node) => node.id === connection.target);
+
+  //       //the Action-Type-Node connects only from the "right" handle of a Condition-Type-Node
+  //       if (
+  //         sourceNode?.type === NodeTypes.CONDITION &&
+  //         connection.sourceHandle?.endsWith("-right") &&
+  //         targetNode?.type === NodeTypes.ACTION
+  //       ) {
+  //         setEdges(addEdge(connection, edges));
+  //       } else {
+  //         // Reject connection by not adding it
+  //         console.warn("You Can't add here");
+  //       }
+  //     },
+  //     [nodes, edges, setEdges]
+  //   );
+
+  const onConnect = useCallback(
     (connection: Connection) => {
       const sourceNode = nodes.find((node) => node.id === connection.source);
       const targetNode = nodes.find((node) => node.id === connection.target);
-  
-      //the Action-Type-Node connects only from the "right" handle of a Condition-Type-Node
+
+      // For Condition to Condition connections
       if (
+        sourceNode?.type === NodeTypes.CONDITION &&
+        targetNode?.type === NodeTypes.CONDITION &&
+        connection.sourceHandle?.endsWith("-bottom") &&
+        connection.targetHandle?.endsWith("-top")
+      ) {
+        setEdges(addEdge(connection, edges));
+      }
+      // For Condition to Action connections using right handle
+      else if (
         sourceNode?.type === NodeTypes.CONDITION &&
         connection.sourceHandle?.endsWith("-right") &&
         targetNode?.type === NodeTypes.ACTION
       ) {
         setEdges(addEdge(connection, edges));
-      } else {
-        // Reject connection by not adding it
-        console.warn("You Can't add here");
+      }
+      // Reject other connections
+      else {
+        console.warn("Invalid connection");
       }
     },
     [nodes, edges, setEdges]
   );
-  
 
   // Handle node click
   const onNodeClick = useCallback(
