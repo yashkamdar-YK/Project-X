@@ -57,7 +57,7 @@ const ConditionEdge = ({
         targetHandle: `${newNodeId}-top`,
         // Always use bottom handle for source if it's a condition node
         sourceHandle: sourceNode?.type === NodeTypes.CONDITION ? `${source}-bottom` : undefined,
-        type: 'smoothstep',
+        type: 'conditionEdge',
       },
       {
         id: `${newNodeId}-${target}`,
@@ -65,7 +65,7 @@ const ConditionEdge = ({
         target,
         sourceHandle: `${newNodeId}-bottom`,
         targetHandle,
-        type: 'smoothstep',
+        type: 'conditionEdge',
       },
       ...updatedEdges,
     ];

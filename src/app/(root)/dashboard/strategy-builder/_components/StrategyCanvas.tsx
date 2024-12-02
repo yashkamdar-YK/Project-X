@@ -29,7 +29,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  smoothstep: ConditionEdge,
+  conditionEdge: ConditionEdge,
   actionEdge: ActionEdge
 };
 
@@ -62,7 +62,7 @@ const StrategyCanvas = () => {
         connection.sourceHandle?.endsWith("-bottom") &&
         connection.targetHandle?.endsWith("-top")
       ) {
-        setEdges(addEdge({ ...connection, type: 'smoothstep' }, edges));
+        setEdges(addEdge({ ...connection, type: 'conditionEdge' }, edges));
       }
       // For Condition to Action connections using right handle
       else if (

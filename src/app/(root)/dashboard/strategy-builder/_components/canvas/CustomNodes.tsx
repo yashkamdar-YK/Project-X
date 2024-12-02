@@ -58,7 +58,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
         target: outgoingEdge.target,
         sourceHandle, // Use bottom handle for condition nodes
         targetHandle: outgoingEdge.targetHandle, // Preserve target handle
-        type: 'smoothstep'
+        type: 'conditionEdge'
       };
       updatedEdges = [...updatedEdges, newEdge];
     }
