@@ -18,7 +18,8 @@ import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
-import CustomEdge from "./canvas/CustomEdge";
+import ConditionEdge from "./canvas/ConditionEdge";
+import ActionEdge from "./canvas/ActionEdge";
 
 // Define node types mapping
 const nodeTypes = {
@@ -28,7 +29,8 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  smoothstep: CustomEdge,
+  conditionEdge: ConditionEdge,
+  actionEdge: ActionEdge
 };
 
 const StrategyCanvas = () => {
@@ -90,36 +92,40 @@ const StrategyCanvas = () => {
     [nodes, edges, setEdges, saveState]
   );
 
-  // Handle Connection
   const onConnect = useCallback(
-    (connection: Connection) => {
-      const sourceNode = nodes.find((node) => node.id === connection.source);
-      const targetNode = nodes.find((node) => node.id === connection.target);
+  (connection: Connection) => {
+    const sourceNode = nodes.find((node) => node.id === connection.source);
+    const targetNode = nodes.find((node) => node.id === connection.target);
 
-      if (
-        sourceNode?.type === NodeTypes.CONDITION &&
-        targetNode?.type === NodeTypes.CONDITION &&
-        connection.sourceHandle?.endsWith("-bottom") &&
-        connection.targetHandle?.endsWith("-top")
-      ) {
-        const updatedEdges = addEdge(connection, edges);
-        setEdges(updatedEdges);
-        saveState(nodes, updatedEdges);
-      } else if (
-        sourceNode?.type === NodeTypes.CONDITION &&
-        connection.sourceHandle?.endsWith("-right") &&
-        targetNode?.type === NodeTypes.ACTION
-      ) {
-        const updatedEdges = addEdge(connection, edges);
-        setEdges(updatedEdges);
-        saveState(nodes, updatedEdges);
-      } else {
-        console.warn("Invalid connection");
-      }
-    },
-    [nodes, edges, setEdges, saveState]
-  );
-
+    // For Condition to Condition connections
+    if (
+      sourceNode?.type === NodeTypes.CONDITION &&
+      targetNode?.type === NodeTypes.CONDITION &&
+      connection.sourceHandle?.endsWith("-bottom") &&
+      connection.targetHandle?.endsWith("-top")
+    ) {
+      const updatedEdges = addEdge({ ...connection, type: 'conditionEdge' }, edges);
+      setEdges(updatedEdges);
+      saveState(nodes, updatedEdges);
+    }
+    // For Condition to Action connections using right handle
+    else if (
+      sourceNode?.type === NodeTypes.CONDITION &&
+      connection.sourceHandle?.endsWith("-right") &&
+      targetNode?.type === NodeTypes.ACTION
+    ) {
+      const updatedEdges = addEdge({ ...connection, type: 'actionEdge' }, edges);
+      setEdges(updatedEdges);
+      saveState(nodes, updatedEdges);
+    }
+    // Reject other connections
+    else {
+      console.warn("Invalid connection");
+    }
+  },
+  [nodes, edges, setEdges, saveState]
+);
+  
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {

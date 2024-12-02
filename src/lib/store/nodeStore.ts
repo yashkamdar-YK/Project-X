@@ -29,7 +29,7 @@
 //       id: `${sourceNodeId}-${finalNode.id}`,
 //       source: sourceNodeId,
 //       target: finalNode.id,
-//       type: 'smoothstep',
+//       type: 'conditionEdge',
 //     };
 
 //     return {

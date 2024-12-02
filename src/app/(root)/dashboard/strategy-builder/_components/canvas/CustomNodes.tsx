@@ -1,6 +1,6 @@
 import React from 'react';
 import { Position } from '@xyflow/react';
-import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNodeStore } from '@/lib/store/nodeStore';
 import CustomHandle from './CustomHandle';
@@ -58,7 +58,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
         target: outgoingEdge.target,
         sourceHandle, // Use bottom handle for condition nodes
         targetHandle: outgoingEdge.targetHandle, // Preserve target handle
-        type: 'smoothstep'
+        type: 'conditionEdge'
       };
       updatedEdges = [...updatedEdges, newEdge];
     }
@@ -155,7 +155,6 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
         <CustomHandle 
           type="target" 
           position={Position.Top}
-          className="w-3 h-3 bg-indigo-500 border-2 border-white" 
           id={`${id}-top`}
         />
         
@@ -174,21 +173,24 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
           </div>
           <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         </div>
-        <CustomHandle 
-          type="source" 
-          position={Position.Right}
-          id={`${id}-right`}
-          // className="w-3 h-3 bg-indigo-500 border-2 border-white" 
-          // isConnectableStart={!isLastConditionNode}
-        />
+
+        {/* Right handle with icon */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1">
+          <CustomHandle
+            type="source"
+            position={Position.Right}
+            id={`${id}-right`}
+            className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !cursor-cell !z-10"
+          >
+            <Zap className="!w-4 !h-5 text-white pointer-events-none" />
+          </CustomHandle>
+        </div>
+
         <CustomHandle 
           type="source" 
           position={Position.Bottom}
           id={`${id}-bottom`}
-          // className="w-3 h-3 bg-indigo-500 border-2 border-white" 
-          // isConnectableStart={!isLastConditionNode}
         />
-        
       </div>
     </div>
   );
@@ -220,7 +222,7 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
         <CustomHandle 
           type="target" 
           position={Position.Left}
-          className="w-3 h-3 bg-emerald-500 border-2 border-white" 
+          className="!w-3 !h-3 md:!w-[10px] md:!h-[10px] sm:!w-4 sm:!h-4 !bg-green-600 !border-1 !border-indigo-600" 
         />
         
         <div className="flex items-center space-x-3">
