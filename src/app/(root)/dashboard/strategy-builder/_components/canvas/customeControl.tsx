@@ -1,12 +1,16 @@
-import React from 'react';
-import { Panel, useReactFlow, ControlButton } from '@xyflow/react';
-import { 
-  BiZoomIn, 
+import React from "react";
+import { Panel, useReactFlow, ControlButton } from "@xyflow/react";
+import {
+  BiZoomIn,
   BiZoomOut,
   BiExpand,
   BiPointer,
   BiPlus,
-} from 'react-icons/bi';
+} from "react-icons/bi";
+import {
+  IoArrowUndoCircleOutline,
+  IoArrowRedoCircleOutline,
+} from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -15,17 +19,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNodeStore } from "@/lib/store/nodeStore";
-import { DEFAULT_NODE_TEMPLATES } from '../../constants/menu';
-import { handleAddNode } from '../../_utils/nodeTypes';
+import { DEFAULT_NODE_TEMPLATES } from "../../constants/menu";
+import { handleAddNode } from "../../_utils/nodeTypes";
 
 interface CustomControlsProps {
   onAddNode?: () => void;
   onBoardAction?: () => void;
+  onUndo?: () => void; // Add prop for undo
+  onRedo?: () => void; // Add prop for redo
 }
 
-const CustomControls: React.FC<CustomControlsProps> = ({ 
-  onBoardAction 
-}) => {
+
+const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, onRedo, }) => {
   const { zoomIn, zoomOut, fitView, setViewport } = useReactFlow();
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
@@ -70,10 +75,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
     "rounded-2xl"
   );
 
-  const mobileButtonClass = cn(
-    baseButtonClass,
-    "w-7 h-7 rounded-lg"
-  );
+  const mobileButtonClass = cn(baseButtonClass, "w-7 h-7 rounded-lg");
 
   const iconClass = cn(
     "transition-all duration-200",
@@ -97,12 +99,35 @@ const CustomControls: React.FC<CustomControlsProps> = ({
     <>
       {/* Desktop Controls */}
       <Panel position="bottom-center" className="hidden sm:block mb-6">
-        <div className={cn(
-          containerClass,
-          "flex flex-row items-center gap-3 justify-center py-3 px-4"
-        )}>
+        <div
+          className={cn(
+            containerClass,
+            "flex flex-row items-center gap-3 justify-center py-3 px-4"
+          )}
+        >
           <div className="flex items-center gap-2 pr-3 border-r border-gray-200/50 dark:border-gray-700/50">
-            <ControlButton 
+            {/* Undo */}
+            <ControlButton
+              onClick={onUndo}
+              className={controlButtonClass}
+              title="Undo"
+            >
+              <IoArrowUndoCircleOutline size={12} className={smallIconClass} />
+            </ControlButton>
+
+            {/* Redo */}
+            <ControlButton
+              onClick={onRedo}
+              className={controlButtonClass}
+              title="Redo"
+            >
+              <IoArrowRedoCircleOutline size={20} className={largeIconClass} />
+            </ControlButton>
+          </div>
+
+          <div className="flex items-center gap-2 pr-3 border-r border-gray-200/50 dark:border-gray-700/50">
+            {/* Zoom In  */}
+            <ControlButton
               onClick={handleZoomIn}
               className={controlButtonClass}
               title="Zoom In"
@@ -110,7 +135,8 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               <BiZoomIn size={20} className={largeIconClass} />
             </ControlButton>
 
-            <ControlButton 
+            {/* Zoom Out  */}
+            <ControlButton
               onClick={handleZoomOut}
               className={controlButtonClass}
               title="Zoom Out"
@@ -118,35 +144,41 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               <BiZoomOut size={20} className={largeIconClass} />
             </ControlButton>
 
-            <ControlButton 
+            {/* Fit Screen  */}
+            <ControlButton
               onClick={handleFitView}
               className={controlButtonClass}
               title="Fit View"
             >
               <BiExpand size={20} className={largeIconClass} />
             </ControlButton>
+
           </div>
 
-          <ControlButton 
+          <ControlButton
             onClick={onBoardAction}
             className={wideButtonClass}
             title="On the Board"
           >
             <BiPointer size={16} className={actionIconClass} />
-            <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">On the Board</span>
+            <span className="text-sm font-medium my-4 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              On the Board
+            </span>
           </ControlButton>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className={wideButtonClass}>
                 <BiPlus size={16} className={actionIconClass} />
-                <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">Quick Add</span>
+                <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                  Quick Add
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-48 p-2">
               {DEFAULT_NODE_TEMPLATES.map((item, index) => (
-                <DropdownMenuItem 
-                  key={index} 
+                <DropdownMenuItem
+                  key={index}
                   className={dropdownItemClass}
                   onClick={() => onAdd(item)}
                 >
@@ -162,12 +194,9 @@ const CustomControls: React.FC<CustomControlsProps> = ({
 
       {/* Mobile Controls */}
       <Panel position="bottom-right" className="sm:hidden mb-4 mr-4">
-        <div className={cn(
-          containerClass,
-          "flex gap-2 p-2"
-        )}>
+        <div className={cn(containerClass, "flex gap-2 p-2")}>
           <div className="flex gap-2">
-            <ControlButton 
+            <ControlButton
               onClick={handleZoomIn}
               className={mobileButtonClass}
               title="Zoom In"
@@ -175,7 +204,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               <BiZoomIn size={16} className={smallIconClass} />
             </ControlButton>
 
-            <ControlButton 
+            <ControlButton
               onClick={handleZoomOut}
               className={mobileButtonClass}
               title="Zoom Out"
@@ -183,7 +212,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               <BiZoomOut size={16} className={smallIconClass} />
             </ControlButton>
 
-            <ControlButton 
+            <ControlButton
               onClick={handleFitView}
               className={mobileButtonClass}
               title="Fit View"
@@ -195,7 +224,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({
           <div className="w-px bg-gray-200/50 dark:bg-gray-700/50" />
 
           <div className="flex gap-2">
-            <ControlButton 
+            <ControlButton
               onClick={onBoardAction}
               className={mobileButtonClass}
               title="On the Board"
@@ -211,8 +240,8 @@ const CustomControls: React.FC<CustomControlsProps> = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 p-2">
                 {DEFAULT_NODE_TEMPLATES.map((item, index) => (
-                  <DropdownMenuItem 
-                    key={index} 
+                  <DropdownMenuItem
+                    key={index}
                     className={dropdownItemClass}
                     onClick={() => onAdd(item)}
                   >

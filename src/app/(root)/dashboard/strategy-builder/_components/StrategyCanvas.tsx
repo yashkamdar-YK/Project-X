@@ -164,7 +164,7 @@ const StrategyCanvas = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "z") {
         undo();
-      } else if (event.ctrlKey && event.key === "y") {
+      } else if (event.ctrlKey && event.shiftKey && event.key === "z") {
         redo();
       }
     };
@@ -233,7 +233,7 @@ const StrategyCanvas = () => {
                 handleNodeDeletion(nodesToDelete, nodes, edges, setNodes, setEdges)
               }
             >
-              <CustomControls />
+              <CustomControls onUndo={undo} onRedo={redo}/>
               <Background gap={12} size={1} />
             </ReactFlow>
           </ReactFlowProvider>
