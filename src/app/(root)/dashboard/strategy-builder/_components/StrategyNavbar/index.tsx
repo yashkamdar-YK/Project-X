@@ -9,20 +9,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { GoProjectTemplate } from "react-icons/go";
-
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
-import { LayoutPanelTop } from 'lucide-react';
+import { TemplateSelector } from "../Templete/Templates";
 
 interface StrategyNavbarProps {
   className?: string;
@@ -83,31 +73,8 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               </TooltipProvider>
             </div>
 
-            <div className="md:block hidden" >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="dark:bg-gray-900">
-                  <LayoutPanelTop size={14} />Templates
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="center"
-                  className="min-w-[140px] dark:bg-gray-900"
-                >
-                  {/* Addind Items  */}
-                  <DropdownMenuItem>
-                    <div className="flex w-[230px] gap-x-4 cursor-pointer dark:text-gray-300 text-gray-800 items-center  ">
-                      <div>
-                      <GoProjectTemplate className="h-10 w-10" />
-                      </div>
-                      <div>
-                        <h1 className="text-lg font-semibold text-black dark:text-white">Starter Templates</h1>
-                        <p className="text-xs text-gray-300">Never write from scratch again. Go from idea to blog in minutes.</p>
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="md:block hidden">
+              <TemplateSelector />
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
