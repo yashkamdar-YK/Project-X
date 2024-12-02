@@ -49,26 +49,6 @@ const StrategyCanvas = () => {
   );
 
   // Handle Connection
-  // const onConnect = useCallback(
-  //     (connection: Connection) => {
-  //       const sourceNode = nodes.find((node) => node.id === connection.source);
-  //       const targetNode = nodes.find((node) => node.id === connection.target);
-
-  //       //the Action-Type-Node connects only from the "right" handle of a Condition-Type-Node
-  //       if (
-  //         sourceNode?.type === NodeTypes.CONDITION &&
-  //         connection.sourceHandle?.endsWith("-right") &&
-  //         targetNode?.type === NodeTypes.ACTION
-  //       ) {
-  //         setEdges(addEdge(connection, edges));
-  //       } else {
-  //         // Reject connection by not adding it
-  //         console.warn("You Can't add here");
-  //       }
-  //     },
-  //     [nodes, edges, setEdges]
-  //   );
-
   const onConnect = useCallback(
     (connection: Connection) => {
       const sourceNode = nodes.find((node) => node.id === connection.source);

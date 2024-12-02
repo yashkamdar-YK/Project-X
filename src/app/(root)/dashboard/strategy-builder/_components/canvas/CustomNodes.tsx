@@ -116,31 +116,33 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         {/* Control buttons */}
-        <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+
+        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3" > 
           {/* Delete button */}
+          <button
+            onClick={handleDelete}
+            className="p-1.5 bg-red-500 rounded-full absolute text-white hover:bg-red-600 bottom-5 left-2"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
           
           {/* Up arrow - show only if not first condition node */}
           {!isFirstConditionNode && (
             <button
               onClick={switchNodes('up')}
-              className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
+              className="p-1.5 rounded-full text-white absolute bottom-0 left-1/2 -translate-x-1/2"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
           )}
 
-          <button
-            onClick={handleDelete}
-            className="p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
           
           {/* Down arrow - show only if not last condition node */}
           {!isLastConditionNode && (
             <button
               onClick={switchNodes('down')}
-              className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
+              className=" p-1.5 rounded-full text-white absolute top-0 left-1/2 -translate-x-1/2 "
+              // className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
