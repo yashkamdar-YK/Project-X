@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   ReactFlow,
   Node,
@@ -33,19 +33,61 @@ const edgeTypes = {
 
 const StrategyCanvas = () => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
-
   const { openSheet } = useSheetStore();
+
+  // Undo/Redo state management
+  const [history, setHistory] = useState([{ nodes, edges }]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Function to save the current state
+  const saveState = useCallback(
+    (newNodes: any, newEdges: any) => {
+      const newHistory = history.slice(0, currentIndex + 1); // Clear forward history
+      newHistory.push({ nodes: newNodes, edges: newEdges });
+      setHistory(newHistory);
+      setCurrentIndex(newHistory.length - 1);
+    },
+    [history, currentIndex]
+  );
+
+  // Undo functionality
+  const undo = useCallback(() => {
+    if (currentIndex > 0) {
+      const previousState = history[currentIndex - 1];
+      setNodes(previousState.nodes);
+      setEdges(previousState.edges);
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [currentIndex, history, setNodes, setEdges]);
+
+  // Redo functionality
+  const redo = useCallback(() => {
+    if (currentIndex < history.length - 1) {
+      const nextState = history[currentIndex + 1];
+      setNodes(nextState.nodes);
+      setEdges(nextState.edges);
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [currentIndex, history, setNodes, setEdges]);
 
   // Handle nodes changes
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes(applyNodeChanges(changes, nodes)),
-    [nodes, setNodes]
+    (changes: NodeChange[]) => {
+      const updatedNodes = applyNodeChanges(changes, nodes);
+      setNodes(updatedNodes);
+      saveState(updatedNodes, edges);
+    },
+    [nodes, edges, setNodes, saveState]
   );
 
   // Handle edges changes
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
-    [edges, setEdges]
+    (changes: EdgeChange[]) => {
+      const updatedEdges = applyEdgeChanges(changes, edges);
+      setEdges(updatedEdges);
+      saveState(nodes, updatedEdges);
+    },
+    [nodes, edges, setEdges, saveState]
   );
 
   // Handle Connection
@@ -54,36 +96,34 @@ const StrategyCanvas = () => {
       const sourceNode = nodes.find((node) => node.id === connection.source);
       const targetNode = nodes.find((node) => node.id === connection.target);
 
-      // For Condition to Condition connections
       if (
         sourceNode?.type === NodeTypes.CONDITION &&
         targetNode?.type === NodeTypes.CONDITION &&
         connection.sourceHandle?.endsWith("-bottom") &&
         connection.targetHandle?.endsWith("-top")
       ) {
-        setEdges(addEdge(connection, edges));
-      }
-      // For Condition to Action connections using right handle
-      else if (
+        const updatedEdges = addEdge(connection, edges);
+        setEdges(updatedEdges);
+        saveState(nodes, updatedEdges);
+      } else if (
         sourceNode?.type === NodeTypes.CONDITION &&
         connection.sourceHandle?.endsWith("-right") &&
         targetNode?.type === NodeTypes.ACTION
       ) {
-        setEdges(addEdge(connection, edges));
-      }
-      // Reject other connections
-      else {
+        const updatedEdges = addEdge(connection, edges);
+        setEdges(updatedEdges);
+        saveState(nodes, updatedEdges);
+      } else {
         console.warn("Invalid connection");
       }
     },
-    [nodes, edges, setEdges]
+    [nodes, edges, setEdges, saveState]
   );
 
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation();
-
       openSheet("node", node);
     },
     [openSheet]
@@ -95,14 +135,13 @@ const StrategyCanvas = () => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  // Handle node drop
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
       const dataTransfer = event.dataTransfer.getData("application/reactflow");
-      // console.log("Drop Data:", dataTransfer);
       if (dataTransfer) {
         const { item }: { item: Node } = JSON.parse(dataTransfer);
-        // console.log("Parsed Item:", item);
         const { newNode, newEdges } = handleDrop(
           event,
           nodes,
@@ -110,44 +149,58 @@ const StrategyCanvas = () => {
           item,
           event.currentTarget.getBoundingClientRect()
         );
-        setNodes([...nodes.filter((n) => n.id !== "add"), newNode]);
+        const updatedNodes = [...nodes.filter((n) => n.id !== "add"), newNode];
+        setNodes(updatedNodes);
         setEdges(newEdges);
+        saveState(updatedNodes, newEdges);
       }
     },
-    [nodes, edges, setNodes, setEdges]
+    [nodes, edges, setNodes, setEdges, saveState]
   );
 
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === "z") {
+        undo();
+      } else if (event.ctrlKey && event.key === "y") {
+        redo();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [undo, redo]);
+
   return (
-    <>
-      <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
-        <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-          <div className="absolute inset-0 dark:text-black">
-            <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                // fitView
-                panOnScroll={true}
-                selectionOnDrag={true}
-                minZoom={0.5} // Minimum zoom level
-                maxZoom={2} // Maximum zoom level
-              >
-                <CustomControls />
-                <Background gap={12} size={1} />
-              </ReactFlow>
-            </ReactFlowProvider>
-          </div>
+    <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
+      <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
+        <div className="absolute inset-0 dark:text-black">
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              panOnScroll={true}
+              selectionOnDrag={true}
+              minZoom={0.5}
+              maxZoom={2}
+            >
+              <CustomControls />
+              <Background gap={12} size={1} />
+            </ReactFlow>
+          </ReactFlowProvider>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
