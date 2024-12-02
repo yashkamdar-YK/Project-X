@@ -81,6 +81,6 @@ export const INITIAL_EDGES: Edge[] = [
     id: 'start-entry',
     source: 'start',
     target: 'initial-entry',
-    type: 'smoothstep',
+    type: 'conditionEdge',
   },
 ];

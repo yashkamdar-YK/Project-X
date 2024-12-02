@@ -18,7 +18,8 @@ import CustomControls from "./canvas/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { useNodeStore } from "@/lib/store/nodeStore"; // Import the new NodeStore
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
-import CustomEdge from "./canvas/CustomEdge";
+import ConditionEdge from "./canvas/ConditionEdge";
+import ActionEdge from "./canvas/ActionEdge";
 
 // Define node types mapping
 const nodeTypes = {
@@ -28,7 +29,8 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  smoothstep: CustomEdge,
+  conditionEdge: ConditionEdge,
+  actionEdge: ActionEdge
 };
 
 const StrategyCanvas = () => {
@@ -47,33 +49,12 @@ const StrategyCanvas = () => {
     (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
     [edges, setEdges]
   );
-
-  // Handle Connection
-  // const onConnect = useCallback(
-  //     (connection: Connection) => {
-  //       const sourceNode = nodes.find((node) => node.id === connection.source);
-  //       const targetNode = nodes.find((node) => node.id === connection.target);
-
-  //       //the Action-Type-Node connects only from the "right" handle of a Condition-Type-Node
-  //       if (
-  //         sourceNode?.type === NodeTypes.CONDITION &&
-  //         connection.sourceHandle?.endsWith("-right") &&
-  //         targetNode?.type === NodeTypes.ACTION
-  //       ) {
-  //         setEdges(addEdge(connection, edges));
-  //       } else {
-  //         // Reject connection by not adding it
-  //         console.warn("You Can't add here");
-  //       }
-  //     },
-  //     [nodes, edges, setEdges]
-  //   );
-
+  
   const onConnect = useCallback(
     (connection: Connection) => {
       const sourceNode = nodes.find((node) => node.id === connection.source);
       const targetNode = nodes.find((node) => node.id === connection.target);
-
+  
       // For Condition to Condition connections
       if (
         sourceNode?.type === NodeTypes.CONDITION &&
@@ -81,7 +62,7 @@ const StrategyCanvas = () => {
         connection.sourceHandle?.endsWith("-bottom") &&
         connection.targetHandle?.endsWith("-top")
       ) {
-        setEdges(addEdge(connection, edges));
+        setEdges(addEdge({ ...connection, type: 'conditionEdge' }, edges));
       }
       // For Condition to Action connections using right handle
       else if (
@@ -89,7 +70,7 @@ const StrategyCanvas = () => {
         connection.sourceHandle?.endsWith("-right") &&
         targetNode?.type === NodeTypes.ACTION
       ) {
-        setEdges(addEdge(connection, edges));
+        setEdges(addEdge({ ...connection, type: 'actionEdge' }, edges));
       }
       // Reject other connections
       else {
@@ -160,8 +141,8 @@ const StrategyCanvas = () => {
                 minZoom={0.5} // Minimum zoom level
                 maxZoom={2} // Maximum zoom level
               >
-                <CustomControls />
                 <Background gap={12} size={1} />
+                <CustomControls />
               </ReactFlow>
             </ReactFlowProvider>
           </div>

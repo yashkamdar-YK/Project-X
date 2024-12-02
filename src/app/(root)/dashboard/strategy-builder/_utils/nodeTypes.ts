@@ -86,7 +86,7 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
       target: newNodeId,
       sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
       targetHandle: `${newNodeId}-top`,
-      type: "smoothstep",
+      type: "conditionEdge",
     });
   }
 
@@ -127,7 +127,7 @@ const handleDrop = (
       target: newNodeId,
       sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Add specific handle
       targetHandle: `${newNodeId}-top`, // Add specific handle
-      type: "smoothstep",
+      type: "conditionEdge",
     });
   }
 
