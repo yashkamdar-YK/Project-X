@@ -37,6 +37,8 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
   const isFirstConditionNode = nodeIndex === 0;
   const isLastConditionNode = nodeIndex === conditionNodes.length - 1;
 
+
+  //Delete Node
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
 

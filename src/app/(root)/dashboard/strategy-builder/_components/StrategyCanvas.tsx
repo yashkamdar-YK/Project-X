@@ -120,6 +120,7 @@ const StrategyCanvas = () => {
     [nodes, edges, setEdges, saveState]
   );
 
+
   // Handle node click
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
@@ -173,6 +174,41 @@ const StrategyCanvas = () => {
     };
   }, [undo, redo]);
 
+
+  // handle connection of node After delete from default way
+  const handleNodeDeletion = (nodesToDelete: Node[], allNodes: Node[], allEdges: Edge[], setNodes: Function, setEdges: Function) => {
+    let updatedEdges = [...allEdges];
+  
+    nodesToDelete.forEach((node) => {
+      const incomingEdge = allEdges.find((edge) => edge.target === node.id);
+      const outgoingEdge = allEdges.find((edge) => edge.source === node.id);
+  
+      // Remove edges connected to the deleted node
+      updatedEdges = updatedEdges.filter((edge) => edge.source !== node.id && edge.target !== node.id);
+  
+      // If the node has both incoming and outgoing edges, create a new edge connecting the gap
+      if (incomingEdge && outgoingEdge) {
+        const sourceNode = allNodes.find((n) => n.id === incomingEdge.source);
+        const sourceHandle = sourceNode?.type === "CONDITION" ? `${incomingEdge.source}-bottom` : undefined;
+  
+        updatedEdges.push({
+          id: `${incomingEdge.source}-${outgoingEdge.target}`,
+          source: incomingEdge.source,
+          target: outgoingEdge.target,
+          sourceHandle, // Maintain handle for conditions
+          targetHandle: outgoingEdge.targetHandle, // Preserve target handle
+          type: "smoothstep",
+        });
+      }
+    });
+  
+    // Remove nodes from the state
+    const remainingNodes = allNodes.filter((node) => !nodesToDelete.some((n) => n.id === node.id));
+    setNodes(remainingNodes);
+    setEdges(updatedEdges);
+  };
+  
+
   return (
     <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
       <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
@@ -193,6 +229,9 @@ const StrategyCanvas = () => {
               selectionOnDrag={true}
               minZoom={0.5}
               maxZoom={2}
+              onNodesDelete={(nodesToDelete) =>
+                handleNodeDeletion(nodesToDelete, nodes, edges, setNodes, setEdges)
+              }
             >
               <CustomControls />
               <Background gap={12} size={1} />
