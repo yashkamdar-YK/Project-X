@@ -169,7 +169,7 @@ const StrategyCanvas = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "z") {
         undo();
-      } else if (event.ctrlKey && event.shiftKey && event.key === "z") {
+      } else if ((event.ctrlKey && event.shiftKey && event.key === "Z") || (event.metaKey && event.shiftKey && event.key === "Z")) {
         redo();
       }
     };
