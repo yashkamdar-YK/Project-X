@@ -64,7 +64,8 @@ const ConditionEdge = ({
         source: newNodeId,
         target,
         sourceHandle: `${newNodeId}-bottom`,
-        targetHandle,
+        // targetHandle to top targat point 
+        targetHandle: targetHandle || `${target}-top`,
         type: 'conditionEdge',
       },
       ...updatedEdges,

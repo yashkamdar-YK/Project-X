@@ -110,8 +110,6 @@ export const STRATEGY_TEMPLATES = {
             comparison: "crossAbove",
           },
         },
-        // sourcePosition: Position.Bottom,
-        // targetPosition: Position.Top
       },
       {
         id: "buy-action",
@@ -140,8 +138,6 @@ export const STRATEGY_TEMPLATES = {
             comparison: "crossBelow",
           },
         },
-        // sourcePosition: Position.Bottom,
-        // targetPosition: Position.Top
       },
       {
         id: "sell-action",
@@ -173,19 +169,13 @@ export const STRATEGY_TEMPLATES = {
       {
         id: "entry-exit",
         source: "entry-condition",
+        // Addded to connect with bottom point
+        sourceHandle: "entry-condition-bottom",
         target: "exit-condition",
-        // sourceHandle: "bottom",
-        // targetHandle: "top",
-        type: "smoothstep",
+        // Added 
+        targetHandle: "exit-condition-top",
+        type: "conditionEdge",
       },
-      // {
-      //   id: "entry-condition-to-exit-condition", // New edge between condition nodes
-      //   source: "entry-condition", 
-      //   target: "exit-condition",
-      //   sourceHandle: "bottom",
-      //   targetHandle: "top",
-      //   type: "smoothstep",
-      // }
       {
         id: "exit-sell",
         source: "exit-condition",
@@ -194,6 +184,7 @@ export const STRATEGY_TEMPLATES = {
       },
     ],
   },
+
   RSI_STRATEGY: {
     name: "RSI Strategy",
     description: "RSI-based mean reversion strategy",
@@ -276,7 +267,11 @@ export const STRATEGY_TEMPLATES = {
       {
         id: "entry-exit",
         source: "oversold-condition",
+        // Addded
+        sourceHandle: "oversold-condition-bottom",
         target: "overbought-condition",
+        // Addded to connect with top point
+        targetHandle: "overbought-condition-top",
         type: "smoothstep",
       },
       {
