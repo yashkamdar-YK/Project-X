@@ -119,7 +119,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         {/* Control buttons */}
 
-        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3" > 
+        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100" > 
           {/* Delete button */}
           <button
             onClick={handleDelete}
@@ -132,7 +132,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
           {!isFirstConditionNode && (
             <button
               onClick={switchNodes('up')}
-              className="p-1.5 rounded-full text-white absolute bottom-0 left-1/2 -translate-x-1/2"
+              className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
@@ -143,7 +143,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
           {!isLastConditionNode && (
             <button
               onClick={switchNodes('down')}
-              className=" p-1.5 rounded-full text-white absolute top-0 left-1/2 -translate-x-1/2 "
+              className=" p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3 "
               // className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
             >
               <ChevronDown className="w-3.5 h-3.5" />
@@ -173,7 +173,9 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
               {data.label}
             </div>
           </div>
-          <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="grid place-content-between">
+          {/* <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" /> */}
+          </div>
         </div>
 
         {/* Right handle with icon */}
