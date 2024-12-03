@@ -12,7 +12,7 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined, edges: 
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
     const nodeWithSingleConnection = nodes.find((node) => {
-      if (node.type === NodeTypes.CONDITION) {
+      if (node.type === NodeTypes.CONDITION || node.type === NodeTypes.START) {
         const incomingEdge = edges.find((edge) => edge.target === node.id);
         const outgoingEdge = edges.find((edge) => edge.source === node.id);
         return incomingEdge && !outgoingEdge;
