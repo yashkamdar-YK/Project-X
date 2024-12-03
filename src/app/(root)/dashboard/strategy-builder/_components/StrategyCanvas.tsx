@@ -21,6 +21,9 @@ import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
 import ConditionEdge from "./canvas/ConditionEdge";
 import ActionEdge from "./canvas/ActionEdge";
 
+import { debounce } from "lodash";
+
+
 // Define node types mapping
 const nodeTypes = {
   [NodeTypes.START]: StartNode,
@@ -37,28 +40,60 @@ const StrategyCanvas = () => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   const { openSheet } = useSheetStore();
 
-  // Undo/Redo state management
-  const [history, setHistory] = useState([{ nodes, edges }]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Undo/Redo state management with debounce
+  const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
+
+  // initialize history with current state when component mount
+  useEffect(() => {
+    setHistory([{ nodes, edges }]);
+    setCurrentIndex(0);
+  }, []);
+
+  // Debounced state save function
+  const debouncedSaveState = useCallback(
+    debounce((newNodes: Node[], newEdges: Edge[]) => {
+      setHistory((prevHistory) => {
+        const newHistory = prevHistory.slice(
+          Math.max(0, prevHistory.length - 50),
+          currentIndex + 1
+        );
+        newHistory.push({ nodes: newNodes, edges: newEdges });
+        return newHistory;
+      });
+      setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, 49)); // Limit index
+    }, 50),
+    [currentIndex]
+  );
+
 
   // Function to save the current state
   const saveState = useCallback(
-    (newNodes: any, newEdges: any) => {
-      const newHistory = history.slice(0, currentIndex + 1); // Clear forward history
-      newHistory.push({ nodes: newNodes, edges: newEdges });
-      setHistory(newHistory);
-      setCurrentIndex(newHistory.length - 1);
+    (newNodes: Node[], newEdges: Edge[]) => {
+      // Only save state if nodes or edges have actually changed
+      if (
+        JSON.stringify(newNodes) !==
+          JSON.stringify(history[currentIndex]?.nodes) ||
+        JSON.stringify(newEdges) !==
+          JSON.stringify(history[currentIndex]?.edges)
+      ) {
+        debouncedSaveState(newNodes, newEdges);
+      }
     },
-    [history, currentIndex]
+    [debouncedSaveState, history, currentIndex]
   );
 
   // Undo functionality
   const undo = useCallback(() => {
-    if (currentIndex > 0) {
+    if (currentIndex > 0 && history.length > 0) {
       const previousState = history[currentIndex - 1];
-      setNodes(previousState.nodes);
-      setEdges(previousState.edges);
-      setCurrentIndex(currentIndex - 1);
+      if (previousState) {
+        setNodes(previousState.nodes || []);
+        setEdges(previousState.edges || []);
+        setCurrentIndex((prevIndex) => prevIndex - 1);
+      } else {
+        console.warn("no previous state found in history");
+      }
     }
   }, [currentIndex, history, setNodes, setEdges]);
 
@@ -66,9 +101,14 @@ const StrategyCanvas = () => {
   const redo = useCallback(() => {
     if (currentIndex < history.length - 1) {
       const nextState = history[currentIndex + 1];
-      setNodes(nextState.nodes);
-      setEdges(nextState.edges);
-      setCurrentIndex(currentIndex + 1);
+      // Add null checks and provide fallback
+      if (nextState) {
+        setNodes(nextState.nodes || []);
+        setEdges(nextState.edges || []);
+        setCurrentIndex((prevIndex) => prevIndex + 1);
+      } else {
+        console.warn("no next state found in history");
+      }
     }
   }, [currentIndex, history, setNodes, setEdges]);
 
@@ -91,6 +131,7 @@ const StrategyCanvas = () => {
     },
     [nodes, edges, setEdges, saveState]
   );
+
 
   const onConnect = useCallback(
   (connection: Connection) => {
@@ -249,3 +290,5 @@ const StrategyCanvas = () => {
 };
 
 export default StrategyCanvas;
+
+
