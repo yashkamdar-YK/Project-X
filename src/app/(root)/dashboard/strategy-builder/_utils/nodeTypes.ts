@@ -88,6 +88,14 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
       targetHandle: `${newNodeId}-top`,
       type: "conditionEdge",
     });
+  } else if (item.type === NodeTypes.CONDITION) {
+    // Connect to start node if no condition nodes exist
+    newEdges.push({
+      id: `start-${newNodeId}`,
+      source: "start",
+      target: newNodeId,
+      type: "conditionEdge",
+    });
   }
 
   return { newNode, newEdges };
