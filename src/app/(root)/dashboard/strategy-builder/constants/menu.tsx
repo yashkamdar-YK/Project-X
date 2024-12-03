@@ -80,7 +80,7 @@ export const INITIAL_EDGES: Edge[] = [
     id: "start-entry",
     source: "start",
     target: "initial-entry",
-    type: "conditionEdge",
+    type: "smoothstep",
   },
 ];
 
@@ -110,8 +110,6 @@ export const STRATEGY_TEMPLATES = {
             comparison: "crossAbove",
           },
         },
-        // sourcePosition: Position.Bottom,
-        // targetPosition: Position.Top
       },
       {
         id: "buy-action",
@@ -140,8 +138,6 @@ export const STRATEGY_TEMPLATES = {
             comparison: "crossBelow",
           },
         },
-        // sourcePosition: Position.Bottom,
-        // targetPosition: Position.Top
       },
       {
         id: "sell-action",
@@ -162,38 +158,33 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "entry-condition",
-        type: "conditionEdge",
+        type: "smoothstep",
       },
       {
         id: "entry-buy",
         source: "entry-condition",
         target: "buy-action",
-        type: "actionEdge",
+        type: "smoothstep",
       },
       {
         id: "entry-exit",
         source: "entry-condition",
+        // Addded to connect with bottom point
+        sourceHandle: "entry-condition-bottom",
         target: "exit-condition",
-        // sourceHandle: "bottom",
-        // targetHandle: "top",
+        // Added 
+        targetHandle: "exit-condition-top",
         type: "conditionEdge",
       },
-      // {
-      //   id: "entry-condition-to-exit-condition", // New edge between condition nodes
-      //   source: "entry-condition", 
-      //   target: "exit-condition",
-      //   sourceHandle: "bottom",
-      //   targetHandle: "top",
-      //   type: "conditionEdge",
-      // }
       {
         id: "exit-sell",
         source: "exit-condition",
         target: "sell-action",
-        type: "actionEdge",
+        type: "smoothstep",
       },
     ],
   },
+
   RSI_STRATEGY: {
     name: "RSI Strategy",
     description: "RSI-based mean reversion strategy",
@@ -265,25 +256,29 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "oversold-condition",
-        type: "conditionEdge",
+        type: "smoothstep",
       },
       {
         id: "entry-buy",
         source: "oversold-condition",
         target: "buy-action",
-        type: "actionEdge",
+        type: "smoothstep",
       },
       {
         id: "entry-exit",
         source: "oversold-condition",
+        // Addded
+        sourceHandle: "oversold-condition-bottom",
         target: "overbought-condition",
-        type: "conditionEdge",
+        // Addded to connect with top point
+        targetHandle: "overbought-condition-top",
+        type: "smoothstep",
       },
       {
         id: "exit-sell",
         source: "overbought-condition",
         target: "sell-action",
-        type: "actionEdge",
+        type: "smoothstep",
       },
     ],
   },
