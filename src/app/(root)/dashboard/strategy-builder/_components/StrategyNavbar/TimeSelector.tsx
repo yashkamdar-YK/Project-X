@@ -51,30 +51,39 @@ const TimePicker = () => {
       .map(option => option.value)
       .sort(sortTimeValues);
     
-    const nonStarred = timeOptions
-      .filter(option => !option.isStarred)
-      .map(option => option.value)
-      .sort(sortTimeValues);
-    
-    const quickOpts = starred.length >= 4 
-      ? starred.slice(0, 4) 
-      : [...starred, ...nonStarred].slice(0, 4);
-    
-    setQuickOptions(quickOpts);
+    setQuickOptions(starred.slice(0, 10));
   };
 
   const toggleStar = (timeValue: string) => {
-    setTimeOptions(prevOptions =>
-      prevOptions.map(option =>
+    setTimeOptions(prevOptions => {
+      const updatedOptions = prevOptions.map(option =>
         option.value === timeValue
           ? { ...option, isStarred: !option.isStarred }
           : option
-      )
-    );
+      );
+      
+      const starredCount = updatedOptions.filter(option => option.isStarred).length;
+      
+      if (starredCount < 4) {
+        // If less than 4 starred options, star the first unstarred options
+        const optionsToStar = updatedOptions
+          .filter(option => !option.isStarred)
+          .slice(0, 4 - starredCount);
+        
+        optionsToStar.forEach(option => {
+          option.isStarred = true;
+        });
+      }
+      
+      return updatedOptions;
+    });
   };
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
+    if (!timeOptions.find(option => option.value === time)?.isStarred) {
+      toggleStar(time);
+    }
     setIsOpen(false);
   };
 
