@@ -274,6 +274,11 @@ const StrategyCanvas = () => {
               panOnScroll={true}
               selectionOnDrag={true}
               minZoom={0.5}
+              fitView
+              fitViewOptions={{
+                minZoom: 1,
+                padding: 20,
+              }}
               maxZoom={2}
               onNodesDelete={(nodesToDelete) =>
                 handleNodeDeletion(nodesToDelete, nodes, edges, setNodes, setEdges)

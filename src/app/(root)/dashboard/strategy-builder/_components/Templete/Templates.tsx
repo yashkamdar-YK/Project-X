@@ -66,6 +66,7 @@ export const TemplateSelector = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [selectedTemplate, setSelectedTemplate] = React.useState<TemplateKey | null>(null);
   const { setNodes, setEdges } = useNodeStore();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const handleTemplateSelect = (templateKey: TemplateKey) => {
     setSelectedTemplate(templateKey);
@@ -78,12 +79,13 @@ export const TemplateSelector = () => {
         setNodes(template.nodes);
         setEdges(template.edges);
         setIsOpen(false);
+        setDialogOpen(false);
     }
   };
 
   return (
     <>
-      <Dialog>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} >
         <DialogTrigger asChild>
           <Button variant="outline" className="dark:bg-gray-900">
             <LayoutPanelTop size={14} className="mr-2" />
