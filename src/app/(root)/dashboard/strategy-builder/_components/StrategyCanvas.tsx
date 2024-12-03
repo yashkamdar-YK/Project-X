@@ -62,7 +62,7 @@ const StrategyCanvas = () => {
         return newHistory;
       });
       setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, 49)); // Limit index
-    }, 50),
+    }, 150),
     [currentIndex]
   );
 
@@ -243,7 +243,7 @@ const StrategyCanvas = () => {
           target: outgoingEdge.target,
           sourceHandle, // Maintain handle for conditions
           targetHandle: outgoingEdge.targetHandle, // Preserve target handle
-          type: "smoothstep",
+          type: "conditionEdge",
         });
       }
     });

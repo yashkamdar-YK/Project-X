@@ -80,7 +80,7 @@ export const INITIAL_EDGES: Edge[] = [
     id: "start-entry",
     source: "start",
     target: "initial-entry",
-    type: "smoothstep",
+    type: "conditionEdge",
   },
 ];
 
@@ -162,13 +162,13 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "entry-condition",
-        type: "smoothstep",
+        type: "conditionEdge",
       },
       {
         id: "entry-buy",
         source: "entry-condition",
         target: "buy-action",
-        type: "smoothstep",
+        type: "actionEdge",
       },
       {
         id: "entry-exit",
@@ -176,7 +176,7 @@ export const STRATEGY_TEMPLATES = {
         target: "exit-condition",
         // sourceHandle: "bottom",
         // targetHandle: "top",
-        type: "smoothstep",
+        type: "conditionEdge",
       },
       // {
       //   id: "entry-condition-to-exit-condition", // New edge between condition nodes
@@ -184,13 +184,13 @@ export const STRATEGY_TEMPLATES = {
       //   target: "exit-condition",
       //   sourceHandle: "bottom",
       //   targetHandle: "top",
-      //   type: "smoothstep",
+      //   type: "conditionEdge",
       // }
       {
         id: "exit-sell",
         source: "exit-condition",
         target: "sell-action",
-        type: "smoothstep",
+        type: "actionEdge",
       },
     ],
   },
@@ -265,25 +265,25 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "oversold-condition",
-        type: "smoothstep",
+        type: "conditionEdge",
       },
       {
         id: "entry-buy",
         source: "oversold-condition",
         target: "buy-action",
-        type: "smoothstep",
+        type: "actionEdge",
       },
       {
         id: "entry-exit",
         source: "oversold-condition",
         target: "overbought-condition",
-        type: "smoothstep",
+        type: "conditionEdge",
       },
       {
         id: "exit-sell",
         source: "overbought-condition",
         target: "sell-action",
-        type: "smoothstep",
+        type: "actionEdge",
       },
     ],
   },
