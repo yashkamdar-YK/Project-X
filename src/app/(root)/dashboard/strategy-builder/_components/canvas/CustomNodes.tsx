@@ -79,11 +79,11 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
     const switchNode = conditionNodes[switchIndex];
     
     if (!switchNode) return;
-
+  
     // Store positions
     const currentPos = { ...currentNode.position };
     const switchPos = { ...switchNode.position };
-
+  
     // Update nodes with switched positions
     const updatedNodes = nodes.map(node => {
       if (node.id === currentNode.id) {
@@ -94,22 +94,51 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
       }
       return node;
     });
-
-    // Update edges to maintain connections
+  
+    // Carefully update edges to maintain connections
     const updatedEdges = edges.map(edge => {
+      // Find incoming and outgoing edges for current and switch nodes
+      const currentIncomingEdge = edges.find(e => e.target === currentNode.id);
+      const currentOutgoingEdge = edges.find(e => e.source === currentNode.id);
+      const switchIncomingEdge = edges.find(e => e.target === switchNode.id);
+      const switchOutgoingEdge = edges.find(e => e.source === switchNode.id);
+  
+      // Create a new edge object, modifying source and target as needed
       let newEdge = { ...edge };
-      
+  
       // Update source connections
-      if (edge.source === currentNode.id) newEdge.source = switchNode.id;
-      else if (edge.source === switchNode.id) newEdge.source = currentNode.id;
-      
+      if (edge.source === currentNode.id) {
+        newEdge.source = switchNode.id;
+        // Preserve source handle if it exists
+        if (edge.sourceHandle) {
+          newEdge.sourceHandle = edge.sourceHandle.replace(currentNode.id, switchNode.id);
+        }
+      } else if (edge.source === switchNode.id) {
+        newEdge.source = currentNode.id;
+        // Preserve source handle if it exists
+        if (edge.sourceHandle) {
+          newEdge.sourceHandle = edge.sourceHandle.replace(switchNode.id, currentNode.id);
+        }
+      }
+  
       // Update target connections
-      if (edge.target === currentNode.id) newEdge.target = switchNode.id;
-      else if (edge.target === switchNode.id) newEdge.target = currentNode.id;
-      
+      if (edge.target === currentNode.id) {
+        newEdge.target = switchNode.id;
+        // Preserve target handle if it exists
+        if (edge.targetHandle) {
+          newEdge.targetHandle = edge.targetHandle.replace(currentNode.id, switchNode.id);
+        }
+      } else if (edge.target === switchNode.id) {
+        newEdge.target = currentNode.id;
+        // Preserve target handle if it exists
+        if (edge.targetHandle) {
+          newEdge.targetHandle = edge.targetHandle.replace(switchNode.id, currentNode.id);
+        }
+      }
+  
       return newEdge;
     });
-
+  
     setNodes(updatedNodes);
     setEdges(updatedEdges);
   };
