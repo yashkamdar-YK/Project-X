@@ -12,7 +12,7 @@ const getNodePosition = (nodes: Node[], newNodeType: string | undefined, edges: 
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
     const nodeWithSingleConnection = nodes.find((node) => {
-      if (node.type === NodeTypes.CONDITION) {
+      if (node.type === NodeTypes.CONDITION || node.type === NodeTypes.START) {
         const incomingEdge = edges.find((edge) => edge.target === node.id);
         const outgoingEdge = edges.find((edge) => edge.source === node.id);
         return incomingEdge && !outgoingEdge;
@@ -86,6 +86,14 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
       target: newNodeId,
       sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
       targetHandle: `${newNodeId}-top`,
+      type: "conditionEdge",
+    });
+  } else if (item.type === NodeTypes.CONDITION) {
+    // Connect to start node if no condition nodes exist
+    newEdges.push({
+      id: `start-${newNodeId}`,
+      source: "start",
+      target: newNodeId,
       type: "conditionEdge",
     });
   }
