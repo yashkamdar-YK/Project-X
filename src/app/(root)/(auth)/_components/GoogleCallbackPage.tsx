@@ -9,11 +9,13 @@ export const GoogleCallbackPage: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const code = searchParams.get('code');
 
   const callbackMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const response = await fetch(`/api/auth/google/callback?code=${code}`);
+    mutationFn: async (params: URLSearchParams) => {
+      // Construct the query string from the search parameters
+      const queryString = params.toString();
+      
+      const response = await fetch(`/api/auth/google/callback?${queryString}`);
       if (response.ok) {
         const data = await response.json();
         return data;
@@ -36,11 +38,15 @@ export const GoogleCallbackPage: React.FC = () => {
       });
       // router.push('/login');
     }
-  })
+  });
+
   // Handle callback on component mount
   useEffect(() => {
-    if (code && typeof code === 'string') {
-      callbackMutation.mutate(code);
+    const code = searchParams.get('code');
+
+    if (code) {
+      // Pass all the search params to the mutation
+      callbackMutation.mutate(searchParams);
     } else {
       toast({
         variant: 'destructive',
@@ -49,7 +55,7 @@ export const GoogleCallbackPage: React.FC = () => {
       });
       // router.push('/login');
     }
-  }, [code]);
+  }, [searchParams]);
 
   // Render loading state
   return (
