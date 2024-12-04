@@ -16,15 +16,16 @@ interface GoogleAuthCallbackResponse {
   message: string;
   data: {
     access_token: string;
-    token_type: string;
-    user: {
-      id: string;
-      email: string;
-      name: string;
-      picture?: string;
-    };
   };
 }
+// {
+//   "status": true,
+//   "error": false,
+//   "message": "Access Token Generated.",
+//   "data": {
+//       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjRGNjM4NiIsInVzZXJ0eXBlIjoiZnJlZSIsImFjY2VzcyI6IndlYiIsImVtYWlsIjoiYW5raXQwcGFuY2hhbEBnbWFpbC5jb20iLCJrZXkiOiIiLCJuYW1lIjoiQW5raXQiLCJleHAiOjE3MzM0ODAzMDF9.OwG2P7ueKmmfRzIGxgMnQu5l17JJqVWq2bSWHF74WNI"
+//   }
+// }
 
 interface UserProfileResponse {
   status: boolean;

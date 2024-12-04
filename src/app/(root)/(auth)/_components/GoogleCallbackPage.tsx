@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../login/_actions';
+import {setCookie} from 'cookies-next'
 
 export const GoogleCallbackPage: React.FC = () => {
   const router = useRouter();
@@ -18,7 +19,9 @@ export const GoogleCallbackPage: React.FC = () => {
     onSuccess: (data) => {
       toast({
         title: 'Authentication Successful',
-        description: `Welcome, ${data.user.name}!`,
+      });
+      setCookie('token', data.access_token, {
+        maxAge: 60 * 60 * 24 * 2, //48 hours
       });
       router.push('/dashboard');
     },
@@ -28,14 +31,13 @@ export const GoogleCallbackPage: React.FC = () => {
         title: 'Authentication Failed',
         description: error.message || 'Unable to complete authentication',
       });
-      // router.push('/login');
     }
   });
 
   // Handle callback on component mount
   useEffect(() => {
     const code = searchParams.get('code');
-console.log("searchParams", searchParams.toString())
+
     if (code) {
       // Pass all the search params to the mutation
       callbackMutation.mutate(searchParams);
