@@ -49,9 +49,9 @@ export const authService = {
   },
 
   // Handle Google Callback
-  handleGoogleCallback: async (code: string) => {
+  handleGoogleCallback: async (queryString: string) => {
     try {
-      const response = await get<GoogleAuthCallbackResponse>(`/v1/auth/google/callback?code=${code}`);
+      const response = await get<GoogleAuthCallbackResponse>(`/v1/auth/google/callback?${queryString}`);
       
       if (response.data.status) {
         // Store the access token in localStorage

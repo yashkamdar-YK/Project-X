@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
+import { authService } from '../login/_actions';
 
 export const GoogleCallbackPage: React.FC = () => {
   const router = useRouter();
@@ -12,16 +13,7 @@ export const GoogleCallbackPage: React.FC = () => {
 
   const callbackMutation = useMutation({
     mutationFn: async (params: URLSearchParams) => {
-      // Construct the query string from the search parameters
-      const queryString = params.toString();
-      
-      const response = await fetch(`/api/auth/google/callback?${queryString}`);
-      if (response.ok) {
-        const data = await response.json();
-        return data;
-      } else {
-        throw new Error('Failed to authenticate');
-      }
+      return authService.handleGoogleCallback(params.toString());
     },
     onSuccess: (data) => {
       toast({
@@ -43,7 +35,7 @@ export const GoogleCallbackPage: React.FC = () => {
   // Handle callback on component mount
   useEffect(() => {
     const code = searchParams.get('code');
-
+console.log("searchParams", searchParams.toString())
     if (code) {
       // Pass all the search params to the mutation
       callbackMutation.mutate(searchParams);
