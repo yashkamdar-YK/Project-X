@@ -7,8 +7,9 @@ import SettingSheet from './_components/StrategyNavbar/SettingSheet/SettingSheet
 import { useSheetStore } from '@/lib/store/SheetStore';
 import CustomSheet from '@/components/shared/custom-sheet';
 import NodeSheet from './_components/StrategyNavbar/NodeSheet';
+import { withAuth } from '@/components/shared/hoc/withAuth';
 
-export default function StrategyBuilder() {
+function StrategyBuilder() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Strategy Navbar */}
@@ -45,3 +46,5 @@ export default function StrategyBuilder() {
     </div>
   );
 }
+
+export default withAuth(StrategyBuilder);
