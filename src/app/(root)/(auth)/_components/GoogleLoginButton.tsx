@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { authService } from '../signin/_actions'
+import { authService } from '../login/_actions'
 
 export const GoogleLoginButton: React.FC = () => {
   const { toast } = useToast()
