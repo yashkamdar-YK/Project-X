@@ -15,7 +15,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { StartNode, ConditionNode, ActionNode } from "./canvas/CustomNodes";
 import CustomControls from "./canvas/customeControl";
-import { useSheetStore } from "@/lib/store/SheetStore"; 
+import { useSheetStore } from "@/lib/store/SheetStore";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
 import ConditionEdge from "./canvas/ConditionEdge";
@@ -25,10 +25,9 @@ import { debounce } from "lodash";
 import { createContext, useContext } from "react";
 
 // Create a context for deletion
-const CanvasContext = createContext<{ deleteNode: (id: string) => void } | null>(
-  null
-);
-
+const CanvasContext = createContext<{
+  deleteNode: (id: string) => void;
+} | null>(null);
 
 // Define node types mapping
 const nodeTypes = {
@@ -46,43 +45,59 @@ const StrategyCanvas = () => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   const { openSheet } = useSheetStore();
 
-  // Undo/Redo state management with debounce
-  const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>(
-    []
-  );
-  const [currentIndex, setCurrentIndex] = useState(-1);
+  // State for history and current index
+  const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>([
+    { nodes: [], edges: [] },
+  ]);
 
-  // initialize history with current state when component mount
-  useEffect(() => {
-    setHistory([{ nodes, edges }]);
-    setCurrentIndex(0);
-  }, []);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Debounced state save function
   const debouncedSaveState = useCallback(
     debounce((newNodes: Node[], newEdges: Edge[]) => {
       setHistory((prevHistory) => {
-        const newHistory = prevHistory.slice(
-          Math.max(0, prevHistory.length - 50),
-          currentIndex + 1
-        );
-        newHistory.push({ nodes: newNodes, edges: newEdges });
-        return newHistory;
+        // Trim history to current index
+        const trimmedHistory = prevHistory.slice(0, currentIndex + 1);
+
+        // Check if the new state is different from the last state
+        const lastState = trimmedHistory[trimmedHistory.length - 1];
+        const isNewStateDifferent =
+          !lastState ||
+          JSON.stringify(newNodes) !== JSON.stringify(lastState.nodes) ||
+          JSON.stringify(newEdges) !== JSON.stringify(lastState.edges);
+
+        // Only add new state if it's meaningfully different
+        if (isNewStateDifferent) {
+          const newHistory = [
+            ...trimmedHistory,
+            { nodes: newNodes, edges: newEdges },
+          ];
+
+          // Limit history to last 50 states
+          return newHistory.slice(-50);
+        }
+
+        return trimmedHistory;
       });
-      setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, 49)); // Limit index
-    }, 150),
+
+      // Update current index
+      setCurrentIndex((prevIndex) => {
+        const newIndex = Math.min(prevIndex + 1, 49);
+        return newIndex;
+      });
+    }, 150), // 150ms debounce time
     [currentIndex]
   );
 
   // Function to save the current state
   const saveState = useCallback(
     (newNodes: Node[], newEdges: Edge[]) => {
-      // Only save state if nodes or edges have actually changed
+      // Only trigger debounced save if state has changed
+      const lastState = history[currentIndex];
       if (
-        JSON.stringify(newNodes) !==
-          JSON.stringify(history[currentIndex]?.nodes) ||
-        JSON.stringify(newEdges) !==
-          JSON.stringify(history[currentIndex]?.edges)
+        !lastState ||
+        JSON.stringify(newNodes) !== JSON.stringify(lastState.nodes) ||
+        JSON.stringify(newEdges) !== JSON.stringify(lastState.edges)
       ) {
         debouncedSaveState(newNodes, newEdges);
       }
@@ -92,32 +107,39 @@ const StrategyCanvas = () => {
 
   // Undo functionality
   const undo = useCallback(() => {
-    if (currentIndex > 0 && history.length > 0) {
-      const previousState = history[currentIndex - 1];
-      if (previousState) {
-        setNodes(previousState.nodes || []);
-        setEdges(previousState.edges || []);
-        setCurrentIndex((prevIndex) => prevIndex - 1);
-      } else {
-        console.warn("no previous state found in history");
+    if (currentIndex > 0) {
+      const previousIndex = currentIndex - 1;
+      const previousState = history[previousIndex];
+
+      // Ensure at least the start node always exists
+      const startNode = previousState.nodes.find((node) => node.id === "start");
+      if (!startNode) {
+        // If no start node, keep the current state
+        return;
       }
+
+      setNodes(previousState.nodes);
+      setEdges(previousState.edges);
+      setCurrentIndex(previousIndex);
     }
   }, [currentIndex, history, setNodes, setEdges]);
 
   // Redo functionality
   const redo = useCallback(() => {
     if (currentIndex < history.length - 1) {
-      const nextState = history[currentIndex + 1];
-      // Add null checks and provide fallback
-      if (nextState) {
-        setNodes(nextState.nodes || []);
-        setEdges(nextState.edges || []);
-        setCurrentIndex((prevIndex) => prevIndex + 1);
-      } else {
-        console.warn("no next state found in history");
-      }
+      const nextIndex = currentIndex + 1;
+      const nextState = history[nextIndex];
+
+      setNodes(nextState.nodes);
+      setEdges(nextState.edges);
+      setCurrentIndex(nextIndex);
     }
   }, [currentIndex, history, setNodes, setEdges]);
+
+  // Automatically save state when nodes or edges change
+  useEffect(() => {
+    saveState(nodes, edges);
+  }, [nodes, edges, saveState]);
 
   // Handle nodes changes
   const onNodesChange = useCallback(
@@ -138,7 +160,6 @@ const StrategyCanvas = () => {
     },
     [nodes, edges, setEdges, saveState]
   );
-  
 
   //On connection Function
   const onConnect = useCallback(
@@ -197,7 +218,6 @@ const StrategyCanvas = () => {
     [nodes, edges, setEdges, saveState]
   );
 
-
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation();
@@ -238,22 +258,26 @@ const StrategyCanvas = () => {
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === "z") {
+      // Undo (Ctrl+Z or Cmd+Z)
+      if ((event.ctrlKey || event.metaKey) && event.key === "z") {
+        event.preventDefault();
         undo();
-      } else if (
+      }
+      // Redo (Ctrl+Shift+Z or Cmd+Shift+Z or Ctrl+Y)
+      else if (
         (event.ctrlKey && event.shiftKey && event.key === "Z") ||
-        (event.metaKey && event.shiftKey && event.key === "Z")
+        (event.ctrlKey && event.shiftKey && event.key === "z")
       ) {
+        event.preventDefault();
         redo();
       }
     };
+
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [undo, redo]);
-
-  
 
   // Add this helper function to handle reconnecting Start node
   const handleStartNodeReconnection = (
@@ -365,7 +389,7 @@ const StrategyCanvas = () => {
     setNodes(remainingNodes);
     setEdges(finalEdges);
   };
- 
+
   //Export Function
   const deleteNode = (id: string) => {
     const nodeToDelete = nodes.find((node) => node.id === id);
@@ -379,37 +403,37 @@ const StrategyCanvas = () => {
       <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
         <div className="absolute inset-0 dark:text-black">
           {/* Wrap deleteNode in React Provider */}
-        <CanvasContext.Provider value={{ deleteNode }}>
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              panOnScroll={true}
-              selectionOnDrag={true}
-              minZoom={0.5}
-              maxZoom={2}
-              onNodesDelete={(nodesToDelete) =>
-                handleNodeDeletion(
-                  nodesToDelete,
-                  nodes,
-                  edges,
-                  setNodes,
-                  setEdges
-                )
-              }
-            >
-              <CustomControls onUndo={undo} onRedo={redo} />
-              <Background gap={12} size={1} />
-            </ReactFlow>
-          </ReactFlowProvider>
+          <CanvasContext.Provider value={{ deleteNode }}>
+            <ReactFlowProvider>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onNodeClick={onNodeClick}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
+                panOnScroll={true}
+                selectionOnDrag={true}
+                minZoom={0.5}
+                maxZoom={2}
+                onNodesDelete={(nodesToDelete) =>
+                  handleNodeDeletion(
+                    nodesToDelete,
+                    nodes,
+                    edges,
+                    setNodes,
+                    setEdges
+                  )
+                }
+              >
+                <CustomControls onUndo={undo} onRedo={redo} />
+                <Background gap={12} size={1} />
+              </ReactFlow>
+            </ReactFlowProvider>
           </CanvasContext.Provider>
         </div>
       </div>
