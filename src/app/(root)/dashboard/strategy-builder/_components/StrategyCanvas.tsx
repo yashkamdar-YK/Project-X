@@ -52,6 +52,9 @@ const StrategyCanvas = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // For knowing node for delete based on id
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
   // Debounced state save function
   const debouncedSaveState = useCallback(
     debounce((newNodes: Node[], newEdges: Edge[]) => {
@@ -218,9 +221,11 @@ const StrategyCanvas = () => {
     [nodes, edges, setEdges, saveState]
   );
 
+  // OnNodeClick Function
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation();
+      setSelectedNodeId(node.id); // Set the selected node ID
       openSheet("node", node);
     },
     [openSheet]
@@ -259,7 +264,7 @@ const StrategyCanvas = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Undo (Ctrl+Z or Cmd+Z)
-      if ((event.ctrlKey || event.metaKey) && event.key === "z") {
+      if (event.ctrlKey && event.key === "z") {
         event.preventDefault();
         undo();
       }
@@ -278,6 +283,22 @@ const StrategyCanvas = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [undo, redo]);
+
+  // Handle keydown for delete functionality
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check for Delete key
+      if (event.key === "Delete" && selectedNodeId) {
+        deleteNode(selectedNodeId); // Call delete function for the selected node
+        setSelectedNodeId(null); // Reset selected node
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedNodeId]);
 
   // Add this helper function to handle reconnecting Start node
   const handleStartNodeReconnection = (
