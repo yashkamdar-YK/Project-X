@@ -4,6 +4,8 @@ import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown
 import { cn } from '@/lib/utils';
 import { useNodeStore } from '@/lib/store/nodeStore';
 import CustomHandle from './CustomHandle';
+import {useCanvasContext}  from "../StrategyCanvas"; 
+
 
 
 export const StartNode = () => {
@@ -22,6 +24,11 @@ export const StartNode = () => {
 };
 
 export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
+
+  //get handleDeleteNode function from StrategyCanvas
+  const { deleteNode } = useCanvasContext() || {};
+
+
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   
   const conditionNodes = React.useMemo(() => {
@@ -39,34 +46,41 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
 
 
   //Delete Node
+  // const handleDelete = (event: React.MouseEvent) => {
+  //   event.stopPropagation();
+
+  //   // Find incoming and outgoing edges for the node being deleted
+  //   const incomingEdge = edges.find(edge => edge.target === id);
+  //   const outgoingEdge = edges.find(edge => edge.source === id);
+
+  //   let updatedEdges = edges.filter(edge => edge.source !== id && edge.target !== id);
+
+  //   // If node had both incoming and outgoing connections, create a new edge to bridge the gap
+  //   if (incomingEdge && outgoingEdge) {
+  //     // Get source node type to determine correct handle
+  //     const sourceNode = nodes.find(node => node.id === incomingEdge.source);
+  //     const sourceHandle = sourceNode?.type === 'CONDITION' ? `${incomingEdge.source}-bottom` : undefined;
+      
+  //     const newEdge = {
+  //       id: `${incomingEdge.source}-${outgoingEdge.target}`,
+  //       source: incomingEdge.source,
+  //       target: outgoingEdge.target,
+  //       sourceHandle, // Use bottom handle for condition nodes
+  //       targetHandle: outgoingEdge.targetHandle, // Preserve target handle
+  //       type: 'conditionEdge'
+  //     };
+  //     updatedEdges = [...updatedEdges, newEdge];
+  //   }
+
+  //   setEdges(updatedEdges);
+  //   setNodes(nodes.filter(node => node.id !== id));
+  // };
+
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-
-    // Find incoming and outgoing edges for the node being deleted
-    const incomingEdge = edges.find(edge => edge.target === id);
-    const outgoingEdge = edges.find(edge => edge.source === id);
-
-    let updatedEdges = edges.filter(edge => edge.source !== id && edge.target !== id);
-
-    // If node had both incoming and outgoing connections, create a new edge to bridge the gap
-    if (incomingEdge && outgoingEdge) {
-      // Get source node type to determine correct handle
-      const sourceNode = nodes.find(node => node.id === incomingEdge.source);
-      const sourceHandle = sourceNode?.type === 'CONDITION' ? `${incomingEdge.source}-bottom` : undefined;
-      
-      const newEdge = {
-        id: `${incomingEdge.source}-${outgoingEdge.target}`,
-        source: incomingEdge.source,
-        target: outgoingEdge.target,
-        sourceHandle, // Use bottom handle for condition nodes
-        targetHandle: outgoingEdge.targetHandle, // Preserve target handle
-        type: 'conditionEdge'
-      };
-      updatedEdges = [...updatedEdges, newEdge];
+    if (deleteNode) {
+      deleteNode(id);
     }
-
-    setEdges(updatedEdges);
-    setNodes(nodes.filter(node => node.id !== id));
   };
 
 

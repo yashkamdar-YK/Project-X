@@ -1,4 +1,5 @@
 import { Edge, Node, Position } from "@xyflow/react";
+import { log } from "console";
 
 export const NodeTypes = {
   CONDITION: "CONDITION",
@@ -7,7 +8,11 @@ export const NodeTypes = {
 };
 
 // Helper functions for node positioning
-const getNodePosition = (nodes: Node[], newNodeType: string | undefined, edges: Edge[]) => {
+const getNodePosition = (
+  nodes: Node[],
+  newNodeType: string | undefined,
+  edges: Edge[]
+) => {
   // For condition nodes
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
@@ -67,7 +72,7 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
     position,
     data: { label: item.data.label },
     sourcePosition: Position.Bottom,
-    targetPosition: Position.Top
+    targetPosition: Position.Top,
   };
 
   let newEdges = [...edges];
@@ -101,6 +106,7 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   return { newNode, newEdges };
 };
 
+
 const handleDrop = (
   event: React.DragEvent,
   nodes: Node[],
@@ -116,7 +122,7 @@ const handleDrop = (
     position,
     data: { label: item.data.label },
     sourcePosition: Position.Bottom, // Add default positions
-    targetPosition: Position.Top
+    targetPosition: Position.Top,
   };
 
   let newEdges = [...edges];
@@ -141,5 +147,75 @@ const handleDrop = (
 
   return { newNode, newEdges };
 };
+
+// const handleDrop = (
+//   event: React.DragEvent,
+//   nodes: Node[],
+//   edges: Edge[],
+//   item: Node,
+//   bounds: DOMRect
+// ) => {
+//   const position = getNodePosition(nodes, item.type, edges);
+//   const newNodeId = `node-${Date.now()}`;  // Use timestamp to ensure unique ID
+//   const newNode = {
+//     id: newNodeId,
+//     type: item.type,
+//     position,
+//     data: { label: item.data.label },
+//     sourcePosition: Position.Bottom,
+//     targetPosition: Position.Top
+//   };
+
+//   let newEdges = [...edges];
+
+//   // Find the most recently added node without an outgoing connection
+//   const nodeWithSingleConnection = nodes.find((node) => {
+//     const incomingEdge = edges.find((edge) => edge.target === node.id);
+//     const outgoingEdge = edges.find((edge) => edge.source === node.id);
+//     return incomingEdge && !outgoingEdge;
+//   });
+
+//   // Connect Condition nodes
+//   if (item.type === NodeTypes.CONDITION) {
+//     if (nodeWithSingleConnection) {
+//       // If a node with a single connection exists, connect to it
+//       newEdges.push({
+//         id: `${nodeWithSingleConnection.id}-${newNodeId}`,
+//         source: nodeWithSingleConnection.id,
+//         target: newNodeId,
+//         sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
+//         targetHandle: `${newNodeId}-top`,
+//         type: "conditionEdge",
+//       });
+//     } else {
+//       // If no existing nodes, connect to start node
+//       newEdges.push({
+//         id: `start-${newNodeId}`,
+//         source: "start",
+//         target: newNodeId,
+//         type: "smoothstep",
+//       });
+//     }
+//   }
+
+//   // Connect Action nodes
+//   if (item.type === NodeTypes.ACTION) {
+//     const latestConditionNode = nodes
+//       .filter(node => node.type === NodeTypes.CONDITION)
+//       .sort((a, b) => b.position.y - a.position.y)[0];
+
+//     if (latestConditionNode) {
+//       newEdges.push({
+//         id: `${latestConditionNode.id}-${newNodeId}`,
+//         source: latestConditionNode.id,
+//         target: newNodeId,
+//         sourceHandle: `${latestConditionNode.id}-right`,
+//         type: "actionEdge",
+//       });
+//     }
+//   }
+
+//   return { newNode, newEdges };
+// };
 
 export { getNodePosition, handleAddNode, handleDrop };
