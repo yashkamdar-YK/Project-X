@@ -2,6 +2,35 @@ import { Database, BarChart2, Layers, Zap } from "lucide-react";
 import { NodeTypes } from "../_utils/nodeTypes";
 import { Edge, Node, Position } from "@xyflow/react";
 
+export const INITIAL_NODES: Node[] = [
+  {
+    id: "start",
+    type: NodeTypes.START,
+    position: { x: 281, y: 0 },
+    data: { label: "Start" },
+    // draggable: false,
+  },
+  {
+    id: "initial-entry",
+    position: { x: 180, y: 200 },
+    type: NodeTypes.CONDITION,
+    data: {
+      label: "Entry Condition",
+    },
+  },
+];
+
+export const INITIAL_EDGES: Edge[] = [
+  {
+    id: "start-entry",
+    source: "start",
+    target: "initial-entry",
+    type: "conditionEdge",//updated
+  },
+];
+
+
+
 export const DEFAULT_NODE_TEMPLATES: Node[] = [
   {
     id: "1",
@@ -54,33 +83,6 @@ export const SIDEBAR_SECTIONS = [
   {
     title: "Actions",
     icon: Zap,
-  },
-];
-
-export const INITIAL_NODES: Node[] = [
-  {
-    id: "start",
-    type: NodeTypes.START,
-    position: { x: 281, y: 0 },
-    data: { label: "Start" },
-    // draggable: false,
-  },
-  {
-    id: "initial-entry",
-    position: { x: 180, y: 200 },
-    type: NodeTypes.CONDITION,
-    data: {
-      label: "Entry Condition",
-    },
-  },
-];
-
-export const INITIAL_EDGES: Edge[] = [
-  {
-    id: "start-entry",
-    source: "start",
-    target: "initial-entry",
-    type: "conditionEdge",
   },
 ];
 

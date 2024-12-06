@@ -196,6 +196,23 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
       <Panel position="bottom-right" className="sm:hidden mb-4 mr-4">
         <div className={cn(containerClass, "flex gap-2 p-2")}>
           <div className="flex gap-2">
+            {/* Undo */}
+            <ControlButton
+              onClick={onUndo}
+              className={controlButtonClass}
+              title="Undo"
+            >
+              <IoArrowUndoCircleOutline size={12} className={smallIconClass} />
+            </ControlButton>
+
+            {/* Redo */}
+            <ControlButton
+              onClick={onRedo}
+              className={controlButtonClass}
+              title="Redo"
+            >
+              <IoArrowRedoCircleOutline size={20} className={largeIconClass} />
+            </ControlButton>
             <ControlButton
               onClick={handleZoomIn}
               className={mobileButtonClass}
