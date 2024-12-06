@@ -69,13 +69,9 @@ const getNodePosition = (
   // For condition nodes
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
-    const lastConditionOrStartNode = nodes.find((node) => {
-      if (node.type === NodeTypes.CONDITION || node.type === NodeTypes.START) {
-        const incomingEdge = edges.find((edge) => edge.target === node.id);
-        const outgoingEdge = edges.find((edge) => edge.source === node.id);
-        return incomingEdge && !outgoingEdge;
-      } 
-    });
+    const lastConditionOrStartNode = [...nodes]
+    .filter((node) => node.type === NodeTypes.CONDITION || node.type === NodeTypes.START)
+    .sort((a, b) => b.position.y - a.position.y)[0];
 
     if (lastConditionOrStartNode) {
       return {
