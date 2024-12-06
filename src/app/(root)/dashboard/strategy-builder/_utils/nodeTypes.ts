@@ -60,7 +60,6 @@ export const NodeTypes = {
 //   return { x: 250, y: 100 };
 // };
 
-
 const getNodePosition = (
   nodes: Node[],
   newNodeType: string | undefined,
@@ -70,8 +69,11 @@ const getNodePosition = (
   if (newNodeType === NodeTypes.CONDITION) {
     // Find most recent condition node
     const lastConditionOrStartNode = [...nodes]
-    .filter((node) => node.type === NodeTypes.CONDITION || node.type === NodeTypes.START)
-    .sort((a, b) => b.position.y - a.position.y)[0];
+      .filter(
+        (node) =>
+          node.type === NodeTypes.CONDITION || node.type === NodeTypes.START
+      )
+      .sort((a, b) => b.position.y - a.position.y)[0];
 
     if (lastConditionOrStartNode) {
       return {
@@ -112,8 +114,7 @@ const getNodePosition = (
 };
 
 
-
-    //  COMMENDET HANDLEADDNODE FUNCTION YOU SHOULD SEE CHANGES
+//  COMMENDET HANDLEADDNODE FUNCTION YOU SHOULD SEE CHANGES
 // const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
 //   const newNodeId = `node-${Date.now()}`;
 //   const position = getNodePosition(nodes, item.type, edges);
@@ -154,10 +155,8 @@ const getNodePosition = (
 //       type: "conditionEdge",
 //     });
 //   }
-  
 //   return { newNode, newEdges };
 // };
-
 
 const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const newNodeId = `node-${Date.now()}`;
@@ -176,10 +175,11 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
 
   // Find the last Condition or Start node
   const lastConditionOrStartNode = [...nodes]
-    .filter((node) => node.type === NodeTypes.CONDITION || node.type === NodeTypes.START)
+    .filter(
+      (node) =>
+        node.type === NodeTypes.CONDITION || node.type === NodeTypes.START
+    )
     .sort((a, b) => b.position.y - a.position.y)[0];
-  
-  
   if (lastConditionOrStartNode && item.type === NodeTypes.CONDITION) {
     // Add an edge to connect the new node to the last Condition or Start node
     newEdges.push({
@@ -195,6 +195,46 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   return { newNode, newEdges };
 };
 
+// const handleDrop = (
+//   event: React.DragEvent,
+//   nodes: Node[],
+//   edges: Edge[],
+//   item: Node,
+//   bounds: DOMRect
+// ) => {
+//   const position = getNodePosition(nodes, item.type, edges);
+//   const newNodeId = `node-${nodes.length + 1}`;
+//   const newNode = {
+//     id: newNodeId,
+//     type: item.type,
+//     position,
+//     data: { label: item.data.label },
+//     sourcePosition: Position.Bottom, // Add default positions
+//     targetPosition: Position.Top,
+//   };
+
+//   let newEdges = [...edges];
+
+//   // Find node with a single connection
+//   const nodeWithSingleConnection = nodes.find((node) => {
+//     const incomingEdge = edges.find((edge) => edge.target === node.id);
+//     const outgoingEdge = edges.find((edge) => edge.source === node.id);
+//     return incomingEdge && !outgoingEdge;
+//   });
+
+//   if (nodeWithSingleConnection && item.type === NodeTypes.CONDITION) {
+//     newEdges.push({
+//       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
+//       source: nodeWithSingleConnection.id,
+//       target: newNodeId,
+//       sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Add specific handle
+//       targetHandle: `${newNodeId}-top`, // Add specific handle
+//       type: "conditionEdge",
+//     });
+//   }
+
+//   return { newNode, newEdges };
+// };
 
 const handleDrop = (
   event: React.DragEvent,
@@ -204,107 +244,67 @@ const handleDrop = (
   bounds: DOMRect
 ) => {
   const position = getNodePosition(nodes, item.type, edges);
-  const newNodeId = `node-${nodes.length + 1}`;
+  const newNodeId = `node-${Date.now()}`; // Use timestamp to ensure unique ID
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
     data: { label: item.data.label },
-    sourcePosition: Position.Bottom, // Add default positions
+    sourcePosition: Position.Bottom,
     targetPosition: Position.Top,
   };
 
   let newEdges = [...edges];
 
-  // Find node with a single connection
+  // Find the most recently added node without an outgoing connection
   const nodeWithSingleConnection = nodes.find((node) => {
     const incomingEdge = edges.find((edge) => edge.target === node.id);
     const outgoingEdge = edges.find((edge) => edge.source === node.id);
     return incomingEdge && !outgoingEdge;
   });
 
-  if (nodeWithSingleConnection && item.type === NodeTypes.CONDITION) {
-    newEdges.push({
-      id: `${nodeWithSingleConnection.id}-${newNodeId}`,
-      source: nodeWithSingleConnection.id,
-      target: newNodeId,
-      sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Add specific handle
-      targetHandle: `${newNodeId}-top`, // Add specific handle
-      type: "conditionEdge",
-    });
+  // Connect Condition nodes
+  if (item.type === NodeTypes.CONDITION) {
+    if (nodeWithSingleConnection) {
+      // If a node with a single connection exists, connect to it
+      newEdges.push({
+        id: `${nodeWithSingleConnection.id}-${newNodeId}`,
+        source: nodeWithSingleConnection.id,
+        target: newNodeId,
+        sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
+        targetHandle: `${newNodeId}-top`,
+        type: "conditionEdge",
+      });
+    } else {
+      // If no existing nodes, connect to start node
+      newEdges.push({
+        id: `start-${newNodeId}`,
+        source: "start",
+        target: newNodeId,
+        type: "smoothstep",
+      });
+    }
+  }
+
+  // Connect Action nodes
+  if (item.type === NodeTypes.ACTION) {
+    const latestConditionNode = nodes
+      .filter((node) => node.type === NodeTypes.CONDITION)
+      .sort((a, b) => b.position.y - a.position.y)[0];
+
+    if (latestConditionNode) {
+      newEdges.push({
+        id: `${latestConditionNode.id}-${newNodeId}`,
+        source: latestConditionNode.id,
+        target: newNodeId,
+        sourceHandle: `${latestConditionNode.id}-right`,
+        type: "actionEdge",
+      });
+    }
   }
 
   return { newNode, newEdges };
 };
 
-// const handleDrop = (
-//   event: React.DragEvent,
-//   nodes: Node[],
-//   edges: Edge[],
-//   item: Node,
-//   bounds: DOMRect
-// ) => {
-//   const position = getNodePosition(nodes, item.type, edges);
-//   const newNodeId = `node-${Date.now()}`;  // Use timestamp to ensure unique ID
-//   const newNode = {
-//     id: newNodeId,
-//     type: item.type,
-//     position,
-//     data: { label: item.data.label },
-//     sourcePosition: Position.Bottom,
-//     targetPosition: Position.Top
-//   };
-
-//   let newEdges = [...edges];
-
-//   // Find the most recently added node without an outgoing connection
-//   const nodeWithSingleConnection = nodes.find((node) => {
-//     const incomingEdge = edges.find((edge) => edge.target === node.id);
-//     const outgoingEdge = edges.find((edge) => edge.source === node.id);
-//     return incomingEdge && !outgoingEdge;
-//   });
-
-//   // Connect Condition nodes
-//   if (item.type === NodeTypes.CONDITION) {
-//     if (nodeWithSingleConnection) {
-//       // If a node with a single connection exists, connect to it
-//       newEdges.push({
-//         id: `${nodeWithSingleConnection.id}-${newNodeId}`,
-//         source: nodeWithSingleConnection.id,
-//         target: newNodeId,
-//         sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
-//         targetHandle: `${newNodeId}-top`,
-//         type: "conditionEdge",
-//       });
-//     } else {
-//       // If no existing nodes, connect to start node
-//       newEdges.push({
-//         id: `start-${newNodeId}`,
-//         source: "start",
-//         target: newNodeId,
-//         type: "smoothstep",
-//       });
-//     }
-//   }
-
-//   // Connect Action nodes
-//   if (item.type === NodeTypes.ACTION) {
-//     const latestConditionNode = nodes
-//       .filter(node => node.type === NodeTypes.CONDITION)
-//       .sort((a, b) => b.position.y - a.position.y)[0];
-
-//     if (latestConditionNode) {
-//       newEdges.push({
-//         id: `${latestConditionNode.id}-${newNodeId}`,
-//         source: latestConditionNode.id,
-//         target: newNodeId,
-//         sourceHandle: `${latestConditionNode.id}-right`,
-//         type: "actionEdge",
-//       });
-//     }
-//   }
-
-//   return { newNode, newEdges };
-// };
 
 export { getNodePosition, handleAddNode, handleDrop };

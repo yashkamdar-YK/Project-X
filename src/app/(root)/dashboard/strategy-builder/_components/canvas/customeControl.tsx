@@ -21,6 +21,7 @@ import {
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { DEFAULT_NODE_TEMPLATES } from "../../constants/menu";
 import { handleAddNode } from "../../_utils/nodeTypes";
+import { Button } from "@/components/ui/button";
 
 interface CustomControlsProps {
   onAddNode?: () => void;
@@ -155,7 +156,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
 
           </div>
 
-          <ControlButton
+          <Button
             onClick={onBoardAction}
             className={wideButtonClass}
             title="On the Board"
@@ -164,7 +165,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
             <span className="text-sm font-medium my-4 group-hover:text-blue-600 dark:group-hover:text-blue-400">
               On the Board
             </span>
-          </ControlButton>
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -193,8 +194,8 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
       </Panel>
 
       {/* Mobile Controls */}
-      <Panel position="bottom-right" className="sm:hidden mb-4 mr-4">
-        <div className={cn(containerClass, "flex gap-2 p-2")}>
+      <Panel position="bottom-right" className="sm:hidden">
+        <div className={cn(containerClass, "flex gap-2 p-2 fixed bottom-6 right-2 z-50")}>
           <div className="flex gap-2">
             {/* Undo */}
             <ControlButton
