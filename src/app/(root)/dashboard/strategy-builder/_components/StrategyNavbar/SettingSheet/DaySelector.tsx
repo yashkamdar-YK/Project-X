@@ -21,7 +21,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({
 }) => {
   const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("days");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [selectedExp, setSelectedExp] = useState<string>("0");
+  const [selectedExp, setSelectedExp] = useState<string[]>([]);
   const [currentExpPage, setCurrentExpPage] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +58,16 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         : [...prev, day]
     );
   };
+  
+  //Add handleExpSelect for selecting multiple Exp Dates
+  const handleExpSelect = (day: string) => {
+    setSelectedExp(prev =>
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    );
+  };
+
 
   const scrollToPage = (page: number) => {
     const container = scrollContainerRef.current;
@@ -159,9 +169,9 @@ const DaySelector: React.FC<DaySelectorProps> = ({
               {allExpDays.map((day) => (
                 <button
                   key={day}
-                  onClick={() => setSelectedExp(day)}
+                  onClick={() => handleExpSelect(day)}
                   className={cn(
-                    dayButtonClass(selectedExp === day),
+                    dayButtonClass(selectedExp.includes(day)),
                     "snap-center"
                   )}
                 >
