@@ -12,16 +12,16 @@ export default {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
-			dark: {
-				background: '#121212', // Deep dark background
-				text: '#E0E0E0',       // Light text for dark mode
-				border: '#333333',     // Darker border
-			},
-			light: {
-				background: '#FFFFFF',
-				text: '#000000',
-				border: '#000000',
-			},
+  			dark: {
+  				background: '#121212',
+  				text: '#E0E0E0',
+  				border: '#333333'
+  			},
+  			light: {
+  				background: '#FFFFFF',
+  				text: '#000000',
+  				border: '#000000'
+  			},
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
@@ -83,10 +83,19 @@ export default {
   					height: '0'
   				}
   			},
+  			'background-position-spin': {
+  				'0%': {
+  					backgroundPosition: 'top center'
+  				},
+  				'100%': {
+  					backgroundPosition: 'bottom center'
+  				}
+  			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'background-position-spin': 'background-position-spin 3000ms infinite alternate'
   		}
   	}
   },
