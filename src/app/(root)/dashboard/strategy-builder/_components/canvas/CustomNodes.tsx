@@ -1,12 +1,19 @@
-import React from 'react';
-import { Position } from '@xyflow/react';
-import { PlayCircle, Settings2, Zap, AlertCircle, Trash2, ChevronUp, ChevronDown, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useNodeStore } from '@/lib/store/nodeStore';
-import CustomHandle from './CustomHandle';
-import {useCanvasContext}  from "../StrategyCanvas"; 
-
-
+import React from "react";
+import { Position } from "@xyflow/react";
+import {
+  PlayCircle,
+  Settings2,
+  Zap,
+  AlertCircle,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  ArrowRight,
+} from "lucide-react";
+import { useNodeStore } from "@/lib/store/nodeStore";
+import CustomHandle from "./CustomHandle";
+import { useCanvasContext } from "../StrategyCanvas";
+import { switchNodes } from "../../_utils/nodeHandling";
 
 export const StartNode = () => {
   return (
@@ -14,69 +21,36 @@ export const StartNode = () => {
       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-blue-500/25 transition-all duration-300 cursor-pointer">
         <PlayCircle className="w-7 h-7 text-white transform group-hover:scale-110 transition-transform duration-200" />
       </div>
-      <CustomHandle 
-        type="source" 
+      <CustomHandle
+        type="source"
         position={Position.Bottom}
         id="start-bottom"
-        className="w-3 h-3 bg-blue-500 border-2 border-white" 
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
       />
     </div>
   );
 };
 
-export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
-
+export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   //get handleDeleteNode function from StrategyCanvas
   const { deleteNode } = useCanvasContext() || {};
 
-
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
-  
+
   const conditionNodes = React.useMemo(() => {
     return nodes
-      .filter(node => node.type === 'CONDITION')
+      .filter((node) => node.type === "CONDITION")
       .sort((a, b) => a.position.y - b.position.y);
   }, [nodes]);
 
   const nodeIndex = React.useMemo(() => {
-    return conditionNodes.findIndex(node => node.id === id);
+    return conditionNodes.findIndex((node) => node.id === id);
   }, [conditionNodes, id]);
 
   const isFirstConditionNode = nodeIndex === 0;
   const isLastConditionNode = nodeIndex === conditionNodes.length - 1;
 
-
   //Delete Node
-  // const handleDelete = (event: React.MouseEvent) => {
-  //   event.stopPropagation();
-
-  //   // Find incoming and outgoing edges for the node being deleted
-  //   const incomingEdge = edges.find(edge => edge.target === id);
-  //   const outgoingEdge = edges.find(edge => edge.source === id);
-
-  //   let updatedEdges = edges.filter(edge => edge.source !== id && edge.target !== id);
-
-  //   // If node had both incoming and outgoing connections, create a new edge to bridge the gap
-  //   if (incomingEdge && outgoingEdge) {
-  //     // Get source node type to determine correct handle
-  //     const sourceNode = nodes.find(node => node.id === incomingEdge.source);
-  //     const sourceHandle = sourceNode?.type === 'CONDITION' ? `${incomingEdge.source}-bottom` : undefined;
-      
-  //     const newEdge = {
-  //       id: `${incomingEdge.source}-${outgoingEdge.target}`,
-  //       source: incomingEdge.source,
-  //       target: outgoingEdge.target,
-  //       sourceHandle, // Use bottom handle for condition nodes
-  //       targetHandle: outgoingEdge.targetHandle, // Preserve target handle
-  //       type: 'conditionEdge'
-  //     };
-  //     updatedEdges = [...updatedEdges, newEdge];
-  //   }
-
-  //   setEdges(updatedEdges);
-  //   setNodes(nodes.filter(node => node.id !== id));
-  // };
-
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (deleteNode) {
@@ -84,86 +58,104 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
     }
   };
 
-
   //basicly here we are switching the nodes position
-  const switchNodes = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    const currentNode = conditionNodes[nodeIndex];
-    const switchIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
-    const switchNode = conditionNodes[switchIndex];
-    
-    if (!switchNode) return;
-  
-    // Store positions
-    const currentPos = { ...currentNode.position };
-    const switchPos = { ...switchNode.position };
-  
-    // Update nodes with switched positions
-    const updatedNodes = nodes.map(node => {
-      if (node.id === currentNode.id) {
-        return { ...node, position: switchPos };
-      }
-      if (node.id === switchNode.id) {
-        return { ...node, position: currentPos };
-      }
-      return node;
-    });
-  
-    // Carefully update edges to maintain connections
-    const updatedEdges = edges.map(edge => {
-      // Find incoming and outgoing edges for current and switch nodes
-      const currentIncomingEdge = edges.find(e => e.target === currentNode.id);
-      const currentOutgoingEdge = edges.find(e => e.source === currentNode.id);
-      const switchIncomingEdge = edges.find(e => e.target === switchNode.id);
-      const switchOutgoingEdge = edges.find(e => e.source === switchNode.id);
-  
-      // Create a new edge object, modifying source and target as needed
-      let newEdge = { ...edge };
-  
-      // Update source connections
-      if (edge.source === currentNode.id) {
-        newEdge.source = switchNode.id;
-        // Preserve source handle if it exists
-        if (edge.sourceHandle) {
-          newEdge.sourceHandle = edge.sourceHandle.replace(currentNode.id, switchNode.id);
-        }
-      } else if (edge.source === switchNode.id) {
-        newEdge.source = currentNode.id;
-        // Preserve source handle if it exists
-        if (edge.sourceHandle) {
-          newEdge.sourceHandle = edge.sourceHandle.replace(switchNode.id, currentNode.id);
-        }
-      }
-  
-      // Update target connections
-      if (edge.target === currentNode.id) {
-        newEdge.target = switchNode.id;
-        // Preserve target handle if it exists
-        if (edge.targetHandle) {
-          newEdge.targetHandle = edge.targetHandle.replace(currentNode.id, switchNode.id);
-        }
-      } else if (edge.target === switchNode.id) {
-        newEdge.target = currentNode.id;
-        // Preserve target handle if it exists
-        if (edge.targetHandle) {
-          newEdge.targetHandle = edge.targetHandle.replace(switchNode.id, currentNode.id);
-        }
-      }
-  
-      return newEdge;
-    });
-  
-    setNodes(updatedNodes);
-    setEdges(updatedEdges);
-  };
+  // const switchNodes = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
+  //   event.stopPropagation();
+
+  //   const currentNode = conditionNodes[nodeIndex];
+  //   const switchIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
+  //   const switchNode = conditionNodes[switchIndex];
+
+  //   if (!switchNode) return;
+
+  //   // Store positions
+  //   const currentPos = { ...currentNode.position };
+  //   const switchPos = { ...switchNode.position };
+
+  //   // Update nodes with switched positions
+  //   const updatedNodes = nodes.map(node => {
+  //     if (node.id === currentNode.id) {
+  //       return { ...node, position: switchPos };
+  //     }
+  //     if (node.id === switchNode.id) {
+  //       return { ...node, position: currentPos };
+  //     }
+  //     return node;
+  //   });
+
+  //   // Carefully update edges to maintain connections
+  //   const updatedEdges = edges.map(edge => {
+  //     // Find incoming and outgoing edges for current and switch nodes
+  //     const currentIncomingEdge = edges.find(e => e.target === currentNode.id);
+  //     const currentOutgoingEdge = edges.find(e => e.source === currentNode.id);
+  //     const switchIncomingEdge = edges.find(e => e.target === switchNode.id);
+  //     const switchOutgoingEdge = edges.find(e => e.source === switchNode.id);
+
+  //     // Create a new edge object, modifying source and target as needed
+  //     let newEdge = { ...edge };
+
+  //     // Update source connections
+  //     if (edge.source === currentNode.id) {
+  //       newEdge.source = switchNode.id;
+  //       // Preserve source handle if it exists
+  //       if (edge.sourceHandle) {
+  //         newEdge.sourceHandle = edge.sourceHandle.replace(currentNode.id, switchNode.id);
+  //       }
+  //     } else if (edge.source === switchNode.id) {
+  //       newEdge.source = currentNode.id
+  //       // Preserve source handle if it exists
+  //       if (edge.sourceHandle) {
+  //         newEdge.sourceHandle = edge.sourceHandle.replace(switchNode.id, currentNode.id);
+  //       }
+  //     }
+
+  //     // Update target connections
+  //     if (edge.target === currentNode.id) {
+  //       newEdge.target = switchNode.id;
+  //       // Preserve target handle if it exists
+  //       if (edge.targetHandle) {
+  //         newEdge.targetHandle = edge.targetHandle.replace(currentNode.id, switchNode.id);
+  //       }
+  //     } else if (edge.target === switchNode.id) {
+  //       newEdge.target = currentNode.id;
+  //       // Preserve target handle if it exists
+  //       if (edge.targetHandle) {
+  //         newEdge.targetHandle = edge.targetHandle.replace(switchNode.id, currentNode.id);
+  //       }
+  //     }
+
+  //     return newEdge;
+  //   });
+
+  //   setNodes(updatedNodes);
+  //   setEdges(updatedEdges);
+  // };
+
+  const handleNodeSwitch =
+    (direction: "up" | "down") => (event: React.MouseEvent) => {
+      event.stopPropagation();
+      const currentNode = conditionNodes[nodeIndex];
+      const switchIndex = direction === "up" ? nodeIndex - 1 : nodeIndex + 1;
+      const switchNode = conditionNodes[switchIndex];
+
+      if (!switchNode) return;
+      const newState = switchNodes(
+        currentNode,
+        switchNode,
+        nodes,
+        edges,
+        setNodes,
+        setEdges
+      );
+      saveState(newState.nodes, newState.edges);
+    };
 
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         {/* Control buttons */}
 
-        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100" > 
+        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100">
           {/* Delete button */}
           <button
             onClick={handleDelete}
@@ -171,22 +163,23 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
-          
+
           {/* Up arrow - show only if not first condition node */}
           {!isFirstConditionNode && (
             <button
-              onClick={switchNodes('up')}
+              // onClick={switchNodes('up')}
+              onClick={handleNodeSwitch("up")}
               className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
           )}
 
-          
           {/* Down arrow - show only if not last condition node */}
           {!isLastConditionNode && (
             <button
-              onClick={switchNodes('down')}
+              // onClick={switchNodes('down')}
+              onClick={handleNodeSwitch("down")}
               className=" p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3 "
               // className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
             >
@@ -194,16 +187,12 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
             </button>
           )}
         </div>
-        
+
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
-        
-        <CustomHandle 
-          type="target" 
-          position={Position.Top}
-          id={`${id}-top`}
-        />
-        
+
+        <CustomHandle type="target" position={Position.Top} id={`${id}-top`} />
+
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             <AlertCircle className="w-5 h-5 text-indigo-500" />
@@ -218,7 +207,7 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
             </div>
           </div>
           <div className="grid place-content-between">
-          {/* <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" /> */}
+            {/* <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" /> */}
           </div>
         </div>
 
@@ -234,8 +223,8 @@ export const ConditionNode = ({ data, id }: { data: Node, id: string }) => {
           </CustomHandle>
         </div>
 
-        <CustomHandle 
-          type="source" 
+        <CustomHandle
+          type="source"
           position={Position.Bottom}
           id={`${id}-bottom`}
         />
@@ -249,8 +238,8 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    setNodes(nodes.filter(node => node.id !== id));
-    setEdges(edges.filter(edge => edge.source !== id && edge.target !== id));
+    setNodes(nodes.filter((node) => node.id !== id));
+    setEdges(edges.filter((edge) => edge.source !== id && edge.target !== id));
   };
 
   return (
@@ -263,16 +252,16 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
-        
+
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />
-        
-        <CustomHandle 
-          type="target" 
+
+        <CustomHandle
+          type="target"
           position={Position.Left}
-          className="!w-3 !h-3 md:!w-[10px] md:!h-[10px] sm:!w-4 sm:!h-4 !bg-green-600 !border-1 !border-indigo-600" 
+          className="!w-3 !h-3 md:!w-[10px] md:!h-[10px] sm:!w-4 sm:!h-4 !bg-green-600 !border-1 !border-indigo-600"
         />
-        
+
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
             <Zap className="w-5 h-5 text-emerald-500" />
@@ -292,3 +281,10 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     </div>
   );
 };
+
+function saveState(
+  nodes: import("@xyflow/react").Node[],
+  edges: import("@xyflow/react").Edge[]
+) {
+  // throw new Error("Function not implemented.");
+}
