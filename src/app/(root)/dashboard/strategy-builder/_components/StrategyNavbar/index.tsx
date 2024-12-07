@@ -13,6 +13,7 @@ import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
 import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
 import { TemplateSelector } from "../Templete/Templates";
+import SymbolSearch from "./SymbolSearch";
 
 interface StrategyNavbarProps {
   className?: string;
@@ -39,16 +40,10 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
-                />
-                <Input
-                  className="pl-10 pr-4 py-2 w-28 sm:w-40 md:w-48 rounded-md bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 transition-all duration-200"
-                  type="text"
-                  placeholder="NIFTY"
-                  aria-label="Search NIFTY"
-                />
+              <SymbolSearch onSymbolSelect={(symbol) => {
+  console.log('Selected symbol:', symbol);
+  // Handle symbol selection
+}} />
               </div>
 
               <TimeSelector />
