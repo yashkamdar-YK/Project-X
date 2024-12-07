@@ -12,19 +12,19 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { SIDEBAR_SECTIONS } from "../constants/menu";
+import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
-import { handleAddNode, NodeTypes } from "../_utils/nodeTypes";
+import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 import { useNodeStore } from "@/lib/store/nodeStore";
+import {DataPointDialog} from "./DatapointDialog/index";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
-  // Track expanded accordion items
-  const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]); // Default to components section open
+  const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]);
+  const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
 
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
-    // console.log("Drag Start:", item);
-      event.stopPropagation();
+    event.stopPropagation();
     event.dataTransfer.setData(
       "application/reactflow",
       JSON.stringify({ item })
@@ -45,6 +45,7 @@ const DashboardSidebar: React.FC = () => {
   const handleAccordionChange = (value: string[]) => {
     setExpandedItems(value);
   };
+  const onDataPointAdd = () => setIsDataPointModalOpen(true);
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -71,7 +72,7 @@ const DashboardSidebar: React.FC = () => {
           value={expandedItems}
           onValueChange={handleAccordionChange}
         >
-          {SIDEBAR_SECTIONS.map((item, index) => (
+          {SIDEBAR_SECTIONS(onDataPointAdd).map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
@@ -83,6 +84,7 @@ const DashboardSidebar: React.FC = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      item.onClick();
                     }}
                     className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
                   >
@@ -151,6 +153,8 @@ const DashboardSidebar: React.FC = () => {
           </SheetContent>
         </Sheet>
       </div>
+
+      <DataPointDialog open={isDataPointModalOpen} onOpenChange={() => setIsDataPointModalOpen(false)} />
     </>
   );
 };

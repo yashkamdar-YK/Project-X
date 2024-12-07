@@ -66,23 +66,27 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
   },
 ];
 
-export const SIDEBAR_SECTIONS = [
+export const SIDEBAR_SECTIONS = (onDataPointAdd:() => void,) =>[
   {
     title: "Data Points",
     icon: Database,
+    onClick: onDataPointAdd,
   },
   {
     title: "Indicators",
     icon: BarChart2,
+    onClick: () =>{}
   },
   {
     title: "Components",
     icon: Layers,
     items: DEFAULT_NODE_TEMPLATES,
+    onClick: () =>{}
   },
   {
     title: "Actions",
     icon: Zap,
+    onClick: () =>{}
   },
 ];
 
