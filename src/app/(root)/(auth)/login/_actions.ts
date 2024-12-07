@@ -1,6 +1,6 @@
 import { get, post } from "@/lib/axios-factory";
+import { UserProfile } from "@/lib/store/authStore";
 
-// Define types for the responses
 interface GoogleLoginUrlResponse {
   status: boolean;
   error: boolean;
@@ -18,24 +18,10 @@ interface GoogleAuthCallbackResponse {
     access_token: string;
   };
 }
-// {
-//   "status": true,
-//   "error": false,
-//   "message": "Access Token Generated.",
-//   "data": {
-//       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjRGNjM4NiIsInVzZXJ0eXBlIjoiZnJlZSIsImFjY2VzcyI6IndlYiIsImVtYWlsIjoiYW5raXQwcGFuY2hhbEBnbWFpbC5jb20iLCJrZXkiOiIiLCJuYW1lIjoiQW5raXQiLCJleHAiOjE3MzM0ODAzMDF9.OwG2P7ueKmmfRzIGxgMnQu5l17JJqVWq2bSWHF74WNI"
-//   }
-// }
-
 interface UserProfileResponse {
   status: boolean;
   error: boolean;
-  data: {
-    id: string;
-    email: string;
-    name: string;
-    picture?: string;
-  };
+  data: UserProfile
 }
 
 export const authService = {
@@ -52,6 +38,7 @@ export const authService = {
   // Handle Google Callback
   handleGoogleCallback: async (queryString: string) => {
     try {
+      await new Promise((resolve) => setTimeout(resolve, 4000));
       const response = await get<GoogleAuthCallbackResponse>(`/v1/auth/google/callback?${queryString}`);
       
       if (response.data.status) {
