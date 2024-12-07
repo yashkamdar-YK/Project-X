@@ -1,25 +1,20 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { usePathname } from "next/navigation"
-import { Menu } from "lucide-react"
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import DarkModeSwitch from "./DarkModeSwitch"
-import { UserToggle } from "./UserToggle"
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import DarkModeSwitch from "./DarkModeSwitch";
+import { UserToggle } from "./UserToggle";
 
 const DashboardNav: React.FC = () => {
-  const pathName = usePathname()
-
+  const pathName = usePathname();
 
   const navLinks = [
     { href: "/dashboard/my-strategies", label: "My Strategies" },
     { href: "/dashboard/explore", label: "Explore" },
     { href: "/dashboard/strategy-builder", label: "Strategy Builder" },
-  ]
+  ];
 
   const NavLinks = () => (
     <div className="flex flex-col md:flex-row md:space-x-8 space-y-4 md:space-y-0 items-start md:items-center font-medium">
@@ -31,22 +26,24 @@ const DashboardNav: React.FC = () => {
             transition-all duration-200
             hover:text-blue-600 dark:hover:text-blue-400
             font-semibold
-            ${pathName === link.href 
-              ? "text-blue-600 dark:text-blue-400" 
-              : "text-gray-700 dark:text-gray-300"}
+            ${
+              pathName === link.href
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-700 dark:text-gray-300"
+            }
           `}
         >
           {link.label}
         </a>
       ))}
     </div>
-  )
+  );
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-4">
-            <div className="relative h-9 w-28">
+          <div className="relative lg:h-7 lg:w-28 h-5 w-24">
             {/* <span className="text-xl font-bold text-gray-900 dark:text-white">Logo</span> */}
             <img
               src="/logo_black.png"
@@ -67,9 +64,13 @@ const DashboardNav: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3">
-          <DarkModeSwitch />
-          <UserToggle />
-          
+          <div>
+            <DarkModeSwitch />
+          </div>
+          <div className="hidden md:block">
+            <UserToggle />
+          </div>
+
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet>
@@ -80,6 +81,8 @@ const DashboardNav: React.FC = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[80%] sm:w-[385px]">
                 <div className="py-6">
+                  <UserToggle />
+                  <div className="border-b border-gray-200 dark:border-gray-700 my-6"></div>
                   <NavLinks />
                 </div>
               </SheetContent>
@@ -88,8 +91,7 @@ const DashboardNav: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
-
+  );
+};
 
 export default DashboardNav;

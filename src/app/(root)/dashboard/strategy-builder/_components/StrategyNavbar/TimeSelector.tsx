@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -6,15 +6,15 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Star } from 'lucide-react';
+import { ChevronDown, Star } from "lucide-react";
 
 // Helper function to convert time string to minutes for comparison
 const convertToMinutes = (timeStr: string): number => {
   const value = parseInt(timeStr);
-  if (timeStr.endsWith('m')) return value;
-  if (timeStr.endsWith('h')) return value * 60;
-  if (timeStr.endsWith('d')) return value * 24 * 60;
-  if (timeStr.endsWith('w')) return value * 7 * 24 * 60;
+  if (timeStr.endsWith("m")) return value;
+  if (timeStr.endsWith("h")) return value * 60;
+  if (timeStr.endsWith("d")) return value * 24 * 60;
+  if (timeStr.endsWith("w")) return value * 7 * 24 * 60;
   return value;
 };
 
@@ -24,15 +24,15 @@ const sortTimeValues = (a: string, b: string): number => {
 };
 
 const initialTimeOptions = [
-  { value: '1m', isStarred: false },
-  { value: '3m', isStarred: false },
-  { value: '5m', isStarred: true },
-  { value: '15m', isStarred: true },
-  { value: '30m', isStarred: true },
-  { value: '1h', isStarred: false },
-  { value: '4h', isStarred: false },
-  { value: '1d', isStarred: false },
-  { value: '1w', isStarred: false },
+  { value: "1m", isStarred: false },
+  { value: "3m", isStarred: false },
+  { value: "5m", isStarred: true },
+  { value: "15m", isStarred: true },
+  { value: "30m", isStarred: true },
+  { value: "1h", isStarred: false },
+  { value: "4h", isStarred: false },
+  { value: "1d", isStarred: false },
+  { value: "1w", isStarred: false },
 ].sort((a, b) => sortTimeValues(a.value, b.value));
 
 const TimePicker = () => {
@@ -47,48 +47,50 @@ const TimePicker = () => {
 
   const updateQuickOptions = () => {
     const starred = timeOptions
-      .filter(option => option.isStarred)
-      .map(option => option.value)
+      .filter((option) => option.isStarred)
+      .map((option) => option.value)
       .sort(sortTimeValues);
-    
+
     setQuickOptions(starred.slice(0, 10));
   };
 
   const toggleStar = (timeValue: string) => {
-    setTimeOptions(prevOptions => {
-      const updatedOptions = prevOptions.map(option =>
+    setTimeOptions((prevOptions) => {
+      const updatedOptions = prevOptions.map((option) =>
         option.value === timeValue
           ? { ...option, isStarred: !option.isStarred }
           : option
       );
-      
-      const starredCount = updatedOptions.filter(option => option.isStarred).length;
-      
+
+      const starredCount = updatedOptions.filter(
+        (option) => option.isStarred
+      ).length;
+
       if (starredCount < 4) {
         // If less than 4 starred options, star the first unstarred options
         const optionsToStar = updatedOptions
-          .filter(option => !option.isStarred)
+          .filter((option) => !option.isStarred)
           .slice(0, 4 - starredCount);
-        
-        optionsToStar.forEach(option => {
+
+        optionsToStar.forEach((option) => {
           option.isStarred = true;
         });
       }
-      
+
       return updatedOptions;
     });
   };
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
-    if (!timeOptions.find(option => option.value === time)?.isStarred) {
+    if (!timeOptions.find((option) => option.value === time)?.isStarred) {
       toggleStar(time);
     }
     setIsOpen(false);
   };
 
   // Sort timeOptions before rendering
-  const sortedTimeOptions = [...timeOptions].sort((a, b) => 
+  const sortedTimeOptions = [...timeOptions].sort((a, b) =>
     sortTimeValues(a.value, b.value)
   );
 
@@ -129,10 +131,19 @@ const TimePicker = () => {
               {sortedTimeOptions.map((option) => (
                 <div
                   key={option.value}
-                  className={`flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${selectedTime === option.value ? "dark:bg-gray-700 bg-gray-200" : ""}`}
-                  onClick={() => handleTimeSelect(option.value)}
+                  className={`flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${
+                    selectedTime === option.value
+                      ? "dark:bg-gray-700 bg-gray-200"
+                      : ""
+                  }`}
                 >
-                  <span>{option.value}</span>
+                  {/* using handleTimeSelect in span insted of div for fix selection */}
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => handleTimeSelect(option.value)}>
+                    {option.value}
+                  </span>
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -173,7 +184,9 @@ const TimePicker = () => {
               {sortedTimeOptions.map((option) => (
                 <div
                   key={option.value}
-                  className={`flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${selectedTime === option.value ? "bg-gray-700" : ""}`}
+                  className={`flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${
+                    selectedTime === option.value ? "bg-gray-700" : ""
+                  }`}
                   onClick={() => handleTimeSelect(option.value)}
                 >
                   <span>{option.value}</span>
