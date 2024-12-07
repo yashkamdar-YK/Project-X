@@ -2,17 +2,26 @@ import { Database, BarChart2, Layers, Zap } from "lucide-react";
 import { NodeTypes } from "../_utils/nodeTypes";
 import { Edge, Node, Position } from "@xyflow/react";
 
+// Constants for positioning
+const SPACING = {
+  VERTICAL: 150,    // Space between vertical nodes
+  HORIZONTAL: 400,  // Space between condition and action nodes
+  START_Y: 0,      // Starting Y position
+  START_X: 281,    // Starting X position
+  CONDITION_X: 180, // X position for condition nodes
+  ACTION_X: 580    // X position for action nodes
+};
+
 export const INITIAL_NODES: Node[] = [
   {
     id: "start",
     type: NodeTypes.START,
-    position: { x: 281, y: 0 },
+    position: { x: SPACING.START_X, y: SPACING.START_Y },
     data: { label: "Start" },
-    // draggable: false,
   },
   {
     id: "initial-entry",
-    position: { x: 180, y: 200 },
+    position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
     type: NodeTypes.CONDITION,
     data: {
       label: "Entry Condition",
@@ -25,11 +34,11 @@ export const INITIAL_EDGES: Edge[] = [
     id: "start-entry",
     source: "start",
     target: "initial-entry",
-    type: "conditionEdge",//updated
+    sourceHandle: "start-bottom",
+    targetHandle: "initial-entry-top",
+    type: "conditionEdge",
   },
 ];
-
-
 
 export const DEFAULT_NODE_TEMPLATES: Node[] = [
   {
@@ -66,7 +75,7 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
   },
 ];
 
-export const SIDEBAR_SECTIONS = (onDataPointAdd:() => void,) =>[
+export const SIDEBAR_SECTIONS = (onDataPointAdd: () => void) => [
   {
     title: "Data Points",
     icon: Database,
@@ -75,21 +84,20 @@ export const SIDEBAR_SECTIONS = (onDataPointAdd:() => void,) =>[
   {
     title: "Indicators",
     icon: BarChart2,
-    onClick: () =>{}
+    onClick: () => {},
   },
   {
     title: "Components",
     icon: Layers,
     items: DEFAULT_NODE_TEMPLATES,
-    onClick: () =>{}
+    onClick: () => {},
   },
   {
     title: "Actions",
     icon: Zap,
-    onClick: () =>{}
+    onClick: () => {},
   },
 ];
-
 
 export const STRATEGY_TEMPLATES = {
   MOVING_AVERAGE_CROSSOVER: {
@@ -99,12 +107,12 @@ export const STRATEGY_TEMPLATES = {
       {
         id: "start",
         type: NodeTypes.START,
-        position: { x: 281, y: 0 },
+        position: { x: SPACING.START_X, y: SPACING.START_Y },
         data: { label: "Start" },
       },
       {
         id: "entry-condition",
-        position: { x: 180, y: 120 },
+        position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
         type: NodeTypes.CONDITION,
         data: {
           label: "Entry: MA(20) crosses above MA(50)",
@@ -119,7 +127,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "buy-action",
-        position: { x: 580, y: 120 },
+        position: { x: SPACING.ACTION_X, y: SPACING.VERTICAL },
         type: NodeTypes.ACTION,
         data: {
           label: "Buy",
@@ -132,7 +140,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "exit-condition",
-        position: { x: 180, y: 240 },
+        position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL * 2 },
         type: NodeTypes.CONDITION,
         data: {
           label: "Exit: MA(20) crosses below MA(50)",
@@ -147,7 +155,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "sell-action",
-        position: { x: 580, y: 240 },
+        position: { x: SPACING.ACTION_X, y: SPACING.VERTICAL * 2 },
         type: NodeTypes.ACTION,
         data: {
           label: "Sell",
@@ -164,21 +172,22 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "entry-condition",
+        sourceHandle: "start-bottom",
+        targetHandle: "entry-condition-top",
         type: "conditionEdge",
       },
       {
         id: "entry-buy",
         source: "entry-condition",
         target: "buy-action",
+        sourceHandle: "entry-condition-right",
         type: "actionEdge",
       },
       {
         id: "entry-exit",
         source: "entry-condition",
-        // Addded to connect with bottom point
         sourceHandle: "entry-condition-bottom",
         target: "exit-condition",
-        // Added 
         targetHandle: "exit-condition-top",
         type: "conditionEdge",
       },
@@ -186,6 +195,7 @@ export const STRATEGY_TEMPLATES = {
         id: "exit-sell",
         source: "exit-condition",
         target: "sell-action",
+        sourceHandle: "exit-condition-right",
         type: "actionEdge",
       },
     ],
@@ -198,12 +208,12 @@ export const STRATEGY_TEMPLATES = {
       {
         id: "start",
         type: NodeTypes.START,
-        position: { x: 281, y: 0 },
+        position: { x: SPACING.START_X, y: SPACING.START_Y },
         data: { label: "Start" },
       },
       {
         id: "oversold-condition",
-        position: { x: 180, y: 120 },
+        position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
         type: NodeTypes.CONDITION,
         data: {
           label: "Entry: RSI(14) < 30",
@@ -217,7 +227,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "buy-action",
-        position: { x: 580, y: 120 },
+        position: { x: SPACING.ACTION_X, y: SPACING.VERTICAL },
         type: NodeTypes.ACTION,
         data: {
           label: "Buy",
@@ -231,7 +241,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "overbought-condition",
-        position: { x: 180, y: 240 },
+        position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL * 2 },
         type: NodeTypes.CONDITION,
         data: {
           label: "Exit: RSI(14) > 70",
@@ -245,7 +255,7 @@ export const STRATEGY_TEMPLATES = {
       },
       {
         id: "sell-action",
-        position: { x: 580, y: 240 },
+        position: { x: SPACING.ACTION_X, y: SPACING.VERTICAL * 2 },
         type: NodeTypes.ACTION,
         data: {
           label: "Sell",
@@ -262,21 +272,22 @@ export const STRATEGY_TEMPLATES = {
         id: "start-entry",
         source: "start",
         target: "oversold-condition",
+        sourceHandle: "start-bottom",
+        targetHandle: "oversold-condition-top",
         type: "conditionEdge",
       },
       {
         id: "entry-buy",
         source: "oversold-condition",
         target: "buy-action",
+        sourceHandle: "oversold-condition-right",
         type: "actionEdge",
       },
       {
         id: "entry-exit",
         source: "oversold-condition",
-        // Addded
         sourceHandle: "oversold-condition-bottom",
         target: "overbought-condition",
-        // Addded to connect with top point
         targetHandle: "overbought-condition-top",
         type: "conditionEdge",
       },
@@ -284,6 +295,7 @@ export const STRATEGY_TEMPLATES = {
         id: "exit-sell",
         source: "overbought-condition",
         target: "sell-action",
+        sourceHandle: "overbought-condition-right",
         type: "actionEdge",
       },
     ],
