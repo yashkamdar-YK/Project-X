@@ -7,6 +7,9 @@ import {
   Save,
   Menu,
   Logs,
+  SquareChevronLeft,
+  ChevronLeft,
+  ChartNoAxesGantt,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -135,12 +138,13 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  variant="secondary"
+                  // size="icon"
                   aria-label="Menu"
-                  className="sm:hidden"
+                  className="sm:hidden mr-1"
                 >
-                  <Logs className="w-6 h-6" />
+                  <ChartNoAxesGantt />
+                  Menu
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-fit"> 
