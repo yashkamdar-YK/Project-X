@@ -23,6 +23,7 @@ import ActionEdge from "./canvas/ActionEdge";
 
 import { debounce } from "lodash";
 import { createContext, useContext } from "react";
+import { handleNodeDeletion, handleOnConnection } from "../_utils/nodeHandling";
 
 // Create a context for deletion
 const CanvasContext = createContext<{
@@ -167,56 +168,7 @@ const StrategyCanvas = () => {
   //On connection Function
   const onConnect = useCallback(
     (connection: Connection) => {
-      const sourceNode = nodes.find((node) => node.id === connection.source);
-      const targetNode = nodes.find((node) => node.id === connection.target);
-
-      // For manual connection of Condition node to Start node only
-      if (
-        (sourceNode?.type === NodeTypes.START &&
-          targetNode?.type === NodeTypes.CONDITION) ||
-        (sourceNode?.type === NodeTypes.CONDITION &&
-          targetNode?.type === NodeTypes.START)
-      ) {
-        const updatedEdges = addEdge(
-          { ...connection, type: "smoothstep" },
-          edges
-        );
-        setEdges(updatedEdges);
-        saveState(nodes, updatedEdges);
-        return;
-      }
-
-      // For Condition to Condition connections
-      if (
-        sourceNode?.type === NodeTypes.CONDITION &&
-        targetNode?.type === NodeTypes.CONDITION &&
-        connection.sourceHandle?.endsWith("-bottom") &&
-        connection.targetHandle?.endsWith("-top")
-      ) {
-        const updatedEdges = addEdge(
-          { ...connection, type: "conditionEdge" },
-          edges
-        );
-        setEdges(updatedEdges);
-        saveState(nodes, updatedEdges);
-      }
-      // For Condition to Action connections using right handle
-      else if (
-        sourceNode?.type === NodeTypes.CONDITION &&
-        connection.sourceHandle?.endsWith("-right") &&
-        targetNode?.type === NodeTypes.ACTION
-      ) {
-        const updatedEdges = addEdge(
-          { ...connection, type: "actionEdge" },
-          edges
-        );
-        setEdges(updatedEdges);
-        saveState(nodes, updatedEdges);
-      }
-      // Reject other connections
-      else {
-        console.warn("Invalid connection");
-      }
+      handleOnConnection(connection, nodes, edges, setEdges, saveState);
     },
     [nodes, edges, setEdges, saveState]
   );
@@ -300,118 +252,7 @@ const StrategyCanvas = () => {
     };
   }, [selectedNodeId]);
 
-  // Add this helper function to handle reconnecting Start node
-  const handleStartNodeReconnection = (
-    nodes: Node[],
-    edges: Edge[],
-    setEdges: Function
-  ) => {
-    // Find the Start node
-    const startNode = nodes.find((node) => node.id === "start");
-    if (!startNode) return edges;
 
-    // Find all Condition nodes
-    const conditionNodes = nodes.filter(
-      (node) => node.type === NodeTypes.CONDITION
-    );
-
-    // Check if Start node is currently disconnected
-    const isStartNodeDisconnected = !edges.some(
-      (edge) => edge.source === "start" || edge.target === "start"
-    );
-
-    // If Start node is disconnected and there are Condition nodes
-    if (isStartNodeDisconnected && conditionNodes.length > 0) {
-      // Find the first Condition node
-      const firstConditionNode = conditionNodes.sort(
-        (a, b) => a.position.y - b.position.y
-      )[0];
-
-      // Create a new edge connecting Start to the first Condition node
-      const newEdge = {
-        id: `start-${firstConditionNode.id}`,
-        source: "start",
-        target: firstConditionNode.id,
-        type: "smoothstep",
-      };
-
-      return [...edges, newEdge];
-    }
-
-    return edges;
-  };
-
-  // handle connection of node After delete from default way
-  const handleNodeDeletion = (
-    nodesToDelete: Node[],
-    allNodes: Node[],
-    allEdges: Edge[],
-    setNodes: Function,
-    setEdges: Function
-  ) => {
-    let updatedEdges = [...allEdges];
-
-    nodesToDelete.forEach((node) => {
-      // Find all edges connected to this node
-      const connectedEdges = allEdges.filter(
-        (edge) => edge.source === node.id || edge.target === node.id
-      );
-
-      // Remove all edges connected to the deleted node
-      updatedEdges = updatedEdges.filter(
-        (edge) => edge.source !== node.id && edge.target !== node.id
-      );
-
-      // If the deleted node is a Condition node
-      if (node.type === NodeTypes.CONDITION) {
-        // Find the Action nodes originally connected to this Condition node
-        const actionNodesConnected = allNodes.filter(
-          (n) =>
-            n.type === NodeTypes.ACTION &&
-            connectedEdges.some(
-              (edge) => edge.source === node.id && edge.target === n.id
-            )
-        );
-
-        // For each connected Action node
-        actionNodesConnected.forEach((actionNode) => {
-          // Find edges connected to this specific Action node
-          const actionNodeEdges = allEdges.filter(
-            (edge) =>
-              edge.source === actionNode.id || edge.target === actionNode.id
-          );
-
-          // Remove only the edges to the deleted Condition node
-          const edgesToRemove = actionNodeEdges.filter(
-            (edge) => edge.source === node.id || edge.target === node.id
-          );
-
-          // Remove these specific edges
-          updatedEdges = updatedEdges.filter(
-            (edge) =>
-              !edgesToRemove.some((removeEdge) => removeEdge.id === edge.id)
-          );
-        });
-      }
-    });
-
-    // Remove nodes from the state
-    const remainingNodes = allNodes.filter(
-      (node) => !nodesToDelete.some((n) => n.id === node.id)
-    );
-
-    // Automatically reconnect Start node if needed
-    const finalEdges = handleStartNodeReconnection(
-      remainingNodes,
-      updatedEdges,
-      setEdges
-    );
-
-    setNodes(remainingNodes);
-    setEdges(finalEdges);
-  };
-
-  //Export Function
   const deleteNode = (id: string) => {
     const nodeToDelete = nodes.find((node) => node.id === id);
     if (nodeToDelete) {

@@ -8,12 +8,10 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
-  ArrowRight,
 } from "lucide-react";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
 import { useCanvasContext } from "../StrategyCanvas";
-import { switchNodes } from "../../_utils/nodeHandling";
 
 export const StartNode = () => {
   return (
@@ -32,9 +30,7 @@ export const StartNode = () => {
 };
 
 export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
-  //get handleDeleteNode function from StrategyCanvas
   const { deleteNode } = useCanvasContext() || {};
-
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const conditionNodes = React.useMemo(() => {
@@ -50,7 +46,6 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   const isFirstConditionNode = nodeIndex === 0;
   const isLastConditionNode = nodeIndex === conditionNodes.length - 1;
 
-  //Delete Node
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (deleteNode) {
@@ -58,105 +53,92 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
     }
   };
 
-  //basicly here we are switching the nodes position
-  // const switchNodes = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
-  //   event.stopPropagation();
 
-  //   const currentNode = conditionNodes[nodeIndex];
-  //   const switchIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
-  //   const switchNode = conditionNodes[switchIndex];
+  /**
+ * Handles the swapping of condition nodes when clicking up/down arrows
+ * @param direction - The direction to swap ('up' or 'down')
+ * @returns Event handler function for the swap
+ */
+  const handleNodeSwap = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
+    // Prevent event bubbling
+    event.stopPropagation();
 
-  //   if (!switchNode) return;
+    // Get the nodes to swap
+    const sourceConditionNode = conditionNodes[nodeIndex];
+    const targetIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
+    const targetConditionNode = conditionNodes[targetIndex];
 
-  //   // Store positions
-  //   const currentPos = { ...currentNode.position };
-  //   const switchPos = { ...switchNode.position };
+    // Exit if no valid target node to swap with
+    if (!targetConditionNode) return;
 
-  //   // Update nodes with switched positions
-  //   const updatedNodes = nodes.map(node => {
-  //     if (node.id === currentNode.id) {
-  //       return { ...node, position: switchPos };
-  //     }
-  //     if (node.id === switchNode.id) {
-  //       return { ...node, position: currentPos };
-  //     }
-  //     return node;
-  //   });
+    // Store the original positions of both nodes
+    const sourceNodePosition = { ...sourceConditionNode.position };
+    const targetNodePosition = { ...targetConditionNode.position };
 
-  //   // Carefully update edges to maintain connections
-  //   const updatedEdges = edges.map(edge => {
-  //     // Find incoming and outgoing edges for current and switch nodes
-  //     const currentIncomingEdge = edges.find(e => e.target === currentNode.id);
-  //     const currentOutgoingEdge = edges.find(e => e.source === currentNode.id);
-  //     const switchIncomingEdge = edges.find(e => e.target === switchNode.id);
-  //     const switchOutgoingEdge = edges.find(e => e.source === switchNode.id);
+    // Create new nodes array with swapped positions
+    const nodesWithSwappedPositions = nodes.map(node => {
+      if (node.id === sourceConditionNode.id) {
+        return { ...node, position: targetNodePosition };
+      }
+      if (node.id === targetConditionNode.id) {
+        return { ...node, position: sourceNodePosition };
+      }
+      return node;
+    });
 
-  //     // Create a new edge object, modifying source and target as needed
-  //     let newEdge = { ...edge };
+    // Update edge connections while preserving action node relationships
+    const updatedEdgeConnections = edges.map(edge => {
+      const newEdgeConnection = { ...edge };
 
-  //     // Update source connections
-  //     if (edge.source === currentNode.id) {
-  //       newEdge.source = switchNode.id;
-  //       // Preserve source handle if it exists
-  //       if (edge.sourceHandle) {
-  //         newEdge.sourceHandle = edge.sourceHandle.replace(currentNode.id, switchNode.id);
-  //       }
-  //     } else if (edge.source === switchNode.id) {
-  //       newEdge.source = currentNode.id
-  //       // Preserve source handle if it exists
-  //       if (edge.sourceHandle) {
-  //         newEdge.sourceHandle = edge.sourceHandle.replace(switchNode.id, currentNode.id);
-  //       }
-  //     }
+      // Skip action node connections (from right handle) to maintain their relationships
+      // Only update vertical connections between condition nodes
+      const isVerticalConnection = !edge.sourceHandle?.includes('right');
 
-  //     // Update target connections
-  //     if (edge.target === currentNode.id) {
-  //       newEdge.target = switchNode.id;
-  //       // Preserve target handle if it exists
-  //       if (edge.targetHandle) {
-  //         newEdge.targetHandle = edge.targetHandle.replace(currentNode.id, switchNode.id);
-  //       }
-  //     } else if (edge.target === switchNode.id) {
-  //       newEdge.target = currentNode.id;
-  //       // Preserve target handle if it exists
-  //       if (edge.targetHandle) {
-  //         newEdge.targetHandle = edge.targetHandle.replace(switchNode.id, currentNode.id);
-  //       }
-  //     }
+      if (isVerticalConnection) {
+        // Update source connections
+        if (edge.source === sourceConditionNode.id) {
+          newEdgeConnection.source = targetConditionNode.id;
+          if (edge.sourceHandle) {
+            // Preserve handle type (top/bottom) while updating node reference
+            const handleDirection = edge.sourceHandle.split('-').pop();
+            newEdgeConnection.sourceHandle = `${targetConditionNode.id}-${handleDirection}`;
+          }
+        } else if (edge.source === targetConditionNode.id) {
+          newEdgeConnection.source = sourceConditionNode.id;
+          if (edge.sourceHandle) {
+            const handleDirection = edge.sourceHandle.split('-').pop();
+            newEdgeConnection.sourceHandle = `${sourceConditionNode.id}-${handleDirection}`;
+          }
+        }
 
-  //     return newEdge;
-  //   });
+        // Update target connections
+        if (edge.target === sourceConditionNode.id) {
+          newEdgeConnection.target = targetConditionNode.id;
+          if (edge.targetHandle) {
+            const handleDirection = edge.targetHandle.split('-').pop();
+            newEdgeConnection.targetHandle = `${targetConditionNode.id}-${handleDirection}`;
+          }
+        } else if (edge.target === targetConditionNode.id) {
+          newEdgeConnection.target = sourceConditionNode.id;
+          if (edge.targetHandle) {
+            const handleDirection = edge.targetHandle.split('-').pop();
+            newEdgeConnection.targetHandle = `${sourceConditionNode.id}-${handleDirection}`;
+          }
+        }
+      }
 
-  //   setNodes(updatedNodes);
-  //   setEdges(updatedEdges);
-  // };
+      return newEdgeConnection;
+    });
 
-  const handleNodeSwitch =
-    (direction: "up" | "down") => (event: React.MouseEvent) => {
-      event.stopPropagation();
-      const currentNode = conditionNodes[nodeIndex];
-      const switchIndex = direction === "up" ? nodeIndex - 1 : nodeIndex + 1;
-      const switchNode = conditionNodes[switchIndex];
-
-      if (!switchNode) return;
-      const newState = switchNodes(
-        currentNode,
-        switchNode,
-        nodes,
-        edges,
-        setNodes,
-        setEdges
-      );
-      saveState(newState.nodes, newState.edges);
-    };
+    // Update the state with new node positions and edge connections
+    setNodes(nodesWithSwappedPositions);
+    setEdges(updatedEdgeConnections);
+  };
 
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
-        {/* Control buttons */}
-
         <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100">
-          {/* Delete button */}
           <button
             onClick={handleDelete}
             className="p-1.5 bg-red-500 rounded-full absolute text-white hover:bg-red-600 bottom-5 left-2"
@@ -164,31 +146,25 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
             <Trash2 className="w-3.5 h-3.5" />
           </button>
 
-          {/* Up arrow - show only if not first condition node */}
           {!isFirstConditionNode && (
             <button
-              // onClick={switchNodes('up')}
-              onClick={handleNodeSwitch("up")}
+              onClick={handleNodeSwap("up")}
               className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
           )}
 
-          {/* Down arrow - show only if not last condition node */}
           {!isLastConditionNode && (
             <button
-              // onClick={switchNodes('down')}
-              onClick={handleNodeSwitch("down")}
-              className=" p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3 "
-              // className="p-1.5 bg-gray-500 rounded-full text-white hover:bg-gray-600"
+              onClick={handleNodeSwap("down")}
+              className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
 
         <CustomHandle type="target" position={Position.Top} id={`${id}-top`} />
@@ -206,12 +182,8 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
               {data.label}
             </div>
           </div>
-          <div className="grid place-content-between">
-            {/* <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" /> */}
-          </div>
         </div>
 
-        {/* Right handle with icon */}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1">
           <CustomHandle
             type="source"
@@ -281,10 +253,3 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     </div>
   );
 };
-
-function saveState(
-  nodes: import("@xyflow/react").Node[],
-  edges: import("@xyflow/react").Edge[]
-) {
-  // throw new Error("Function not implemented.");
-}
