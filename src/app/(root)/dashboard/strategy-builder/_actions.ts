@@ -1,12 +1,5 @@
 import { get } from "@/lib/axios-factory";
-import { SymbolData, SymbolInfo } from "@/lib/store/dataPointStore";
-
-interface ApiResponse<T> {
-  status: boolean;
-  error: boolean;
-  message: string;
-  data: T;
-}
+import {  ApiResponse, SymbolData, SymbolInfo } from "./_components/DashboardSidebar/DatapointDialog/types";
 
 export const symbolService = {
   getSymbols: async (search?: string) => {

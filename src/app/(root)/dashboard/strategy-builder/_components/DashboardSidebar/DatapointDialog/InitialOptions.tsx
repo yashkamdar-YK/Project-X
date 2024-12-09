@@ -2,7 +2,11 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight } from "lucide-react";
-import { InitialOptionsProps } from "./types";
+
+interface InitialOptionsProps{
+  onSelect: (option: any) => void;
+  filteredOptions: any[];
+}
 
 export const InitialOptions: React.FC<InitialOptionsProps> = ({ onSelect, filteredOptions }) => (
   <div className="grid gap-4">

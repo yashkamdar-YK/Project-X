@@ -5,46 +5,58 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { DataType, StrikeMode, StrikePosition, StrikeSelection } from "./types";
+import { DataType, StrikeMode, StrikePosition, DataPoint } from "./types";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 // Constants
 const CANDLE_TYPES = ["ohlc", "hlc"] as const;
-const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
-const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
+const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i);
+const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i);
 
 interface CandleDataFormProps {
-  dataType: DataType;
-  setDataType: (type: DataType) => void;
-  onGenerateElementName: () => void;
-  elementName: string;
+  initialData?: DataPoint;
+  onSave: (data: Partial<DataPoint>) => void;
+  onClose?: () => void;
 }
 
 export const CandleDataForm: React.FC<CandleDataFormProps> = ({
-  dataType,
-  setDataType,
-  onGenerateElementName,
-  elementName,
+  initialData,
+  onSave,
+  onClose
 }) => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
-  const [candleType, setCandleType] = useState<string>("ohlc");
-  const [duration, setDuration] = useState<string>("2");
-  const [expiryType, setExpiryType] = useState<"weekly" | "monthly">("weekly");
-  const [expiryOrder, setExpiryOrder] = useState<string>("0");
-  const [strikeSelection, setStrikeSelection] = useState<StrikeSelection>({
-    mode: "at",
-    position: "ATM"
+  const [formData, setFormData] = useState({
+    dataType: initialData?.dataType || "SPOT" as DataType,
+    candleType: initialData?.candleType || "ohlc",
+    duration: initialData?.duration || "2",
+    expiryType: initialData?.expiryType || "weekly",
+    expiryOrder: initialData?.expiryOrder || "0",
+    elementName: initialData?.elementName || `spotNF_ohlc_2d`,
+    strikeSelection: initialData?.strikeSelection || {
+      mode: "at" as StrikeMode,
+      position: "ATM" as StrikePosition
+    }
   });
 
-  // Effect to handle expiry type when data type changes
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   useEffect(() => {
-    if (dataType === "FUT") {
-      setExpiryType("monthly");
+    if (formData.dataType === "FUT") {
+      updateFormData("expiryType", "monthly");
     }
-  }, [dataType]);
+  }, [formData.dataType]);
+
+  const handleGenerateElementName = () => {
+    const prefix = formData.dataType.toLowerCase();
+    const timestamp = Date.now().toString().slice(-4);
+    const newName = `${prefix}NF_${timestamp}`;
+    updateFormData("elementName", newName);
+  };
 
   if (!selectedSymbol || !currentSymbolInfo) {
     return (
@@ -59,6 +71,23 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
 
   const isWeeklyEnabled = currentSymbolInfo.isWeekly;
   const availableExpiryTypes = isWeeklyEnabled ? ["weekly", "monthly"] : ["monthly"];
+
+  const handleSubmit = () => {
+    const formDataToSubmit = {
+      elementName: formData.elementName,
+      dataType: formData.dataType,
+      candleType: formData.candleType,
+      duration: formData.duration,
+      expiryType: 
+        formData.dataType === "SPOT" ? undefined : formData.expiryType,
+      expiryOrder: 
+        formData.dataType === "SPOT" ? undefined : formData.expiryOrder,
+      strikeSelection: 
+        formData.dataType === "OPT" ? formData.strikeSelection : undefined
+    };
+  
+    onSave(formDataToSubmit);
+  };
 
   return (
     <div className="space-y-6">
@@ -84,8 +113,8 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <ToggleGroup
           className="border rounded-lg p-1 justify-start"
           type="single"
-          value={dataType}
-          onValueChange={(value: any) => value && setDataType(value)}
+          value={formData.dataType}
+          onValueChange={(value: any) => value && updateFormData("dataType", value)}
         >
           <ToggleGroupItem value="SPOT" className="flex-1">SPOT</ToggleGroupItem>
           <ToggleGroupItem value="FUT" className="flex-1">FUT</ToggleGroupItem>
@@ -97,7 +126,10 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Candle Type:</label>
-          <Select value={candleType} onValueChange={setCandleType}>
+          <Select 
+            value={formData.candleType} 
+            onValueChange={(value) => updateFormData("candleType", value)}
+          >
             <SelectTrigger className="text-base h-11">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
@@ -113,7 +145,10 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Duration:</label>
-          <Select value={duration} onValueChange={setDuration}>
+          <Select 
+            value={formData.duration} 
+            onValueChange={(value) => updateFormData("duration", value)}
+          >
             <SelectTrigger className="text-base h-11">
               <SelectValue placeholder="Select duration" />
             </SelectTrigger>
@@ -129,21 +164,21 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       </div>
 
       {/* Conditional Expiry Fields */}
-      {(dataType === "FUT" || dataType === "OPT") && (
+      {(formData.dataType === "FUT" || formData.dataType === "OPT") && (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Expiry:</label>
             <div className="flex gap-2">
               <Select
-                value={dataType === "FUT" ? "monthly" : expiryType}
-                onValueChange={(value: any) => value && setExpiryType(value)}
-                disabled={dataType === "FUT"}
+                value={formData.dataType === "FUT" ? "monthly" : formData.expiryType}
+                onValueChange={(value: any) => updateFormData("expiryType", value)}
+                disabled={formData.dataType === "FUT"}
               >
                 <SelectTrigger className="flex-1 text-base h-11">
                   <SelectValue placeholder="Select expiry" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(dataType === "FUT"
+                  {(formData.dataType === "FUT"
                     ? ["monthly"]
                     : availableExpiryTypes
                   ).map((type) => (
@@ -152,18 +187,21 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                 </SelectContent>
               </Select>
 
-              <Select value={expiryOrder} onValueChange={setExpiryOrder}>
+              <Select 
+                value={formData.expiryOrder}
+                onValueChange={(value) => updateFormData("expiryOrder", value)}
+              >
                 <SelectTrigger className="flex-1 text-base h-11">
                   <SelectValue placeholder="Select order" />
                 </SelectTrigger>
                 <SelectContent>
-                  {dataType === "FUT"
+                  {formData.dataType === "FUT"
                     ? currentSymbolInfo.FutExp.monthly.map((order) => (
                       <SelectItem key={order} value={order.toString()}>
                         {order === 0 ? 'Current' : order === 1 ? 'Next' : `Next ${order}`}
                       </SelectItem>
                     ))
-                    : expiryType === 'monthly'
+                    : formData.expiryType === 'monthly'
                       ? currentSymbolInfo.OptExp.monthly.map((order) => (
                         <SelectItem key={order} value={order.toString()}>
                           {order === 0 ? 'Current' : order === 1 ? 'Next' : `Next ${order}`}
@@ -180,16 +218,15 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             </div>
           </div>
 
-
           {/* Strike Selection for Options only */}
-          {dataType === "OPT" && (
+          {formData.dataType === "OPT" && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Strike Selection:</label>
               <div className="flex gap-2">
                 <Select
-                  value={strikeSelection.mode}
+                  value={formData.strikeSelection.mode}
                   onValueChange={(value: StrikeMode) =>
-                    setStrikeSelection(prev => ({ ...prev, mode: value }))
+                    updateFormData("strikeSelection", { ...formData.strikeSelection, mode: value })
                   }
                 >
                   <SelectTrigger className="flex-1 text-base h-11">
@@ -201,9 +238,9 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                   </SelectContent>
                 </Select>
                 <Select
-                  value={strikeSelection.position}
+                  value={formData.strikeSelection.position}
                   onValueChange={(value: StrikePosition) =>
-                    setStrikeSelection(prev => ({ ...prev, position: value }))
+                    updateFormData("strikeSelection", { ...formData.strikeSelection, position: value })
                   }
                 >
                   <SelectTrigger className="flex-1 text-base h-11">
@@ -240,19 +277,31 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <label className="text-sm font-medium">Element Name:</label>
         <div className="relative">
           <Input
-            value={elementName}
+            value={formData.elementName}
+            onChange={(e) => updateFormData("elementName", e.target.value)}
             className="rounded-lg bg-accent pr-10"
-            readOnly
           />
           <Button
             size="icon"
             variant="ghost"
             className="absolute right-2 top-1/2 -translate-y-1/2 hover:bg-accent"
-            onClick={onGenerateElementName}
+            onClick={handleGenerateElementName}
           >
             <WandSparkles className="h-4 w-4" />
           </Button>
         </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2 mt-6">
+        {onClose && (
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+        )}
+        <Button onClick={handleSubmit}>
+          {initialData ? 'Update' : 'Add'}
+        </Button>
       </div>
     </div>
   );

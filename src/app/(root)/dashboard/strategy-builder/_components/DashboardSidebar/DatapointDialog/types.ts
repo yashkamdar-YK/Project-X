@@ -1,13 +1,70 @@
 import { LucideIcon } from "lucide-react";
 
+// API Types
+export interface ApiResponse<T> {
+  status: boolean;
+  error: boolean;
+  message: string;
+  data: T;
+}
+
+export interface SymbolData {
+  exchange: string;
+}
+
+export interface ExecutionSettings {
+  orderType: string[];
+  productType: string[];
+}
+
+export interface OptExp {
+  weekly?: number[];
+  monthly: number[];
+}
+
+export interface SymbolInfo {
+  exchange: string;
+  isWeekly: boolean;
+  OptExp: OptExp;
+  FutExp: {
+    monthly: number[];
+  };
+  tickSize: number;
+  executionSettings: ExecutionSettings;
+  symbol: string;
+  timeFrame: number[];
+}
+
+// Data Point Types
 export type DataType = "SPOT" | "FUT" | "OPT";
-export type SelectedOption = "candle-data" | "days-to-expire" | "calculate-candle-data" | "synthetic-futures" | null;
+export type SelectedOption = "candle-data" | "days-to-expire" | null;
 export type StrikeMode = "at" | "near";
 export type StrikePosition = "ATM" | `ITM_${number}` | `OTM_${number}`;
 
 export interface StrikeSelection {
   mode: StrikeMode;
   position: StrikePosition;
+}
+
+export interface DataPoint {
+  id: string;
+  type: "candle-data" | "days-to-expire";
+  elementName: string;
+  dataType?: DataType;
+  candleType?: string;
+  duration?: string;
+  expiryType?: string;
+  expiryOrder?: string;
+  strikeSelection?: StrikeSelection;
+}
+
+export interface DataPointsStore {
+  dataPoints: DataPoint[];
+  selectedDataPoint: string | null;
+  addDataPoint: (dataPoint: DataPoint) => void;
+  removeDataPoint: (id: string) => void;
+  setSelectedDataPoint: (id: string | null) => void;
+  updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;
 }
 
 export interface DataPointOption {
@@ -20,41 +77,29 @@ export interface DataPointOption {
 export interface DataPointDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingDataPoint?: DataPoint;
 }
-
-export interface InitialOptionsProps {
-  onSelect: (option: SelectedOption) => void;
-  filteredOptions: DataPointOption[];
-}
-
-export type StrikeType = "ITM" | "ATM" | "OTM";
-export type CandleType = "ohlc" | "hlc";
 
 export interface CandleDataFormProps {
-  dataType: DataType;
-  setDataType: (type: DataType) => void;
-  onGenerateElementName: () => void;
-  elementName: string;
+  initialData?: DataPoint;
+  onSave: (data: {
+    elementName: string;
+    dataType?: DataType;
+    candleType?: string;
+    duration?: string;
+    expiryType?: string;
+    expiryOrder?: string;
+    strikeSelection?: StrikeSelection;
+  }) => void;
+  onClose?: () => void;
 }
 
-export interface DataPoint {
-  id: string;
-  type: "candle-data" | "days-to-expire";
-  dataType?: DataType;  // SPOT, FUT, OPT
-  candleType?: string;
-  duration?: string;
-  expiryType?: string;
-  expiryOrder?: string;
-  strikeSelection?: StrikeSelection;
-  elementName: string;
+export interface DaysToExpireProps {
+  initialData?: DataPoint;
+  onSave: (data: {
+    elementName: string;
+    expiryType?: string;
+    expiryOrder?: string;
+  }) => void;
+  onClose?: () => void;
 }
-
-export interface DataPointsStore {
-  dataPoints: DataPoint[];
-  selectedDataPoint: string | null;
-  addDataPoint: (dataPoint: DataPoint) => void;
-  removeDataPoint: (id: string) => void;
-  setSelectedDataPoint: (id: string | null) => void;
-  updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;
-}
-
