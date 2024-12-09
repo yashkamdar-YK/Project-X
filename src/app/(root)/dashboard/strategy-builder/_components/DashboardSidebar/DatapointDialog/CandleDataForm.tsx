@@ -98,7 +98,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <div className="space-y-2">
           <label className="text-sm font-medium">Candle Type:</label>
           <Select value={candleType} onValueChange={setCandleType}>
-            <SelectTrigger>
+            <SelectTrigger className="text-base h-11">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -110,10 +110,11 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             </SelectContent>
           </Select>
         </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium">Duration:</label>
           <Select value={duration} onValueChange={setDuration}>
-            <SelectTrigger>
+            <SelectTrigger className="text-base h-11">
               <SelectValue placeholder="Select duration" />
             </SelectTrigger>
             <SelectContent>
@@ -138,7 +139,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                 onValueChange={(value: any) => value && setExpiryType(value)}
                 disabled={dataType === "FUT"}
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1 text-base h-11">
                   <SelectValue placeholder="Select expiry" />
                 </SelectTrigger>
                 <SelectContent>
@@ -150,8 +151,9 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+
               <Select value={expiryOrder} onValueChange={setExpiryOrder}>
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1 text-base h-11">
                   <SelectValue placeholder="Select order" />
                 </SelectTrigger>
                 <SelectContent>
@@ -178,6 +180,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             </div>
           </div>
 
+
           {/* Strike Selection for Options only */}
           {dataType === "OPT" && (
             <div className="space-y-2">
@@ -189,7 +192,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     setStrikeSelection(prev => ({ ...prev, mode: value }))
                   }
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="flex-1 text-base h-11">
                     <SelectValue placeholder="Select strike" />
                   </SelectTrigger>
                   <SelectContent>
@@ -203,7 +206,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     setStrikeSelection(prev => ({ ...prev, position: value }))
                   }
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="flex-1 text-base h-11">
                     <SelectValue placeholder="Select position" />
                   </SelectTrigger>
                   <SelectContent>

@@ -84,7 +84,7 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
           <label className="text-sm font-medium">Expiry:</label>
           <div className="flex gap-2">
             <Select value={expiryType} onValueChange={setExpiryType}>
-              <SelectTrigger>
+              <SelectTrigger className="text-base h-11">
                 <SelectValue placeholder="Select expiry" />
               </SelectTrigger>
               <SelectContent>
@@ -93,7 +93,7 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
               </SelectContent>
             </Select>
             <Select value={expiryOrder} onValueChange={setExpiryOrder}>
-              <SelectTrigger>
+              <SelectTrigger className="text-base h-11">
                 <SelectValue placeholder="Select order" />
               </SelectTrigger>
               <SelectContent>
