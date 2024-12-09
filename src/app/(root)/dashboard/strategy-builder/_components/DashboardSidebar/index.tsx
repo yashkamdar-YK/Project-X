@@ -76,6 +76,7 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
+
         <Accordion
           type="multiple"
           className="space-y-2"
@@ -127,7 +128,7 @@ const DashboardSidebar: React.FC = () => {
                         </div>
                       ))}
                     {item.title === "Data Points" && (
-                      <div className="mt-4 space-y-2">
+                      <div className="space-y-2">
                         {Object.entries(groupedDataPoints).map(([type, points]) => (
                           <div key={type} className="space-y-1">
                             <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
