@@ -53,116 +53,121 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
     }
   };
 
-
   /**
- * Handles the swapping of condition nodes when clicking up/down arrows
- * @param direction - The direction to swap ('up' or 'down')
- * @returns Event handler function for the swap
- */
-  const handleNodeSwap = (direction: 'up' | 'down') => (event: React.MouseEvent) => {
-    // Prevent event bubbling
-    event.stopPropagation();
+   * Handles the swapping of condition nodes when clicking up/down arrows
+   * @param direction - The direction to swap ('up' or 'down')
+   * @returns Event handler function for the swap
+   */
+  const handleNodeSwap =
+    (direction: "up" | "down") => (event: React.MouseEvent) => {
+      // Prevent event bubbling
+      event.stopPropagation();
 
-    // Get the nodes to swap
-    const sourceConditionNode = conditionNodes[nodeIndex];
-    const targetIndex = direction === 'up' ? nodeIndex - 1 : nodeIndex + 1;
-    const targetConditionNode = conditionNodes[targetIndex];
+      // Get the nodes to swap
+      const sourceConditionNode = conditionNodes[nodeIndex];
+      const targetIndex = direction === "up" ? nodeIndex - 1 : nodeIndex + 1;
+      const targetConditionNode = conditionNodes[targetIndex];
 
-    // Exit if no valid target node to swap with
-    if (!targetConditionNode) return;
+      // Exit if no valid target node to swap with
+      if (!targetConditionNode) return;
 
-    // Store the original positions of both nodes
-    const sourceNodePosition = { ...sourceConditionNode.position };
-    const targetNodePosition = { ...targetConditionNode.position };
+      // Store the original positions of both nodes
+      const sourceNodePosition = { ...sourceConditionNode.position };
+      const targetNodePosition = { ...targetConditionNode.position };
 
-    // Create new nodes array with swapped positions
-    const nodesWithSwappedPositions = nodes.map(node => {
-      if (node.id === sourceConditionNode.id) {
-        return { ...node, position: targetNodePosition };
-      }
-      if (node.id === targetConditionNode.id) {
-        return { ...node, position: sourceNodePosition };
-      }
-      return node;
-    });
+      // Create new nodes array with swapped positions
+      const nodesWithSwappedPositions = nodes.map((node) => {
+        if (node.id === sourceConditionNode.id) {
+          return { ...node, position: targetNodePosition };
+        }
+        if (node.id === targetConditionNode.id) {
+          return { ...node, position: sourceNodePosition };
+        }
+        return node;
+      });
 
-    // Update edge connections while preserving action node relationships
-    const updatedEdgeConnections = edges.map(edge => {
-      const newEdgeConnection = { ...edge };
+      // Update edge connections while preserving action node relationships
+      const updatedEdgeConnections = edges.map((edge) => {
+        const newEdgeConnection = { ...edge };
 
-      // Skip action node connections (from right handle) to maintain their relationships
-      // Only update vertical connections between condition nodes
-      const isVerticalConnection = !edge.sourceHandle?.includes('right');
+        // Skip action node connections (from right handle) to maintain their relationships
+        // Only update vertical connections between condition nodes
+        const isVerticalConnection = !edge.sourceHandle?.includes("right");
 
-      if (isVerticalConnection) {
-        // Update source connections
-        if (edge.source === sourceConditionNode.id) {
-          newEdgeConnection.source = targetConditionNode.id;
-          if (edge.sourceHandle) {
-            // Preserve handle type (top/bottom) while updating node reference
-            const handleDirection = edge.sourceHandle.split('-').pop();
-            newEdgeConnection.sourceHandle = `${targetConditionNode.id}-${handleDirection}`;
+        if (isVerticalConnection) {
+          // Update source connections
+          if (edge.source === sourceConditionNode.id) {
+            newEdgeConnection.source = targetConditionNode.id;
+            if (edge.sourceHandle) {
+              // Preserve handle type (top/bottom) while updating node reference
+              const handleDirection = edge.sourceHandle.split("-").pop();
+              newEdgeConnection.sourceHandle = `${targetConditionNode.id}-${handleDirection}`;
+            }
+          } else if (edge.source === targetConditionNode.id) {
+            newEdgeConnection.source = sourceConditionNode.id;
+            if (edge.sourceHandle) {
+              const handleDirection = edge.sourceHandle.split("-").pop();
+              newEdgeConnection.sourceHandle = `${sourceConditionNode.id}-${handleDirection}`;
+            }
           }
-        } else if (edge.source === targetConditionNode.id) {
-          newEdgeConnection.source = sourceConditionNode.id;
-          if (edge.sourceHandle) {
-            const handleDirection = edge.sourceHandle.split('-').pop();
-            newEdgeConnection.sourceHandle = `${sourceConditionNode.id}-${handleDirection}`;
+
+          // Update target connections
+          if (edge.target === sourceConditionNode.id) {
+            newEdgeConnection.target = targetConditionNode.id;
+            if (edge.targetHandle) {
+              const handleDirection = edge.targetHandle.split("-").pop();
+              newEdgeConnection.targetHandle = `${targetConditionNode.id}-${handleDirection}`;
+            }
+          } else if (edge.target === targetConditionNode.id) {
+            newEdgeConnection.target = sourceConditionNode.id;
+            if (edge.targetHandle) {
+              const handleDirection = edge.targetHandle.split("-").pop();
+              newEdgeConnection.targetHandle = `${sourceConditionNode.id}-${handleDirection}`;
+            }
           }
         }
 
-        // Update target connections
-        if (edge.target === sourceConditionNode.id) {
-          newEdgeConnection.target = targetConditionNode.id;
-          if (edge.targetHandle) {
-            const handleDirection = edge.targetHandle.split('-').pop();
-            newEdgeConnection.targetHandle = `${targetConditionNode.id}-${handleDirection}`;
-          }
-        } else if (edge.target === targetConditionNode.id) {
-          newEdgeConnection.target = sourceConditionNode.id;
-          if (edge.targetHandle) {
-            const handleDirection = edge.targetHandle.split('-').pop();
-            newEdgeConnection.targetHandle = `${sourceConditionNode.id}-${handleDirection}`;
-          }
-        }
-      }
+        return newEdgeConnection;
+      });
 
-      return newEdgeConnection;
-    });
-
-    // Update the state with new node positions and edge connections
-    setNodes(nodesWithSwappedPositions);
-    setEdges(updatedEdgeConnections);
-  };
+      // Update the state with new node positions and edge connections
+      setNodes(nodesWithSwappedPositions);
+      setEdges(updatedEdgeConnections);
+    };
 
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
-        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-0 group-hover:opacity-100">
-          <button
-            onClick={handleDelete}
-            className="p-1.5 bg-red-500 rounded-full absolute text-white hover:bg-red-600 bottom-5 left-2"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 ">
 
-          {!isFirstConditionNode && (
+          <div className="opacity-0 group-hover:opacity-100">
             <button
-              onClick={handleNodeSwap("up")}
-              className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
+              onClick={handleDelete}
+              className="p-1.5 bg-red-500 rounded-full  absolute text-white hover:bg-red-600 bottom-6 left-2"
             >
-              <ChevronUp className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
-          )}
+          </div>
 
-          {!isLastConditionNode && (
-            <button
-              onClick={handleNodeSwap("down")}
-              className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
-            >
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <div className="lg:opacity-0 opacity-100 group-hover:opacity-100">
+            {!isFirstConditionNode && (
+              <button
+                onClick={handleNodeSwap("up")}
+                className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {!isLastConditionNode && (
+              <button
+                onClick={handleNodeSwap("down")}
+                className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
