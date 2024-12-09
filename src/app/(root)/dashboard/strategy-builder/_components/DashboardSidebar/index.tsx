@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
-import { Search, ChevronDown, Plus, X } from "lucide-react";
+import { Search, ChevronDown, Plus, X, Pencil } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -26,6 +26,17 @@ const DashboardSidebar: React.FC = () => {
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const dataPoints = useDataPointsStore((state) => state.dataPoints);
   const removeDataPoint = useDataPointsStore((state) => state.removeDataPoint);
+
+  const [isEditDataPointModalOpen, setIsEditDataPointModalOpen] =
+    useState(false);
+  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | null>(
+    null
+  );
+
+  const handleEditDataPoint = (dataPoint: DataPoint) => {
+    setEditingDataPoint(dataPoint);
+    setIsEditDataPointModalOpen(true);
+  };
 
   const groupedDataPoints = dataPoints.reduce((acc, dp) => {
     if (!acc[dp.type]) acc[dp.type] = [];
@@ -75,7 +86,6 @@ const DashboardSidebar: React.FC = () => {
         </div>
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
-
 
         <Accordion
           type="multiple"
@@ -129,30 +139,46 @@ const DashboardSidebar: React.FC = () => {
                       ))}
                     {item.title === "Data Points" && (
                       <div className="space-y-2">
-                        {Object.entries(groupedDataPoints).map(([type, points]) => (
-                          <div key={type} className="space-y-1">
-                            <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-                              {type === "candle-data" ? "Candle Data" : "Days to Expire"}
-                            </h4>
-                            {points.map((point) => (
-                              <div
-                                key={point.id}
-                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
-                              >
-                                <span className="text-sm">
-                                  {point.elementName}
-                                  {point.dataType && ` (${point.dataType})`}
-                                </span>
-                                <button
-                                  onClick={() => removeDataPoint(point.id)}
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
+                        {Object.entries(groupedDataPoints).map(
+                          ([type, points]) => (
+                            <div key={type} className="space-y-1">
+                              <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                                {type === "candle-data"
+                                  ? "Candle Data"
+                                  : "Days to Expire"}
+                              </h4>
+                              {points.map((point) => (
+                                <div
+                                  key={point.id}
+                                  className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
                                 >
-                                  <X className="w-4 h-4 text-gray-500" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
+                                  <span className="text-sm">
+                                    {point.elementName}
+                                    {point.dataType && ` (${point.dataType})`}
+                                  </span>
+
+                                  {/* Edit Symbol Button */}
+                                  <div>
+                                    <button
+                                      className="text-xs bg-blue-500 dark:bg-blue-600  text-white px-1 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 ml-3"
+                                      onClick={() => handleEditDataPoint(point)}
+                                    >
+                                      <Pencil className="w-3 h-3" />
+                                    </button>
+
+                                    {/* Delete Button */}
+                                    <button
+                                      onClick={() => removeDataPoint(point.id)}
+                                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
+                                    >
+                                      <X className="w-4 h-4 text-gray-500" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        )}
                       </div>
                     )}
                   </div>
@@ -193,7 +219,15 @@ const DashboardSidebar: React.FC = () => {
         </Sheet>
       </div>
 
-      <DataPointDialog open={isDataPointModalOpen} onOpenChange={() => setIsDataPointModalOpen(false)} />
+      <DataPointDialog
+        open={isDataPointModalOpen}
+        onOpenChange={() => setIsDataPointModalOpen(false)}
+      />
+      <DataPointDialog
+        open={isEditDataPointModalOpen}
+        onOpenChange={() => setIsEditDataPointModalOpen(false)}
+        initialDataPoint={editingDataPoint}
+      />
     </>
   );
 };

@@ -17,9 +17,15 @@ export interface DataPointOption {
   comingSoon?: boolean;
 }
 
+// export interface DataPointDialogProps {
+//   open: boolean;
+//   onOpenChange: (open: boolean) => void;
+// }
+
 export interface DataPointDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialDataPoint?: DataPoint | null;
 }
 
 export interface InitialOptionsProps {
