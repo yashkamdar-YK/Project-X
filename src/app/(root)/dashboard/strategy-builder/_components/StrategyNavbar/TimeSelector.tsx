@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Star } from "lucide-react";
+import { useDataPointStore } from "@/lib/store/datapointStore";
 
 const convertToMinutes = (timeStr: string): number => {
   const value = parseInt(timeStr);
@@ -21,29 +22,50 @@ const sortTimeValues = (a: string, b: string): number => {
   return convertToMinutes(a) - convertToMinutes(b);
 };
 
-const initialTimeOptions = [
-  { value: "1m", isStarred: false },
-  { value: "3m", isStarred: false },
-  { value: "5m", isStarred: false },
-  { value: "15m", isStarred: false },
-  { value: "30m", isStarred: false },
-  { value: "1h", isStarred: false },
-  { value: "4h", isStarred: false },
-  { value: "1d", isStarred: false },
-  { value: "1w", isStarred: false },
-].sort((a, b) => sortTimeValues(a.value, b.value));
+const formatTimeFrame = (minutes: number): string => {
+  if (minutes >= 1440) { // 24 * 60
+    return `${minutes / 1440}d`;
+  } else if (minutes >= 60) {
+    return `${minutes / 60}h`;
+  }
+  return `${minutes}m`;
+};
+
 
 const TimePicker = () => {
-  const [selectedTime, setSelectedTime] = useState(initialTimeOptions[0].value);
-  const [timeOptions, setTimeOptions] = useState(initialTimeOptions);
+  const { symbolInfo, selectedSymbol } = useDataPointStore();
+  const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
+  
+  // Convert API timeframes to our format
+  const getTimeOptions = () => {
+    if (!currentSymbolInfo?.timeFrame) {
+      return [];
+    }
+
+    return currentSymbolInfo.timeFrame.map(minutes => ({
+      value: formatTimeFrame(minutes),
+      isStarred: false
+    })).sort((a, b) => sortTimeValues(a.value, b.value));
+  };
+
+  const [timeOptions, setTimeOptions] = useState(getTimeOptions());
+  const [selectedTime, setSelectedTime] = useState(timeOptions[0]?.value || "1m");
   const [isOpen, setIsOpen] = useState(false);
+
+  // Update options when symbol changes
+  useEffect(() => {
+    const newOptions = getTimeOptions();
+    setTimeOptions(newOptions);
+    if (newOptions.length > 0) {
+      setSelectedTime(newOptions[0].value);
+    }
+  }, [selectedSymbol, currentSymbolInfo]);
 
   const getQuickSelectionOptions = () => {
     const starredOptions = timeOptions
       .filter(option => option.isStarred)
       .map(option => option.value);
     
-    // Add selected time if it's not already in starred options
     if (!starredOptions.includes(selectedTime)) {
       starredOptions.push(selectedTime);
     }
@@ -74,6 +96,9 @@ const TimePicker = () => {
   );
   
   const quickSelectionOptions = getQuickSelectionOptions();
+
+  if (!selectedSymbol || timeOptions.length === 0) return null
+
 
   return (
     <div className="flex items-center space-x-1">

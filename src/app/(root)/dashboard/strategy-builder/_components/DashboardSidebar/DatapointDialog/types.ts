@@ -2,6 +2,13 @@ import { LucideIcon } from "lucide-react";
 
 export type DataType = "SPOT" | "FUT" | "OPT";
 export type SelectedOption = "candle-data" | "days-to-expire" | "calculate-candle-data" | "synthetic-futures" | null;
+export type StrikeMode = "at" | "near";
+export type StrikePosition = "ATM" | `ITM_${number}` | `OTM_${number}`;
+
+export interface StrikeSelection {
+  mode: StrikeMode;
+  position: StrikePosition;
+}
 
 export interface DataPointOption {
   title: string;
@@ -29,3 +36,25 @@ export interface CandleDataFormProps {
   onGenerateElementName: () => void;
   elementName: string;
 }
+
+export interface DataPoint {
+  id: string;
+  type: "candle-data" | "days-to-expire";
+  dataType?: DataType;  // SPOT, FUT, OPT
+  candleType?: string;
+  duration?: string;
+  expiryType?: string;
+  expiryOrder?: string;
+  strikeSelection?: StrikeSelection;
+  elementName: string;
+}
+
+export interface DataPointsStore {
+  dataPoints: DataPoint[];
+  selectedDataPoint: string | null;
+  addDataPoint: (dataPoint: DataPoint) => void;
+  removeDataPoint: (id: string) => void;
+  setSelectedDataPoint: (id: string | null) => void;
+  updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;
+}
+

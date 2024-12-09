@@ -2,31 +2,44 @@ import React, { useState } from 'react';
 import { Search, Loader2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
-import { symbolService } from './_actions';
+import { symbolService } from '../../_actions';
 import { cn } from '@/lib/utils';
+import { useDataPointStore } from '@/lib/store/datapointStore';
 
-interface SymbolSearchProps {
-  onSymbolSelect?: (symbol: string) => void;
-}
-
-const SymbolSearch: React.FC<SymbolSearchProps> = ({ onSymbolSelect }) => {
+const SymbolSearch: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 300);
+  
+  // Get store actions
+  const { setSelectedSymbol, setSymbolInfo } = useDataPointStore();
 
-  const { data: symbolsData, isLoading, error } = useQuery({
+  // Query for symbols list
+  const { data: symbolsData, isLoading: isLoadingSymbols, error: symbolsError } = useQuery({
     queryKey: ['symbols', debouncedSearch],
-    queryFn: () => symbolService.getSymbols(debouncedSearch),
+    queryFn: () => symbolService.getSymbols(),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
 
-  const handleSelect = (symbol: string) => {
+  // Query for symbol info
+  const symbolInfoMutation = useMutation({
+    mutationFn: () => symbolService.getSymbolInfo(searchValue),
+    onSuccess: (data) => {
+      setSymbolInfo(searchValue, data);
+    },
+    mutationKey: ['symbolInfo'],
+  })
+
+  const handleSelect = async (symbol: string) => {
     setSearchValue(symbol);
+    setSelectedSymbol(symbol);
     setOpen(false);
-    onSymbolSelect?.(symbol);
+    
+    // Fetch symbol info when selected
+    await symbolInfoMutation.mutateAsync();
   };
 
   const clearSearch = () => {
@@ -34,7 +47,7 @@ const SymbolSearch: React.FC<SymbolSearchProps> = ({ onSymbolSelect }) => {
   };
 
   const renderSymbolList = () => {
-    if (isLoading) {
+    if (isLoadingSymbols) {
       return (
         <div className="flex flex-col items-center justify-center p-8 space-y-4 text-gray-500 dark:text-gray-400">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -43,7 +56,7 @@ const SymbolSearch: React.FC<SymbolSearchProps> = ({ onSymbolSelect }) => {
       );
     }
 
-    if (error) {
+    if (symbolsError) {
       return (
         <div className="flex flex-col items-center justify-center p-8 space-y-2">
           <div className="rounded-full bg-red-100 dark:bg-red-900/20 p-3">
@@ -82,7 +95,7 @@ const SymbolSearch: React.FC<SymbolSearchProps> = ({ onSymbolSelect }) => {
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
-                  Select
+                  {symbolInfoMutation.isPending ? 'Loading...' : 'Select'}
                 </span>
               </div>
             </div>

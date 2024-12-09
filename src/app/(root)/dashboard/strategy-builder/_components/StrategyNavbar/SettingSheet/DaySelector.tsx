@@ -11,13 +11,9 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
 interface DaySelectorProps {
-  onStateChange?: (state: "days" | "daily" | "exp") => void;
-  showDaysInDaily?: boolean;
 }
 
-const DaySelector: React.FC<DaySelectorProps> = ({ 
-  onStateChange,
-  showDaysInDaily = false 
+const DaySelector: React.FC<{}> = ({ 
 }) => {
   const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("days");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -47,7 +43,6 @@ const DaySelector: React.FC<DaySelectorProps> = ({
         ? "exp"
         : "days";
     setSelectorState(newState);
-    onStateChange?.(newState);
     setCurrentExpPage(0);
   };
 
