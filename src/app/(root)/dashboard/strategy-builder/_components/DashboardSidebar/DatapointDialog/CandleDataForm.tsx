@@ -3,11 +3,11 @@ import { WandSparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { useDataPointStore } from "@/lib/store/datapointStore";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { DataType, StrikeMode, StrikePosition, StrikeSelection } from "./types";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 // Constants
 const CANDLE_TYPES = ["ohlc", "hlc"] as const;

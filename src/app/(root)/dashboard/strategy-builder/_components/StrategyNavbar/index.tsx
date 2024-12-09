@@ -59,10 +59,6 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="relative">
                 <SymbolSearch
-                  onSymbolSelect={(symbol) => {
-                    console.log("Selected symbol:", symbol);
-                    // Handle symbol selection
-                  }}
                 />
               </div>
 

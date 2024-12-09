@@ -3,8 +3,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Clock, IndianRupee } from "lucide-react";
-import { useDataPointStore } from "@/lib/store/datapointStore";
 import { cn } from "@/lib/utils";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 interface OrderOperationProps {
   type?: "entry" | "exit";

@@ -1,5 +1,5 @@
 import { get } from "@/lib/axios-factory";
-import { SymbolData, SymbolInfo } from "@/lib/store/datapointStore";
+import { SymbolData, SymbolInfo } from "@/lib/store/dataPointStore";
 
 interface ApiResponse<T> {
   status: boolean;

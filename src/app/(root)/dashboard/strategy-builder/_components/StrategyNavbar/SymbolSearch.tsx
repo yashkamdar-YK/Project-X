@@ -6,7 +6,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { symbolService } from '../../_actions';
 import { cn } from '@/lib/utils';
-import { useDataPointStore } from '@/lib/store/datapointStore';
+import { useDataPointStore } from '@/lib/store/dataPointStore';
 
 const SymbolSearch: React.FC = () => {
   const [open, setOpen] = useState(false);
