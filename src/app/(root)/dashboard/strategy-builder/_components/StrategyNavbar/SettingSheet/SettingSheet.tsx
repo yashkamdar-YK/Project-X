@@ -4,13 +4,28 @@ import DaySelector from "./DaySelector";
 import { useSheetStore } from "@/lib/store/SheetStore";
 import { X, Settings2, Calendar, Briefcase, LayoutGrid } from "lucide-react";
 import OrderOperation from "./OrderOperation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { useDataPointStore } from "@/lib/store/datapointStore";
 
 const SettingSheet = () => {
   const { closeSheet, type } = useSheetStore();
+  const { symbolInfo, selectedSymbol } = useDataPointStore();
+  
+  // Get the current symbol's info
+  const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
+  
   const [strategyType, setStrategyType] = useState<"Intraday" | "Positional">("Intraday");
-  const [productType, setProductType] = useState<"Intraday" | "Delivery">("Intraday");
-  const [orderType, setOrderType] = useState<"Limit" | "Market">("Limit");
-  const [tradeState, setTradeState] = useState<"days" | "daily" | "exp">("days");
+  const [productType, setProductType] = useState<"Intraday" | "Delivery">(
+    (currentSymbolInfo?.executionSettings?.productType[0] as "Intraday" | "Delivery") || "Intraday"
+  );
+  const [orderType, setOrderType] = useState<"Limit" | "Market">(
+    (currentSymbolInfo?.executionSettings?.orderType[0] as "Limit" | "Market") || "Limit"
+  );
+
+  // Available options from API or defaults
+  const availableProductTypes = currentSymbolInfo?.executionSettings?.productType || ["Intraday", "Delivery"];
+  const availableOrderTypes = currentSymbolInfo?.executionSettings?.orderType || ["Market", "Limit"];
 
   if (type !== "settings") return null;
 
@@ -27,7 +42,7 @@ const SettingSheet = () => {
             <div className="flex items-center gap-3">
               <Settings2 className="w-5 h-5 text-blue-500" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Settings
+                Settings {selectedSymbol ? `- ${selectedSymbol}` : ''}
               </h1>
             </div>
             <Button
@@ -40,6 +55,15 @@ const SettingSheet = () => {
             </Button>
           </div>
 
+          {!selectedSymbol && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Please select a symbol first to configure settings.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Strategy Type Section */}
           <div className={sectionClass}>
             <div className="flex items-center justify-between">
@@ -50,6 +74,7 @@ const SettingSheet = () => {
               <Button
                 onClick={() => setStrategyType(prev => prev === "Intraday" ? "Positional" : "Intraday")}
                 className={buttonClass}
+                disabled={!selectedSymbol}
               >
                 {strategyType}
               </Button>
@@ -64,10 +89,12 @@ const SettingSheet = () => {
                 Trade On
               </span>
               <div className="flex justify-end mt-2">
-              <DaySelector
-                onStateChange={setTradeState}
-                showDaysInDaily={true}
-              />
+                <DaySelector
+                  // onStateChange={setTradeState}
+                  // showDaysInDaily={true}
+                  // disabled={!selectedSymbol}
+                  // isWeekly={currentSymbolInfo?.isWeekly}
+                />
               </div>
             </div>
           </div>
@@ -88,8 +115,13 @@ const SettingSheet = () => {
                   Product Type
                 </span>
                 <Button
-                  onClick={() => setProductType(prev => prev === "Intraday" ? "Delivery" : "Intraday")}
+                  onClick={() => {
+                    const currentIndex = availableProductTypes.indexOf(productType);
+                    const nextIndex = (currentIndex + 1) % availableProductTypes.length;
+                    setProductType(availableProductTypes[nextIndex] as "Intraday" | "Delivery");
+                  }}
                   className={buttonClass}
+                  disabled={!selectedSymbol || availableProductTypes.length <= 1}
                 >
                   {productType}
                 </Button>
@@ -101,8 +133,13 @@ const SettingSheet = () => {
                   Order Type
                 </span>
                 <Button
-                  onClick={() => setOrderType(prev => prev === "Limit" ? "Market" : "Limit")}
+                  onClick={() => {
+                    const currentIndex = availableOrderTypes.indexOf(orderType);
+                    const nextIndex = (currentIndex + 1) % availableOrderTypes.length;
+                    setOrderType(availableOrderTypes[nextIndex] as "Limit" | "Market");
+                  }}
                   className={buttonClass}
+                  disabled={!selectedSymbol}
                 >
                   {orderType}
                 </Button>
@@ -115,13 +152,13 @@ const SettingSheet = () => {
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Entry Order Operations
                     </h3>
-                    <OrderOperation type="entry" />
+                    <OrderOperation type="entry" disabled={!selectedSymbol} />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Exit Order Operations
                     </h3>
-                    <OrderOperation type="exit" />
+                    <OrderOperation type="exit" disabled={!selectedSymbol} />
                   </div>
                 </div>
               )}

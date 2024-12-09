@@ -6,15 +6,20 @@ import { Input } from "@/components/ui/input";
 import { InitialOptions } from "./InitialOptions";
 import { CandleDataForm } from "./CandleDataForm";
 import { DATA_POINT_OPTIONS } from "./constants";
-import { DataPointDialogProps, DataType, SelectedOption } from "./types";
+import { DataPointDialogProps, DataType, SelectedOption, DataPoint } from "./types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 
 export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
   const [selectedOption, setSelectedOption] = useState<SelectedOption>(null);
   const [dataType, setDataType] = useState<DataType>("SPOT");
   const [searchQuery, setSearchQuery] = useState("");
   const [elementName, setElementName] = useState("spotNF_ohlc_2d");
+  const [expiryType, setExpiryType] = useState("weekly");
+  const [expiryOrder, setExpiryOrder] = useState("0");
+
+  const addDataPoint = useDataPointsStore((state) => state.addDataPoint);
 
   const filteredOptions = useMemo(() => {
     return DATA_POINT_OPTIONS.filter(option => 
@@ -40,6 +45,31 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
     setElementName(newName);
   };
 
+  const handleSaveDataPoint = () => {
+    if (selectedOption === "candle-data") {
+      // Get form data from CandleDataForm via ref or state
+      const newDataPoint: DataPoint = {
+        id: Date.now().toString(),
+        type: "candle-data",
+        dataType,
+        elementName,
+      };
+      addDataPoint(newDataPoint);
+    } else if (selectedOption === "days-to-expire") {
+      const newDataPoint: DataPoint = {
+        id: Date.now().toString(),
+        type: "days-to-expire",
+        elementName: "dte",
+        expiryType,
+        expiryOrder,
+      };
+      addDataPoint(newDataPoint);
+    }
+
+    handleSearchClear();
+    onOpenChange(false);
+  };
+
   const renderDaysToExpire = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -53,7 +83,7 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
         <div className="space-y-2">
           <label className="text-sm font-medium">Expiry:</label>
           <div className="flex gap-2">
-            <Select defaultValue="weekly">
+            <Select value={expiryType} onValueChange={setExpiryType}>
               <SelectTrigger>
                 <SelectValue placeholder="Select expiry" />
               </SelectTrigger>
@@ -62,13 +92,14 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
                 <SelectItem value="monthly">Monthly</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="first">
+            <Select value={expiryOrder} onValueChange={setExpiryOrder}>
               <SelectTrigger>
                 <SelectValue placeholder="Select order" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="first">First</SelectItem>
-                <SelectItem value="second">Second</SelectItem>
+                <SelectItem value="0">Current</SelectItem>
+                <SelectItem value="1">Next</SelectItem>
+                <SelectItem value="2">Next 2</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -157,8 +188,13 @@ export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
         {renderContent()}
 
         {selectedOption && (
-          <div className="flex justify-end mt-6">
-            <Button onClick={() => onOpenChange(false)}>Done</Button>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveDataPoint}>
+              Add
+            </Button>
           </div>
         )}
       </DialogContent>
