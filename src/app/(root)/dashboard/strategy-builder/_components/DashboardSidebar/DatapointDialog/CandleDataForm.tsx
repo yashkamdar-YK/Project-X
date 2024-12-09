@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import { WandSparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+} from "@/components/ui/select";
 import { useDataPointStore } from "@/lib/store/datapointStore";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -14,11 +22,28 @@ const CANDLE_TYPES = ["ohlc", "hlc"] as const;
 const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
 const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
 
+// interface CandleDataFormProps {
+//   dataType: DataType;
+//   setDataType: (type: DataType) => void;
+//   onGenerateElementName: () => void;
+//   elementName: string;
+// }
+
 interface CandleDataFormProps {
   dataType: DataType;
   setDataType: (type: DataType) => void;
   onGenerateElementName: () => void;
   elementName: string;
+  candleType: string;
+  setCandleType: (type: string) => void;
+  duration: string;
+  setDuration: (duration: string) => void;
+  expiryType: string;
+  setExpiryType: (type: string) => void;
+  expiryOrder: string;
+  setExpiryOrder: (order: string) => void;
+  strikeSelection: StrikeSelection;
+  setStrikeSelection: (selection: StrikeSelection) => void;
 }
 
 export const CandleDataForm: React.FC<CandleDataFormProps> = ({
@@ -26,18 +51,31 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   setDataType,
   onGenerateElementName,
   elementName,
+  candleType,
+  setCandleType,
+  duration,
+  setDuration,
+  expiryType,
+  setExpiryType,
+  expiryOrder,
+  setExpiryOrder,
+  strikeSelection,
+  setStrikeSelection,
 }) => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
+  // const [candleType, setCandleType] = useState<string>("ohlc");
+  // const [duration, setDuration] = useState<string>("2");
+  // const [expiryType, setExpiryType] = useState<"weekly" | "monthly">("weekly");
+  // const [expiryOrder, setExpiryOrder] = useState<string>("0");
+  // const [strikeSelection, setStrikeSelection] = useState<StrikeSelection>({
+  //   mode: "at",
+  //   position: "ATM"
+  // });
 
-  const [candleType, setCandleType] = useState<string>("ohlc");
-  const [duration, setDuration] = useState<string>("2");
-  const [expiryType, setExpiryType] = useState<"weekly" | "monthly">("weekly");
-  const [expiryOrder, setExpiryOrder] = useState<string>("0");
-  const [strikeSelection, setStrikeSelection] = useState<StrikeSelection>({
-    mode: "at",
-    position: "ATM"
-  });
+  console.log(
+    `Data of Symbole: Candle Type ${candleType}, Days ${duration}, Expire ${expiryType} , Expire ${expiryOrder}`
+  );
 
   // Effect to handle expiry type when data type changes
   useEffect(() => {
@@ -58,7 +96,9 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   }
 
   const isWeeklyEnabled = currentSymbolInfo.isWeekly;
-  const availableExpiryTypes = isWeeklyEnabled ? ["weekly", "monthly"] : ["monthly"];
+  const availableExpiryTypes = isWeeklyEnabled
+    ? ["weekly", "monthly"]
+    : ["monthly"];
 
   return (
     <div className="space-y-6">
@@ -87,9 +127,15 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
           value={dataType}
           onValueChange={(value: any) => value && setDataType(value)}
         >
-          <ToggleGroupItem value="SPOT" className="flex-1">SPOT</ToggleGroupItem>
-          <ToggleGroupItem value="FUT" className="flex-1">FUT</ToggleGroupItem>
-          <ToggleGroupItem value="OPT" className="flex-1">OPT</ToggleGroupItem>
+          <ToggleGroupItem value="SPOT" className="flex-1">
+            SPOT
+          </ToggleGroupItem>
+          <ToggleGroupItem value="FUT" className="flex-1">
+            FUT
+          </ToggleGroupItem>
+          <ToggleGroupItem value="OPT" className="flex-1">
+            OPT
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
@@ -120,7 +166,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             <SelectContent>
               {DURATION_DAYS.map((day) => (
                 <SelectItem key={day} value={day.toString()}>
-                  {day} {day === 1 ? 'Day' : 'Days'}
+                  {day} {day === 1 ? "Day" : "Days"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -147,7 +193,9 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     ? ["monthly"]
                     : availableExpiryTypes
                   ).map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -159,27 +207,37 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                 <SelectContent>
                   {dataType === "FUT"
                     ? currentSymbolInfo.FutExp.monthly.map((order) => (
-                      <SelectItem key={order} value={order.toString()}>
-                        {order === 0 ? 'Current' : order === 1 ? 'Next' : `Next ${order}`}
-                      </SelectItem>
-                    ))
-                    : expiryType === 'monthly'
-                      ? currentSymbolInfo.OptExp.monthly.map((order) => (
                         <SelectItem key={order} value={order.toString()}>
-                          {order === 0 ? 'Current' : order === 1 ? 'Next' : `Next ${order}`}
+                          {order === 0
+                            ? "Current"
+                            : order === 1
+                            ? "Next"
+                            : `Next ${order}`}
                         </SelectItem>
                       ))
-                      : currentSymbolInfo.OptExp.weekly?.map((order) => (
+                    : expiryType === "monthly"
+                    ? currentSymbolInfo.OptExp.monthly.map((order) => (
                         <SelectItem key={order} value={order.toString()}>
-                          {order === 0 ? 'Current' : order === 1 ? 'Next' : `Next ${order}`}
+                          {order === 0
+                            ? "Current"
+                            : order === 1
+                            ? "Next"
+                            : `Next ${order}`}
                         </SelectItem>
                       ))
-                  }
+                    : currentSymbolInfo.OptExp.weekly?.map((order) => (
+                        <SelectItem key={order} value={order.toString()}>
+                          {order === 0
+                            ? "Current"
+                            : order === 1
+                            ? "Next"
+                            : `Next ${order}`}
+                        </SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
-
 
           {/* Strike Selection for Options only */}
           {dataType === "OPT" && (
@@ -188,9 +246,12 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
               <div className="flex gap-2">
                 <Select
                   value={strikeSelection.mode}
-                  onValueChange={(value: StrikeMode) =>
-                    setStrikeSelection(prev => ({ ...prev, mode: value }))
-                  }
+                  onValueChange={(value: StrikeMode) => {
+                    setStrikeSelection({
+                      ...strikeSelection,
+                      mode: value,
+                    });
+                  }}
                 >
                   <SelectTrigger className="flex-1 text-base h-11">
                     <SelectValue placeholder="Select strike" />
@@ -202,9 +263,12 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                 </Select>
                 <Select
                   value={strikeSelection.position}
-                  onValueChange={(value: StrikePosition) =>
-                    setStrikeSelection(prev => ({ ...prev, position: value }))
-                  }
+                  onValueChange={(value: StrikePosition) => {
+                    setStrikeSelection({
+                      ...strikeSelection,
+                      position: value,
+                    });
+                  }}
                 >
                   <SelectTrigger className="flex-1 text-base h-11">
                     <SelectValue placeholder="Select position" />
