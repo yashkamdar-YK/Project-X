@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
-import { Search, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronDown, Plus, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -16,12 +16,22 @@ import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
 import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 import { useNodeStore } from "@/lib/store/nodeStore";
-import {DataPointDialog} from "./DatapointDialog/index";
+import { DataPointDialog } from "./DatapointDialog/index";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { DataPoint } from "./DatapointDialog/types";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
+  const dataPoints = useDataPointsStore((state) => state.dataPoints);
+  const removeDataPoint = useDataPointsStore((state) => state.removeDataPoint);
+
+  const groupedDataPoints = dataPoints.reduce((acc, dp) => {
+    if (!acc[dp.type]) acc[dp.type] = [];
+    acc[dp.type].push(dp);
+    return acc;
+  }, {} as Record<string, DataPoint[]>);
 
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
     event.stopPropagation();
@@ -116,6 +126,34 @@ const DashboardSidebar: React.FC = () => {
                           </div>
                         </div>
                       ))}
+                    {item.title === "Data Points" && (
+                      <div className="mt-4 space-y-2">
+                        {Object.entries(groupedDataPoints).map(([type, points]) => (
+                          <div key={type} className="space-y-1">
+                            <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                              {type === "candle-data" ? "Candle Data" : "Days to Expire"}
+                            </h4>
+                            {points.map((point) => (
+                              <div
+                                key={point.id}
+                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
+                              >
+                                <span className="text-sm">
+                                  {point.elementName}
+                                  {point.dataType && ` (${point.dataType})`}
+                                </span>
+                                <button
+                                  onClick={() => removeDataPoint(point.id)}
+                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
+                                >
+                                  <X className="w-4 h-4 text-gray-500" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </AccordionContent>
