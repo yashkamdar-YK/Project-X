@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Star } from "lucide-react";
-import { useDataPointStore } from "@/lib/store/datapointStore";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 const convertToMinutes = (timeStr: string): number => {
   const value = parseInt(timeStr);

@@ -6,7 +6,7 @@ import { X, Settings2, Calendar, Briefcase, LayoutGrid } from "lucide-react";
 import OrderOperation from "./OrderOperation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { useDataPointStore } from "@/lib/store/datapointStore";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 const SettingSheet = () => {
   const { closeSheet, type } = useSheetStore();

@@ -1,205 +1,135 @@
 import React, { useState, useMemo } from "react";
-import { Search, WandSparkles, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { InitialOptions } from "./InitialOptions";
-import { CandleDataForm } from "./CandleDataForm";
-import { DATA_POINT_OPTIONS } from "./constants";
-import { DataPointDialogProps, DataType, SelectedOption, DataPoint } from "./types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DataPoint, SelectedOption } from "./types";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { CandleDataForm } from "./CandleDataForm";
+import DaysToExpire from "./DaysToExpire";
+import { InitialOptions } from "./InitialOptions";
+import { DATA_POINT_OPTIONS } from "./constants";
 
-export function DataPointDialog({ open, onOpenChange }: DataPointDialogProps) {
-  const [selectedOption, setSelectedOption] = useState<SelectedOption>(null);
-  const [dataType, setDataType] = useState<DataType>("SPOT");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [elementName, setElementName] = useState("spotNF_ohlc_2d");
-  const [expiryType, setExpiryType] = useState("weekly");
-  const [expiryOrder, setExpiryOrder] = useState("0");
+interface DataPointDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingDataPoint?: DataPoint;
+}
 
+// Define a type for the form data
+type DataPointFormData = {
+  elementName: string;
+  dataType?: DataPoint['dataType'];
+  candleType?: DataPoint['candleType'];
+  duration?: DataPoint['duration'];
+  expiryType?: DataPoint['expiryType'];
+  expiryOrder?: DataPoint['expiryOrder'];
+  strikeSelection?: DataPoint['strikeSelection'];
+};
+
+export function DataPointDialog({ 
+  open, 
+  onOpenChange,
+  editingDataPoint 
+}: DataPointDialogProps) {
   const addDataPoint = useDataPointsStore((state) => state.addDataPoint);
+  const updateDataPoint = useDataPointsStore((state) => state.updateDataPoint);
 
-  const filteredOptions = useMemo(() => {
-    return DATA_POINT_OPTIONS.filter(option => 
-      option.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+  const [selectedOption, setSelectedOption] = useState<SelectedOption>(
+    editingDataPoint?.type || null
+  );
 
   const handleOptionSelect = (option: SelectedOption) => {
     setSelectedOption(option);
-    setSearchQuery(DATA_POINT_OPTIONS.find(item => item.option === option)?.title || "");
   };
 
-  const handleSearchClear = () => {
-    setSearchQuery("");
-    setSelectedOption(null);
-    setDataType("SPOT");
-  };
-
-  const handleGenerateElementName = () => {
-    const prefix = dataType.toLowerCase();
-    const timestamp = Date.now().toString().slice(-4);
-    const newName = `${prefix}NF_${timestamp}`;
-    setElementName(newName);
-  };
-
-  const handleSaveDataPoint = () => {
-    if (selectedOption === "candle-data") {
-      // Get form data from CandleDataForm via ref or state
+  const handleSave = (formData: DataPointFormData) => {
+    if (editingDataPoint) {
+      // Update existing data point with partial data
+      updateDataPoint(editingDataPoint.id, formData);
+    } else if (selectedOption) {
+      // Create new data point with complete data
       const newDataPoint: DataPoint = {
         id: Date.now().toString(),
-        type: "candle-data",
-        dataType,
-        elementName,
-      };
-      addDataPoint(newDataPoint);
-    } else if (selectedOption === "days-to-expire") {
-      const newDataPoint: DataPoint = {
-        id: Date.now().toString(),
-        type: "days-to-expire",
-        elementName: "dte",
-        expiryType,
-        expiryOrder,
+        type: selectedOption,
+        elementName: formData.elementName,
+        dataType: formData.dataType,
+        candleType: formData.candleType,
+        duration: formData.duration,
+        expiryType: formData.expiryType,
+        expiryOrder: formData.expiryOrder,
+        strikeSelection: formData.strikeSelection
       };
       addDataPoint(newDataPoint);
     }
+    handleClose();
+  };
 
-    handleSearchClear();
+  const handleClose = () => {
+    setSelectedOption(null);
     onOpenChange(false);
   };
 
-  const renderDaysToExpire = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Underlying:</label>
-          <div className="rounded-lg bg-accent px-4 py-2 text-center">NIFTY</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Expiry:</label>
-          <div className="flex gap-2">
-            <Select value={expiryType} onValueChange={setExpiryType}>
-              <SelectTrigger className="text-base h-11">
-                <SelectValue placeholder="Select expiry" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={expiryOrder} onValueChange={setExpiryOrder}>
-              <SelectTrigger className="text-base h-11">
-                <SelectValue placeholder="Select order" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Current</SelectItem>
-                <SelectItem value="1">Next</SelectItem>
-                <SelectItem value="2">Next 2</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Element Name:</label>
-        <div className="relative">
-          <Input 
-            value="dte" 
-            className="rounded-lg bg-accent pr-10" 
-            readOnly 
-          />
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="absolute right-2 top-1/2 -translate-y-1/2"
-            onClick={handleGenerateElementName}
-          >
-            <WandSparkles className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <Alert>
-        <AlertDescription>
-          Selected Expiry date is compared with current date to find the days to expiry.
-          Holidays and events are ignored while calculating Days to Expiry.
-        </AlertDescription>
-      </Alert>
-    </div>
-  );
-
   const renderContent = () => {
-    switch (selectedOption) {
-      case "candle-data":
-        return (
-          <CandleDataForm 
-            dataType={dataType} 
-            setDataType={setDataType}
-            onGenerateElementName={handleGenerateElementName}
-            elementName={elementName}
-          />
-        );
-      case "days-to-expire":
-        return renderDaysToExpire();
-      default:
-        return (
-          <InitialOptions 
-            onSelect={handleOptionSelect} 
-            filteredOptions={filteredOptions} 
-          />
-        );
+    // When editing, show the appropriate form directly
+    if (editingDataPoint) {
+      return editingDataPoint.type === "candle-data" ? (
+        <CandleDataForm
+          initialData={editingDataPoint}
+          //@ts-ignore
+          onSave={handleSave}
+          onClose={handleClose}
+        />
+      ) : (
+        <DaysToExpire
+          initialData={editingDataPoint}
+          //@ts-ignore
+          onSave={handleSave}
+          onClose={handleClose}
+        />
+      );
     }
+
+    // When creating new, show options first then form
+    if (!selectedOption) {
+      return (
+        <InitialOptions
+          onSelect={handleOptionSelect}
+          filteredOptions={DATA_POINT_OPTIONS.filter(opt => !opt.comingSoon)}
+        />
+      );
+    }
+
+    return selectedOption === "candle-data" ? (
+      <CandleDataForm
+      //@ts-ignore
+        onSave={handleSave}
+        onClose={handleClose}
+      />
+    ) : (
+      <DaysToExpire
+      //@ts-ignore
+        onSave={handleSave}
+        onClose={handleClose}
+      />
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setSelectedOption(null);
+        }
+        onOpenChange(isOpen);
+      }}
+    >
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Add Data</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">
+            {editingDataPoint ? 'Edit Data Point' : 'Add Data Point'}
+          </DialogTitle>
         </DialogHeader>
-        
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-9 pr-9 rounded-full"
-            placeholder="Search"
-            value={searchQuery}
-            disabled={selectedOption !== null}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute right-2 top-1/2 -translate-y-1/2"
-              onClick={handleSearchClear}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
         {renderContent()}
-
-        {selectedOption && (
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveDataPoint}>
-              Add
-            </Button>
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );
 }
-
-export default DataPointDialog;

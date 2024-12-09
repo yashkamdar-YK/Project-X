@@ -1,9 +1,7 @@
-"use client";
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
-import { Search, ChevronDown, Plus, X } from "lucide-react";
+import { Search, ChevronDown, Plus, X, Edit2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
@@ -14,9 +12,9 @@ import {
 
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
-import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
+import { handleAddNode } from "../../_utils/nodeTypes";
 import { useNodeStore } from "@/lib/store/nodeStore";
-import { DataPointDialog } from "./DatapointDialog/index";
+import { DataPointDialog } from "./DatapointDialog";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { DataPoint } from "./DatapointDialog/types";
 
@@ -24,14 +22,17 @@ const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
+  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
   const dataPoints = useDataPointsStore((state) => state.dataPoints);
   const removeDataPoint = useDataPointsStore((state) => state.removeDataPoint);
 
-  const groupedDataPoints = dataPoints.reduce((acc, dp) => {
-    if (!acc[dp.type]) acc[dp.type] = [];
-    acc[dp.type].push(dp);
-    return acc;
-  }, {} as Record<string, DataPoint[]>);
+  const groupedDataPoints = React.useMemo(() => {
+    return dataPoints.reduce((acc, dp) => {
+      if (!acc[dp.type]) acc[dp.type] = [];
+      acc[dp.type].push(dp);
+      return acc;
+    }, {} as Record<string, DataPoint[]>);
+  }, [dataPoints]);
 
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
     event.stopPropagation();
@@ -42,7 +43,6 @@ const DashboardSidebar: React.FC = () => {
     event.dataTransfer.effectAllowed = "move";
   };
 
-  // Handler for adding node through button
   const onAdd = (event: React.MouseEvent, item: Node) => {
     event.preventDefault();
     event.stopPropagation();
@@ -51,11 +51,67 @@ const DashboardSidebar: React.FC = () => {
     setEdges(newEdges);
   };
 
-  // Handler for accordion state changes
   const handleAccordionChange = (value: string[]) => {
     setExpandedItems(value);
   };
-  const onDataPointAdd = () => setIsDataPointModalOpen(true);
+
+  const handleAddDataPoint = () => {
+    setEditingDataPoint(undefined);
+    setIsDataPointModalOpen(true);
+  };
+
+  const handleEditDataPoint = (dataPoint: DataPoint) => {
+    setEditingDataPoint(dataPoint);
+    setIsDataPointModalOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDataPointModalOpen(false);
+    setEditingDataPoint(undefined);
+  };
+
+  const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
+    event.stopPropagation();
+    removeDataPoint(id);
+  };
+
+  const renderDataPoints = () => {
+    return Object.entries(groupedDataPoints).map(([type, points]) => (
+      <div key={type} className="space-y-1">
+        <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400 pl-2">
+          {type === "candle-data" ? "Candle Data" : "Days to Expire"}
+        </h4>
+        {points.map((point) => (
+          <div
+            key={point.id}
+            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
+          >
+            <span className="text-sm">
+              {point.elementName}
+              {point.dataType && ` (${point.dataType})`}
+            </span>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditDataPoint(point);
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <Edit2 className="w-4 h-4 text-gray-500" />
+              </button>
+              <button
+                onClick={(e) => handleRemoveDataPoint(e, point.id)}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ));
+  };
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -76,14 +132,13 @@ const DashboardSidebar: React.FC = () => {
 
         <div className="border-b border-gray-200 dark:border-gray-700 mb-4"></div>
 
-
         <Accordion
           type="multiple"
           className="space-y-2"
           value={expandedItems}
           onValueChange={handleAccordionChange}
         >
-          {SIDEBAR_SECTIONS(onDataPointAdd).map((item, index) => (
+          {SIDEBAR_SECTIONS(handleAddDataPoint).map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
@@ -91,16 +146,18 @@ const DashboardSidebar: React.FC = () => {
                   <span className="ml-2">{item.title}</span>
                 </div>
                 <div className="flex items-center">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      item.onClick();
-                    }}
-                    className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
+                  {item.title === "Data Points" && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddDataPoint();
+                      }}
+                      className="text-xs bg-blue-500 dark:bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-200 mr-2"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  )}
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
@@ -129,30 +186,7 @@ const DashboardSidebar: React.FC = () => {
                       ))}
                     {item.title === "Data Points" && (
                       <div className="space-y-2">
-                        {Object.entries(groupedDataPoints).map(([type, points]) => (
-                          <div key={type} className="space-y-1">
-                            <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-                              {type === "candle-data" ? "Candle Data" : "Days to Expire"}
-                            </h4>
-                            {points.map((point) => (
-                              <div
-                                key={point.id}
-                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
-                              >
-                                <span className="text-sm">
-                                  {point.elementName}
-                                  {point.dataType && ` (${point.dataType})`}
-                                </span>
-                                <button
-                                  onClick={() => removeDataPoint(point.id)}
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
-                                >
-                                  <X className="w-4 h-4 text-gray-500" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
+                        {renderDataPoints()}
                       </div>
                     )}
                   </div>
@@ -165,7 +199,6 @@ const DashboardSidebar: React.FC = () => {
     </div>
   );
 
-  // Rest of the component remains the same...
   return (
     <>
       {/* Desktop Sidebar */}
@@ -173,7 +206,7 @@ const DashboardSidebar: React.FC = () => {
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar with Fixed Floating Trigger */}
+      {/* Mobile Sidebar */}
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -193,7 +226,11 @@ const DashboardSidebar: React.FC = () => {
         </Sheet>
       </div>
 
-      <DataPointDialog open={isDataPointModalOpen} onOpenChange={() => setIsDataPointModalOpen(false)} />
+      <DataPointDialog 
+        open={isDataPointModalOpen} 
+        onOpenChange={handleCloseDialog}
+        editingDataPoint={editingDataPoint}
+      />
     </>
   );
 };
