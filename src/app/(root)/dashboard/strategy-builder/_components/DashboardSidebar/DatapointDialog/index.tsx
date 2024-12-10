@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DataPoint, SelectedOption } from "./types";
+import { DataPoint, DataType, SelectedOption } from "./types";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { CandleDataForm } from "./CandleDataForm";
 import DaysToExpire from "./DaysToExpire";
 import { InitialOptions } from "./InitialOptions";
-import { DATA_POINT_OPTIONS } from "./constants";
+import { DATA_POINT_OPTIONS } from "../constants";
+import { useMutation } from "@tanstack/react-query";
+import { symbolService } from "../../../_actions";
+import { toast } from "@/hooks/use-toast";
 
 interface DataPointDialogProps {
   open: boolean;
@@ -14,15 +17,9 @@ interface DataPointDialogProps {
 }
 
 // Define a type for the form data
-type DataPointFormData = {
-  elementName: string;
-  dataType?: DataPoint['dataType'];
-  candleType?: DataPoint['candleType'];
-  duration?: DataPoint['duration'];
-  expiryType?: DataPoint['expiryType'];
-  expiryOrder?: DataPoint['expiryOrder'];
-  strikeSelection?: DataPoint['strikeSelection'];
-};
+// type DataPointFormData = DataPoint & {
+//   elementName: string;
+// };
 
 export function DataPointDialog({ 
   open, 
@@ -32,6 +29,29 @@ export function DataPointDialog({
   const addDataPoint = useDataPointsStore((state) => state.addDataPoint);
   const updateDataPoint = useDataPointsStore((state) => state.updateDataPoint);
 
+  const getCandleOptions = useMutation({
+    mutationFn: (dataType:DataType) => symbolService.getCandleDataPointsOptions(dataType),
+    mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch data points options',
+        variant:"destructive"
+      })
+    }
+  })
+  const getDTEDataPointsOptions = useMutation({
+    mutationFn: () => symbolService.getDTEDataPointsOptions(),
+    mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch data points options',
+        variant:"destructive"
+      })
+    }
+  })
+
   const [selectedOption, setSelectedOption] = useState<SelectedOption>(
     editingDataPoint?.type || null
   );
@@ -40,14 +60,22 @@ export function DataPointDialog({
     setSelectedOption(option);
   };
 
-  const handleSave = (formData: DataPointFormData) => {
+  const handleSave = async (formData: DataPoint) => {
     if (editingDataPoint) {
       // Update existing data point with partial data
       updateDataPoint(editingDataPoint.id, formData);
+      //@ts-ignore
+      const res= formData.type == 'candle-data' ? await getCandleOptions.mutateAsync(formData?.dataType) : await getDTEDataPointsOptions.mutateAsync();
+      const updatedDataPoint = {
+        ...formData,
+        options: res
+      }
+      updateDataPoint(editingDataPoint.id, updatedDataPoint);
     } else if (selectedOption) {
+      const newId = Date.now().toString();
       // Create new data point with complete data
       const newDataPoint: DataPoint = {
-        id: Date.now().toString(),
+        id: newId,
         type: selectedOption,
         elementName: formData.elementName,
         dataType: formData.dataType,
@@ -58,6 +86,13 @@ export function DataPointDialog({
         strikeSelection: formData.strikeSelection
       };
       addDataPoint(newDataPoint);
+      //@ts-ignore
+      const res= formData.type == 'candle-data' ? await getCandleOptions.mutateAsync(formData?.dataType) : await getDTEDataPointsOptions.mutateAsync();
+      const updatedDataPoint = {
+        ...newDataPoint,
+        options: res
+      }
+      updateDataPoint(newId, updatedDataPoint);
     }
     handleClose();
   };

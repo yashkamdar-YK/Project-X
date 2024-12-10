@@ -9,6 +9,7 @@ interface DataPointState {
   isLoadingSymbols: boolean;
   isLoadingSymbolInfo: boolean;
   error: string | null;
+  selectedTimeFrame: string | null;
   setSymbols: (symbols: Record<string, SymbolData>) => void;
   setSymbolInfo: (symbol: string, info: SymbolInfo) => void;
   setSelectedSymbol: (symbol: string | null) => void;
@@ -17,15 +18,18 @@ interface DataPointState {
   setError: (error: string | null) => void;
   clearError: () => void;
   reset: () => void;
+  setSelectedTimeFrame: (timeFrame: string) => void;
 }
 
 export const useDataPointStore = create<DataPointState>((set) => ({
   symbols: {},
   symbolInfo: {},
-  selectedSymbol: null,
+  selectedSymbol: 'NIFTY',
   isLoadingSymbols: false,
   isLoadingSymbolInfo: false,
   error: null,
+  selectedTimeFrame: null,
+  setSelectedTimeFrame: (timeFrame) => set({ selectedTimeFrame: timeFrame }),
   setSymbols: (symbols) => set({ symbols, error: null }),
   setSymbolInfo: (symbol, info) =>
     set((state) => ({

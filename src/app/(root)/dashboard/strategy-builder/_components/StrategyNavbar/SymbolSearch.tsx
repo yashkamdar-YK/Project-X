@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Loader2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -18,12 +18,12 @@ const SymbolSearch: React.FC = () => {
 
   // Query for symbols list
   const { data: symbolsData, isLoading: isLoadingSymbols, error: symbolsError } = useQuery({
-    queryKey: ['symbols', debouncedSearch],
+    queryKey: ['symbols'],
     queryFn: () => symbolService.getSymbols(),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
-
+  
   // Query for symbol info
   const symbolInfoMutation = useMutation({
     mutationFn: () => symbolService.getSymbolInfo(searchValue),
@@ -32,6 +32,14 @@ const SymbolSearch: React.FC = () => {
     },
     mutationKey: ['symbolInfo'],
   })
+  
+    useEffect(() => {
+      if (symbolsData) {
+        setSelectedSymbol(Object.entries(symbolsData)[0]?.[0]);
+        setSearchValue(Object.entries(symbolsData)[0]?.[0]);
+        symbolInfoMutation.mutateAsync();
+      }
+    },[symbolsData]);
 
   const handleSelect = async (symbol: string) => {
     setSearchValue(symbol);
@@ -44,6 +52,26 @@ const SymbolSearch: React.FC = () => {
 
   const clearSearch = () => {
     setSearchValue("");
+  };
+
+  // Filter function to filter symbols based on search input
+  const getFilteredSymbols = () => {
+    if (!symbolsData || !debouncedSearch) return symbolsData;
+
+    const searchTerm = debouncedSearch.toLowerCase();
+    const filteredSymbols: typeof symbolsData = {};
+
+    Object.entries(symbolsData).forEach(([symbol, data]) => {
+      // Check if symbol or exchange matches search term
+      if (
+        symbol.toLowerCase().includes(searchTerm) ||
+        data.exchange.toLowerCase().includes(searchTerm)
+      ) {
+        filteredSymbols[symbol] = data;
+      }
+    });
+
+    return filteredSymbols;
   };
 
   const renderSymbolList = () => {
@@ -67,7 +95,9 @@ const SymbolSearch: React.FC = () => {
       );
     }
 
-    if (!symbolsData || Object.keys(symbolsData).length === 0) {
+    const filteredSymbols = getFilteredSymbols();
+
+    if (!filteredSymbols || Object.keys(filteredSymbols).length === 0) {
       return (
         <div className="flex flex-col items-center justify-center p-8 space-y-2 text-gray-500 dark:text-gray-400">
           <Search className="h-6 w-6" />
@@ -78,7 +108,7 @@ const SymbolSearch: React.FC = () => {
 
     return (
       <div className="max-h-[300px] overflow-y-auto px-1 divide-y divide-gray-100 dark:divide-gray-800">
-        {Object.entries(symbolsData).map(([symbol, data]) => (
+        {Object.entries(filteredSymbols).map(([symbol, data]) => (
           <button
             key={symbol}
             onClick={() => handleSelect(symbol)}

@@ -46,6 +46,14 @@ export interface StrikeSelection {
   position: StrikePosition;
 }
 
+export interface DataPointOption {
+  applyIndicators: boolean;
+  candleLocation: boolean;
+  type: "candleData" | "dte";
+  columnsAvailable: string[];
+  canComparedwith: ['candleData' , 'values' ,'indicators']
+}
+
 export interface DataPoint {
   id: string;
   type: "candle-data" | "days-to-expire";
@@ -56,22 +64,14 @@ export interface DataPoint {
   expiryType?: string;
   expiryOrder?: string;
   strikeSelection?: StrikeSelection;
+  options?: DataPointOption
 }
 
 export interface DataPointsStore {
   dataPoints: DataPoint[];
-  selectedDataPoint: string | null;
   addDataPoint: (dataPoint: DataPoint) => void;
   removeDataPoint: (id: string) => void;
-  setSelectedDataPoint: (id: string | null) => void;
   updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;
-}
-
-export interface DataPointOption {
-  title: string;
-  option: string;
-  icon: LucideIcon;
-  comingSoon?: boolean;
 }
 
 export interface DataPointDialogProps {

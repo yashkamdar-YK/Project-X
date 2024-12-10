@@ -3,13 +3,12 @@ import React from 'react';
 import StrategyNavbar from './_components/StrategyNavbar';
 import DashboardSidebar from './_components/DashboardSidebar';
 import StrategyCanvas from './_components/StrategyCanvas';
-import SettingSheet from './_components/StrategyNavbar/SettingSheet/SettingSheet';
-import { useSheetStore } from '@/lib/store/SheetStore';
 import CustomSheet from '@/components/shared/custom-sheet';
 import NodeSheet from './_components/StrategyNavbar/NodeSheet';
 import { withAuth } from '@/components/shared/hoc/withAuth';
 
 function StrategyBuilder() {
+
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Strategy Navbar */}
