@@ -83,9 +83,11 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       expiryOrder: 
         formData.dataType === "SPOT" ? undefined : formData.expiryOrder,
       strikeSelection: 
-        formData.dataType === "OPT" ? formData.strikeSelection : undefined
+        formData.dataType === "OPT" ? formData.strikeSelection : undefined,
+      type: "candle-data"
     };
   
+    //@ts-ignore
     onSave(formDataToSubmit);
   };
 

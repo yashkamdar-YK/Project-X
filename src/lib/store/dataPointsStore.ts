@@ -4,7 +4,6 @@ import { create } from 'zustand';
 
 export const useDataPointsStore = create<DataPointsStore>((set) => ({
   dataPoints: [],
-  selectedDataPoint: null,
 
   addDataPoint: (dataPoint) => 
     set((state) => ({
@@ -14,11 +13,7 @@ export const useDataPointsStore = create<DataPointsStore>((set) => ({
   removeDataPoint: (id) =>
     set((state) => ({
       dataPoints: state.dataPoints.filter((dp) => dp.id !== id),
-      selectedDataPoint: state.selectedDataPoint === id ? null : state.selectedDataPoint
     })),
-
-  setSelectedDataPoint: (id) =>
-    set({ selectedDataPoint: id }),
 
   updateDataPoint: (id, updatedData) =>
     set((state) => ({

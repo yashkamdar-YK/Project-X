@@ -44,9 +44,11 @@ const DaysToExpire = ({
     const formDataToSubmit = {
       elementName: formData.elementName,
       expiryType: formData.expiryType,
-      expiryOrder: formData.expiryOrder
+      expiryOrder: formData.expiryOrder,
+      type: "days-to-expire"
     };
   
+    //@ts-ignore
     onSave(formDataToSubmit);
   };
 

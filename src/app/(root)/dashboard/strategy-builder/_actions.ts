@@ -1,5 +1,6 @@
 import { get } from "@/lib/axios-factory";
-import {  ApiResponse, SymbolData, SymbolInfo } from "./_components/DashboardSidebar/DatapointDialog/types";
+import {  ApiResponse, DataPointOption, DataType, SymbolData, SymbolInfo } from "./_components/DashboardSidebar/DatapointDialog/types";
+import { IndicatorOption } from "./_components/DashboardSidebar/Indicators/types";
 
 export const symbolService = {
   getSymbols: async (search?: string) => {
@@ -26,6 +27,50 @@ export const symbolService = {
         return response.data.data;
       } else {
         throw new Error(response.data.message || 'Failed to fetch symbol info');
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getCandleDataPointsOptions: async (dataType: DataType) => {
+    try {
+      if(!dataType) throw new Error('Invalid data type');
+      const url = `/v1/builder/applydata/candleData?dataType=${dataType}`;
+      const response = await get<ApiResponse<DataPointOption>>(url);
+      
+      if (response.data.status && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch data points options');
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+  getDTEDataPointsOptions: async () => {
+    try {
+      const url = `/v1/builder/applydata/DTE`;
+      const response = await get<ApiResponse<DataPointOption>>(url);
+      
+      if (response.data.status && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch data points options');
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+  getIndicatorAbility : async (indicatorId: string) => {
+    try {
+      const url = `v1/builder/setIndc?indc=${indicatorId}`;
+      const response = await get<ApiResponse<IndicatorOption>>(url);
+      
+      if (response.data.status && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch indicator ability');
       }
     } catch (error) {
       throw error;

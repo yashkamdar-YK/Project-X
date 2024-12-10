@@ -49,25 +49,30 @@ const TimePicker = () => {
   };
 
   const [timeOptions, setTimeOptions] = useState(getTimeOptions());
-  const [selectedTime, setSelectedTime] = useState(timeOptions[0]?.value || "1m");
+  const {selectedTimeFrame,setSelectedTimeFrame} = useDataPointStore();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    setSelectedTimeFrame(timeOptions[0]?.value || "1m");
+  }, [timeOptions]);
 
   // Update options when symbol changes
   useEffect(() => {
     const newOptions = getTimeOptions();
     setTimeOptions(newOptions);
     if (newOptions.length > 0) {
-      setSelectedTime(newOptions[0].value);
+      setSelectedTimeFrame(newOptions[0].value);
     }
   }, [selectedSymbol, currentSymbolInfo]);
 
   const getQuickSelectionOptions = () => {
+    if(!selectedTimeFrame) return [];
     const starredOptions = timeOptions
       .filter(option => option.isStarred)
       .map(option => option.value);
     
-    if (!starredOptions.includes(selectedTime)) {
-      starredOptions.push(selectedTime);
+    if (!starredOptions.includes(selectedTimeFrame)) {
+      starredOptions.push(selectedTimeFrame);
     }
     
     return starredOptions.sort(sortTimeValues);
@@ -87,7 +92,7 @@ const TimePicker = () => {
   };
 
   const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
+    setSelectedTimeFrame(time);
     setIsOpen(false);
   };
 
@@ -112,7 +117,7 @@ const TimePicker = () => {
             onClick={() => handleTimeSelect(time)}
             className={cn(
               "px-2 py-1 h-8 text-sm font-medium transition-all duration-200 rounded-none relative",
-              selectedTime === time
+              selectedTimeFrame === time
                 ? "bg-blue-100 text-blue-700 dark:bg-gray-600 dark:text-blue-300"
                 : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
@@ -138,7 +143,7 @@ const TimePicker = () => {
                   key={option.value}
                   className={cn(
                     "flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
-                    selectedTime === option.value ? "dark:bg-gray-700 bg-gray-200" : ""
+                    selectedTimeFrame === option.value ? "dark:bg-gray-700 bg-gray-200" : ""
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >
@@ -171,7 +176,7 @@ const TimePicker = () => {
               variant="outline"
               className="w-fit border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200"
             >
-              {selectedTime}
+              {selectedTimeFrame}
               <ChevronDown className="h-4 w-4 ml-2" />
             </Button>
           </PopoverTrigger>
@@ -182,7 +187,7 @@ const TimePicker = () => {
                   key={option.value}
                   className={cn(
                     "flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
-                    selectedTime === option.value ? "bg-gray-700" : ""
+                    selectedTimeFrame === option.value ? "bg-gray-700" : ""
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >
