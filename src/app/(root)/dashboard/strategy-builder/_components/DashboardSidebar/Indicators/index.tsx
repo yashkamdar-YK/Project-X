@@ -110,9 +110,10 @@ const IndicatorDialog: React.FC<IndicatorDialogProps> = ({
 export interface IndicatorFormWrapperProps {
   children: React.ReactNode;
   onClose: () => void;
+  isEdit: boolean;
 }
 
-export const IndicatorFormWrapper: React.FC<IndicatorFormWrapperProps> = ({ children, onClose }) => (
+export const IndicatorFormWrapper: React.FC<IndicatorFormWrapperProps> = ({ children, onClose , isEdit}) => (
   <div className="space-y-4">
     {children}
     <div className="flex justify-end space-x-2 mt-4">
@@ -120,7 +121,7 @@ export const IndicatorFormWrapper: React.FC<IndicatorFormWrapperProps> = ({ chil
         Cancel
       </Button>
       <Button type="submit">
-        Add
+        {isEdit ? "Save" : "Add"}
       </Button>
     </div>
   </div>

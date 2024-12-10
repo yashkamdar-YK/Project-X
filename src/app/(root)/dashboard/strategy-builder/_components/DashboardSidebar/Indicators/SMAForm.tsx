@@ -23,7 +23,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
 
   const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "sma9",
-    onData: null,
+    onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
       source: initialData?.settings.source || "high",
@@ -84,7 +84,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
       id: initialData?.id || `sma-${Date.now()}`,
       type: 'sma',
       elementName: formData.elementName,
-      onData: selectedSymbol,
+      onData: formData.onData,
       timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
       settings: {
         length: formData.settings.length,
@@ -114,7 +114,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <IndicatorFormWrapper onClose={onClose}>
+      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData}>
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

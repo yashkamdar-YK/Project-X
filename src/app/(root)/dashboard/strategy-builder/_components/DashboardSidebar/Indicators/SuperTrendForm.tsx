@@ -23,7 +23,7 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
 
   const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "st10",
-    onData: null,
+    onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "10",
       multiplier: initialData?.settings.multiplier || "1"
@@ -76,7 +76,7 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
       id: initialData?.id || `st-${Date.now()}`,
       type: 'supertrend',
       elementName: formData.elementName,
-      onData: formData.onData || selectedSymbol,
+      onData: formData.onData ,
       timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
       settings: {
         length: formData.settings.length,
@@ -105,12 +105,12 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
 
   return (
     <form onSubmit={handleSubmit}>
-      <IndicatorFormWrapper onClose={onClose}>
+      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData}>
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">On Data</label>
-              <Select 
+              <Select
                 value={formData?.onData || ""} 
                 onValueChange={(value) => setFormData(prev => ({
                   ...prev,
