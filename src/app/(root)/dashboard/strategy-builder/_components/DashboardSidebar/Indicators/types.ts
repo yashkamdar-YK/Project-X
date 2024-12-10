@@ -14,6 +14,10 @@ export interface IndicatorOption {
   type: "candleData" | "dte";
   columnsAvailable: string[];
   canComparedwith: ['candleData' , 'values' ,'indicators']
+  requirements:{
+    type: ["candleData","indicator"]
+    minDuration:number
+  }
 }
 
 export interface MovingAverageIndicator extends BaseIndicator {

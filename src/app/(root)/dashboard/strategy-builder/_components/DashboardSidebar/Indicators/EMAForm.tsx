@@ -45,7 +45,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
       });
     }
   }, [initialData]);
-  
+
   const machesWithReq = useMemo(() => {
     if (!data) return []
     if (!dataPoints) return [];
@@ -56,8 +56,11 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const matchedIndicator = useMemo(() => {
     if (!indicators) return [];
     if (!data) return [];
-    //@ts-ignore
-    return indicators.filter(v => data?.requirements.type.includes(v.options?.type));
+    return indicators.filter(v => {
+      if(v.id === initialData?.id) return false;
+      //@ts-ignore
+      return data?.requirements.type.includes(v.options?.type);
+    });
   }, [initialData, indicators]);
 
   const onDataOptions = [...matchedIndicator?.map(v => v.elementName),...machesWithReq.map(v => v.elementName)];

@@ -1,13 +1,15 @@
-// SuperTrendForm.tsx
+import { useState, useEffect, useMemo } from "react";
+import { WandSparkles } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
-import { useState, useEffect } from "react";
 import { IndicatorFormWrapper } from ".";
-import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { WandSparkles } from "lucide-react";
-import { SuperTrendIndicator } from "./types";
+import { IndicatorFormData, SuperTrendIndicator } from "./types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { useQuery } from "@tanstack/react-query";
+import { symbolService } from "../../../_actions";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 
 interface SuperTrendFormProps {
   initialData?: SuperTrendIndicator;
@@ -15,48 +17,91 @@ interface SuperTrendFormProps {
 }
 
 const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose }) => {
-  const { selectedSymbol } = useDataPointStore();
-  const { addIndicator, updateIndicator } = useIndicatorStore();
+  const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
+  const { dataPoints } = useDataPointsStore();
+  const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "st10",
+    onData: null,
     settings: {
       length: initialData?.settings.length || "10",
       multiplier: initialData?.settings.multiplier || "1"
     }
   });
 
+  // Query for SuperTrend indicator requirements
+  const { data } = useQuery({
+    queryFn: () => symbolService.getIndicatorAbility('supertrend'),
+    queryKey: ['supertrend']
+  });
+
   useEffect(() => {
     if (initialData) {
       setFormData({
         elementName: initialData.elementName,
+        onData: initialData.onData,
         settings: initialData.settings
       });
     }
   }, [initialData]);
 
+  // Filter data points that match requirements
+  const matchesWithReq = useMemo(() => {
+    if (!data) return [];
+    if (!dataPoints) return [];
+    //@ts-ignore
+    return dataPoints.filter(v => data?.requirements.type.includes(v.options?.type));
+  }, [dataPoints, data]);
+
+  // Filter indicators that match requirements
+  const matchedIndicator = useMemo(() => {
+    if (!indicators) return [];
+    if (!data) return [];
+    //@ts-ignore
+    return indicators.filter(v => {
+      if(v.id === initialData?.id) return false;
+      //@ts-ignore
+      return data?.requirements.type.includes(v.options?.type);
+    });
+  }, [initialData, indicators]);
+
+  // Combine available data sources
+  const onDataOptions = [...matchedIndicator?.map(v => v.elementName), ...matchesWithReq.map(v => v.elementName)];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const indicatorData: SuperTrendIndicator = {
       id: initialData?.id || `st-${Date.now()}`,
       type: 'supertrend',
       elementName: formData.elementName,
-      onData: selectedSymbol,
-      timeFrame: 15,
+      onData: formData.onData || selectedSymbol,
+      timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
       settings: {
         length: formData.settings.length,
-        multiplier: formData.settings.multiplier
+        multiplier: formData.settings.multiplier as string
       }
     };
 
     if (initialData) {
-      updateIndicator(initialData.id, indicatorData);
+      updateIndicator(initialData.id, {...indicatorData, options: data});
     } else {
-      addIndicator(indicatorData);
+      addIndicator({
+        ...indicatorData,
+        options: data
+      });
     }
     onClose();
   };
+
+  if (!selectedTimeFrame || !selectedSymbol) {
+    return (
+      <p className="dark:text-gray-700 text-gray-200">
+        Please select a symbol and time frame first to configure indicators.
+      </p>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -65,15 +110,28 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">On Data</label>
-              <Select value={selectedSymbol || ""} disabled>
+              <Select 
+                value={formData?.onData || ""} 
+                onValueChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  onData: value
+                }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select data" />
                 </SelectTrigger>
+                <SelectContent>
+                  {onDataOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Time Frame</label>
-              <Input value="15" disabled />
+              <Input value={selectedTimeFrame} disabled />
             </div>
           </div>
 
@@ -87,6 +145,7 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
                   settings: { ...prev.settings, length: e.target.value }
                 }))}
                 type="number"
+                min="1"
               />
             </div>
             <div className="space-y-2">
@@ -98,6 +157,8 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
                   settings: { ...prev.settings, multiplier: e.target.value }
                 }))}
                 type="number"
+                min="0.1"
+                step="0.1"
               />
             </div>
           </div>

@@ -1,13 +1,15 @@
-// SMAForm.tsx
-import { useDataPointStore } from "@/lib/store/dataPointStore";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { WandSparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 import { IndicatorFormWrapper } from ".";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MovingAverageIndicator } from "./types";
+import { IndicatorFormData, MovingAverageIndicator } from "./types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { useQuery } from "@tanstack/react-query";
+import { symbolService } from "../../../_actions";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 
 interface SMAFormProps {
   initialData?: MovingAverageIndicator;
@@ -15,11 +17,13 @@ interface SMAFormProps {
 }
 
 const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
-  const { selectedSymbol } = useDataPointStore();
-  const { addIndicator, updateIndicator } = useIndicatorStore();
+  const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
+  const { dataPoints } = useDataPointsStore();
+  const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "sma9",
+    onData: null,
     settings: {
       length: initialData?.settings.length || "9",
       source: initialData?.settings.source || "high",
@@ -27,38 +31,86 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
     }
   });
 
+  // Query for SMA indicator requirements
+  const { data } = useQuery({
+    queryFn: () => symbolService.getIndicatorAbility('sma'),
+    queryKey: ['sma']
+  });
+
   useEffect(() => {
     if (initialData) {
       setFormData({
         elementName: initialData.elementName,
+        onData: initialData.onData,
         settings: initialData.settings
       });
     }
   }, [initialData]);
 
+  // Filter data points that match requirements
+  const matchesWithReq = useMemo(() => {
+    if (!data) return [];
+    if (!dataPoints) return [];
+    //@ts-ignore
+    return dataPoints.filter(v => data?.requirements.type.includes(v.options?.type));
+  }, [dataPoints, data]);
+
+  // Filter indicators that match requirements
+  const matchedIndicator = useMemo(() => {
+    if (!indicators) return [];
+    if (!data) return [];
+    //@ts-ignore
+    return indicators.filter(v => {
+      if(v.id === initialData?.id) return false;
+      //@ts-ignore
+      return data?.requirements.type.includes(v.options?.type);
+    });
+  }, [initialData, indicators]);
+
+  // Combine available data sources
+  const onDataOptions = [...matchedIndicator?.map(v => v.elementName), ...matchesWithReq.map(v => v.elementName)];
+
+  // Get available source columns based on selected data
+  const sourceOptions = useMemo(() => {
+    if (!formData.onData) return [];
+    const selectedDataPoint = matchesWithReq.find(v => v.elementName === formData.onData);
+    return selectedDataPoint?.options?.columnsAvailable || [];
+  }, [formData?.onData]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const indicatorData: MovingAverageIndicator = {
       id: initialData?.id || `sma-${Date.now()}`,
       type: 'sma',
       elementName: formData.elementName,
       onData: selectedSymbol,
-      timeFrame: 15,
+      timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
       settings: {
         length: formData.settings.length,
         source: formData.settings.source as 'high' | 'low' | 'close',
-        offset: formData.settings.offset
+        offset: formData.settings.offset || "0"
       }
     };
 
     if (initialData) {
-      updateIndicator(initialData.id, indicatorData);
+      updateIndicator(initialData.id, {...indicatorData, options: data});
     } else {
-      addIndicator(indicatorData);
+      addIndicator({
+        ...indicatorData,
+        options: data
+      });
     }
     onClose();
   };
+
+  if (!selectedTimeFrame || !selectedSymbol) {
+    return (
+      <p className="dark:text-gray-700 text-gray-200">
+        Please select a symbol and time frame first to configure indicators.
+      </p>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -67,15 +119,28 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">On Data</label>
-              <Select value={selectedSymbol || ""} disabled>
+              <Select 
+                value={formData?.onData || ""} 
+                onValueChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  onData: value
+                }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select data" />
                 </SelectTrigger>
+                <SelectContent>
+                  {onDataOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Time Frame</label>
-              <Input value="15" disabled />
+              <Input value={selectedTimeFrame} disabled />
             </div>
           </div>
 
@@ -94,6 +159,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Source</label>
               <Select
+                disabled={!sourceOptions?.length}
                 value={formData.settings.source}
                 //@ts-ignore
                 onValueChange={(value) => setFormData(prev => ({
@@ -105,9 +171,11 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="close">Close</SelectItem>
+                  {sourceOptions?.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
