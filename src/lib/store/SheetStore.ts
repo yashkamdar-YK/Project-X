@@ -1,18 +1,24 @@
+
 import { create } from 'zustand'
+import { Node } from '@xyflow/react'
+import { NodeTypes } from '@/app/(root)/dashboard/strategy-builder/_utils/nodeTypes' // Adjust import path as needed
 
 type SheetType = 'settings' | 'code' | 'node' | null
+type NodeSheetType = typeof NodeTypes.CONDITION | typeof NodeTypes.ACTION | null
 
 interface SheetStore {
   isOpen: boolean
   type: SheetType
-  selectedItem?: any
-  openSheet: (type: SheetType, item?: any) => void
+  nodeType: NodeSheetType
+  selectedItem?: Node | any
+  openSheet: (type: SheetType, item?: Node | any) => void
   closeSheet: () => void
 }
 
 export const useSheetStore = create<SheetStore>((set, get) => ({
   isOpen: false,
   type: null,
+  nodeType: null,
   selectedItem: undefined,
   
   openSheet: (type, item) => {
@@ -23,15 +29,23 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       set({ 
         isOpen: false, 
         type: null, 
+        nodeType: null,
         selectedItem: undefined 
       });
       return;
     }
 
+    // Determine node type if it's a node sheet
+    const nodeType = type === 'node' && item?.type ? 
+      item.type === NodeTypes.CONDITION ? NodeTypes.CONDITION : 
+      item.type === NodeTypes.ACTION ? NodeTypes.ACTION : 
+      null : null;
+
     // Otherwise open with new type
     set({ 
       isOpen: true, 
       type, 
+      nodeType, // Add node type
       selectedItem: item 
     });
   },
@@ -39,6 +53,7 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
   closeSheet: () => set({ 
     isOpen: false, 
     type: null, 
+    nodeType: null,
     selectedItem: undefined 
   })
 }))
