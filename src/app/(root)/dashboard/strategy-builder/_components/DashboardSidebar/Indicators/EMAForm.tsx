@@ -23,7 +23,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
 
   const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "ema9",
-    onData: null,
+    onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
       source: initialData?.settings.source || "high",
@@ -78,7 +78,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
       id: initialData?.id || `ema-${Date.now()}`,
       type: 'ema',
       elementName: formData.elementName,
-      onData: selectedSymbol,
+      onData: formData?.onData,
       timeFrame: 15, // This should come from your time frame selector
       settings: {
         length: formData.settings.length,
@@ -104,7 +104,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <IndicatorFormWrapper onClose={onClose}>
+      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData}>
         <div className="grid gap-4">
           {/* Rest of your form JSX remains the same */}
           <div className="grid grid-cols-2 gap-4">
