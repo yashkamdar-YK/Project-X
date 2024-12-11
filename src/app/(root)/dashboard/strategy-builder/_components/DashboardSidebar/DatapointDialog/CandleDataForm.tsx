@@ -47,7 +47,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       ? initialData.elementName 
       : generateUniqueElementName("SPOT"), // Generate unique name for new data point
     strikeSelection: initialData?.strikeSelection || {
-      mode: "at" as StrikeMode,
+      mode: "strike-at" as StrikeMode,
       position: "ATM" as StrikePosition
     }
   });

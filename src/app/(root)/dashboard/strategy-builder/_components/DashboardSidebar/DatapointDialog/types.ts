@@ -38,7 +38,7 @@ export interface SymbolInfo {
 // Data Point Types
 export type DataType = "SPOT" | "FUT" | "OPT";
 export type SelectedOption = "candle-data" | "days-to-expire" | null;
-export type StrikeMode = "at" | "near";
+export type StrikeMode = "strike-at"
 export type StrikePosition = "ATM" | `ITM_${number}` | `OTM_${number}`;
 
 export interface StrikeSelection {

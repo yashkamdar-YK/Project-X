@@ -126,7 +126,7 @@ const DashboardSidebar: React.FC = () => {
   const renderIndicators = () => (
     indicators?.map((indicator) => {
       //@ts-ignore
-      const isMissing = !(dataPoints?.map(v => v.elementName).includes(indicator?.onData));
+      const isMissing = !([...dataPoints?.map(v => v.elementName), ...indicators?.map(v =>v.elementName)].includes(indicator?.onData));
       
       return (
         <TooltipProvider key={indicator.id}>
@@ -169,7 +169,9 @@ const DashboardSidebar: React.FC = () => {
             </TooltipTrigger>
             {isMissing && (
               <TooltipContent>
-                <p>Required data point "{indicator.onData}" is missing</p>
+                <p>
+                  Required data point <span className="font-semibold">{indicator.onData}</span> is missing
+                </p>
               </TooltipContent>
             )}
           </Tooltip>
