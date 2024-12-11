@@ -208,8 +208,8 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
               <Select
                 disabled={!sourceOptions?.length}
                 value={formData.settings.source}
-                //@ts-ignore
                 onValueChange={(value) =>
+                  //@ts-ignore
                   setFormData((prev) => ({
                     ...prev,
                     settings: { ...prev.settings, source: value },
