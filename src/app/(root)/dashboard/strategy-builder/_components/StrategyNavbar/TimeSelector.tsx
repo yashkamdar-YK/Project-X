@@ -53,7 +53,9 @@ const TimePicker = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    setSelectedTimeFrame(timeOptions[0]?.value || "1m");
+    if(!selectedTimeFrame){
+      setSelectedTimeFrame(timeOptions[0]?.value || "1m");
+    }
   }, [timeOptions]);
 
   // Update options when symbol changes

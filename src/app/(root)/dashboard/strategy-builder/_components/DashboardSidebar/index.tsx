@@ -125,6 +125,7 @@ const DashboardSidebar: React.FC = () => {
 
   const renderIndicators = () => (
     indicators?.map((indicator) => {
+      //@ts-ignore
       const isMissing = !(dataPoints?.map(v => v.elementName).includes(indicator?.onData));
       
       return (
