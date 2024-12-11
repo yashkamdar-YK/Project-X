@@ -22,14 +22,15 @@ export function DataPointDialog({
   onOpenChange,
   editingDataPoint 
 }: DataPointDialogProps) {
-  
+  // Move all hooks to the top level
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedOption, setSelectedOption] = useState<SelectedOption>(
+    editingDataPoint?.type || null
+  );
+
   const addDataPoint = useDataPointsStore((state) => state.addDataPoint);
   const updateDataPoint = useDataPointsStore((state) => state.updateDataPoint);
 
-  const [selectedOption, setSelectedOption] = useState<SelectedOption>(editingDataPoint?.type || null);
-  const [searchValue, setSearchValue] = useState("");
-
-  // Fetch Candle data options using mutation
   const getCandleOptions = useMutation({
     mutationFn: (dataType:DataType) => symbolService.getCandleDataPointsOptions(dataType),
     mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
@@ -40,9 +41,8 @@ export function DataPointDialog({
         variant:"destructive"
       })
     }
-  })
+  });
 
-  // Fetch Days to Expire (DTE) options using mutation
   const getDTEDataPointsOptions = useMutation({
     mutationFn: () => symbolService.getDTEDataPointsOptions(),
     mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
@@ -53,21 +53,33 @@ export function DataPointDialog({
         variant:"destructive"
       })
     }
-  })
-  
-  // Set the selected option
+  });
+
+  // Memoize filtered options
+  const filteredOptions = useMemo(() => {
+    return DATA_POINT_OPTIONS.filter(option =>
+      option.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      option.option?.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [searchValue]);
+
   const handleOptionSelect = (option: SelectedOption) => {
     setSelectedOption(option);
   };
 
-
-  // Handle save operation for new or existing data points
   const handleSave = async (formData: DataPoint) => {
+    if(!formData?.dataType){
+      return toast({
+        title: 'Error',
+        description: 'Data type is required',
+        variant:"destructive"
+      })
+    }
     if (editingDataPoint) {
-      // Update existing data point with partial data
       updateDataPoint(editingDataPoint.id, formData);
-      //@ts-ignore
-      const res= formData.type == 'candle-data' ? await getCandleOptions.mutateAsync(formData?.dataType) : await getDTEDataPointsOptions.mutateAsync();
+      const res = formData.type === 'candle-data' 
+        ? await getCandleOptions.mutateAsync(formData?.dataType) 
+        : await getDTEDataPointsOptions.mutateAsync();
       const updatedDataPoint = {
         ...formData,
         options: res
@@ -75,7 +87,6 @@ export function DataPointDialog({
       updateDataPoint(editingDataPoint.id, updatedDataPoint);
     } else if (selectedOption) {
       const newId = Date.now().toString();
-      // Create new data point with complete data
       const newDataPoint: DataPoint = {
         id: newId,
         type: selectedOption,
@@ -88,8 +99,9 @@ export function DataPointDialog({
         strikeSelection: formData.strikeSelection
       };
       addDataPoint(newDataPoint);
-      //@ts-ignore
-      const res= formData.type == 'candle-data' ? await getCandleOptions.mutateAsync(formData?.dataType) : await getDTEDataPointsOptions.mutateAsync();
+      const res = formData.type === 'candle-data' 
+        ? await getCandleOptions.mutateAsync(formData?.dataType) 
+        : await getDTEDataPointsOptions.mutateAsync();
       const updatedDataPoint = {
         ...newDataPoint,
         options: res
@@ -99,73 +111,55 @@ export function DataPointDialog({
     handleClose();
   };
 
-  // Close dialog and reset state
   const handleClose = () => {
     setSelectedOption(null);
+    setSearchValue(""); // Reset search when closing
     onOpenChange(false);
   };
 
-  // Filter options based on search input
-  const filteredOptions = useMemo(
-    () =>
-      DATA_POINT_OPTIONS.filter((option) =>
-        [option.title, option.option]
-          .filter(Boolean)
-          .some((text) => text.toLowerCase().includes(searchValue.toLowerCase()))
-      ),
-    [searchValue]
-  );
-
-  // Render dialog content based on the current state
   const renderContent = () => {
-    // When editing, show the appropriate form directly
     if (editingDataPoint) {
       return editingDataPoint.type === "candle-data" ? (
         <CandleDataForm
           initialData={editingDataPoint}
-          //@ts-ignore
+      //@ts-ignore
           onSave={handleSave}
           onClose={handleClose}
         />
       ) : (
         <DaysToExpire
           initialData={editingDataPoint}
-          //@ts-ignore
+      //@ts-ignore
           onSave={handleSave}
           onClose={handleClose}
         />
       );
     }
-  
-    // When creating new, show options first then form
+
     if (!selectedOption) {
       return (
         <div>
-          {/* search bar with icon */}
           <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder="Search options..."
-            className="w-full p-2 pl-10 rounded-lg border bg-white dark:bg-gray-800 
-                     border-gray-300 dark:border-gray-700 
-                     text-gray-900 dark:text-white 
-                     placeholder-gray-500 dark:placeholder-gray-400
-                     focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-          />
-          <Search 
-            size={20} 
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" 
-          />
-        </div>
-
-          <div>
-          <InitialOptions
-          onSelect={handleOptionSelect}
-          filteredOptions={filteredOptions}
-        />
+            <input
+              type="text"
+              placeholder="Search options..."
+              className="w-full p-2 pl-10 rounded-lg border bg-white dark:bg-gray-800 
+                       border-gray-300 dark:border-gray-700 
+                       text-gray-900 dark:text-white 
+                       placeholder-gray-500 dark:placeholder-gray-400
+                       focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+            <Search 
+              size={20} 
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" 
+            />
           </div>
+          <InitialOptions
+            onSelect={handleOptionSelect}
+            filteredOptions={filteredOptions}
+          />
         </div>
       );
     }
@@ -191,6 +185,7 @@ export function DataPointDialog({
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           setSelectedOption(null);
+          setSearchValue(""); // Reset search when dialog closes
         }
         onOpenChange(isOpen);
       }}
