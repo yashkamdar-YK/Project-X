@@ -10,7 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 // Constants
-const CANDLE_TYPES = ["ohlc", "hlc"] as const;
+const CANDLE_TYPES = ["candlestick", "heikenashi"] as const;
 const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i);
 const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i);
 
@@ -25,12 +25,12 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   onSave,
   onClose
 }) => {
-  const { symbolInfo, selectedSymbol } = useDataPointStore();
+  const { symbolInfo, selectedSymbol , selectedTimeFrame} = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
   const [formData, setFormData] = useState({
     dataType: initialData?.dataType || "SPOT" as DataType,
-    candleType: initialData?.candleType || "ohlc",
+    candleType: initialData?.candleType || "candlestick",
     duration: initialData?.duration || "2",
     expiryType: initialData?.expiryType || "weekly",
     expiryOrder: initialData?.expiryOrder || "0",
@@ -104,7 +104,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <div className="space-y-2">
           <label className="text-sm font-medium">Time Frame:</label>
           <div className="rounded-lg bg-accent px-4 py-2 text-center text-muted-foreground">
-            15m
+          {selectedTimeFrame}
           </div>
         </div>
       </div>
@@ -138,7 +138,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             <SelectContent>
               {CANDLE_TYPES.map((type) => (
                 <SelectItem key={type} value={type}>
-                  Candle ({type})
+                  {type}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -235,8 +235,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     <SelectValue placeholder="Select strike" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="at">Strike at</SelectItem>
-                    <SelectItem value="near">Strike near</SelectItem>
+                    <SelectItem value="strike-at">Strike at</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
@@ -249,7 +248,6 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     <SelectValue placeholder="Select position" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ATM">ATM</SelectItem>
                     <SelectGroup>
                       <SelectLabel>ITM</SelectLabel>
                       {ITM_OTM_RANGE.map((num) => (
@@ -258,6 +256,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                         </SelectItem>
                       ))}
                     </SelectGroup>
+                    <SelectItem value="ATM">ATM</SelectItem>
                     <SelectGroup>
                       <SelectLabel>OTM</SelectLabel>
                       {ITM_OTM_RANGE.map((num) => (

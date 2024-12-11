@@ -75,7 +75,7 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
   },
 ];
 
-export const SIDEBAR_SECTIONS = (onDataPointAdd: () => void,onIndicatorAdd: () => void) => [
+export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void,onIndicatorAdd: (e: any) => void) => [
   {
     title: "Data Points",
     icon: Database,

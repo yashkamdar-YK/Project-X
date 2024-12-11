@@ -172,7 +172,7 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
                   ...prev,
                   elementName: e.target.value
                 }))}
-                className="pr-10"
+                className="pr-10 bg-accent"
               />
               <Button
                 type="button"
