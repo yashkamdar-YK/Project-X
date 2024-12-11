@@ -22,17 +22,27 @@ const DaysToExpire = ({
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
+  // Unique name generation function
+  const generateUniqueElementName = (): string => {
+    const timestamp = Date.now().toString().slice(-6);
+    const randomString = Math.random().toString(36).substring(2, 6);
+    return `dte_${timestamp}_${randomString}`;
+  };
+
   // Initialize form data with default values
   const [formData, setFormData] = useState({
     expiryType: initialData?.expiryType || "weekly",
     expiryOrder: initialData?.expiryOrder || "0",
-    elementName: initialData?.elementName || "dte"
+    elementName: initialData 
+      ? initialData.elementName 
+      : generateUniqueElementName() // Generate unique name for new data point
   });
 
-  // Helper function to update form data state
+
+    // Helper function to update form data state
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  };  
 
   // Check if weekly expiry is enabled for the selected symbol
   const isWeeklyEnabled = currentSymbolInfo?.isWeekly;
@@ -43,18 +53,33 @@ const DaysToExpire = ({
     }
   }, [isWeeklyEnabled]);
 
-  // Handle form submission and pass data back to parent
-  const handleSubmit = () => {
-    const formDataToSubmit = {
-      elementName: formData.elementName,
-      expiryType: formData.expiryType,
-      expiryOrder: formData.expiryOrder,
-      type: "days-to-expire"
+  // Regenerate element name when expiry type changes
+  useEffect(() => {
+    if (!initialData) {
+      const newName = generateUniqueElementName();
+      updateFormData("elementName", newName);
+    }
+  }, [formData.expiryType]);
+
+    // Handle form submission and pass data back to parent
+    const handleSubmit = () => {
+      const formDataToSubmit = {
+        elementName: formData.elementName,
+        expiryType: formData.expiryType,
+        expiryOrder: formData.expiryOrder,
+        type: "days-to-expire"
+      };
+    
+      //@ts-ignore
+      onSave(formDataToSubmit);
     };
-  
-    //@ts-ignore
-    onSave(formDataToSubmit);
+
+    // Manually regenerate element name
+  const handleGenerateElementName = () => {
+    const newName = generateUniqueElementName();
+    updateFormData("elementName", newName);
   };
+  
 
   // If no symbol is selected, show an alert message
   if (!selectedSymbol || !currentSymbolInfo) {
@@ -128,7 +153,7 @@ const DaysToExpire = ({
             size="icon"
             variant="ghost"
             className="absolute right-2 top-1/2 -translate-y-1/2"
-            onClick={() => updateFormData("elementName", `dte_${Date.now().toString().slice(-4)}`)}
+            onClick={handleGenerateElementName}
           >
             <WandSparkles className="h-4 w-4" />
           </Button>
