@@ -71,10 +71,11 @@ export function DataPointDialog({
     if(!formData?.dataType){
       return toast({
         title: 'Error',
-        description: 'Data type is required',
+        description: 'Please select a data type',
         variant:"destructive"
       })
-    }
+    };
+
     if (editingDataPoint) {
       updateDataPoint(editingDataPoint.id, formData);
       const res = formData.type === 'candle-data' 
@@ -122,14 +123,14 @@ export function DataPointDialog({
       return editingDataPoint.type === "candle-data" ? (
         <CandleDataForm
           initialData={editingDataPoint}
-      //@ts-ignore
+          //@ts-ignore
           onSave={handleSave}
           onClose={handleClose}
         />
       ) : (
         <DaysToExpire
           initialData={editingDataPoint}
-      //@ts-ignore
+          //@ts-ignore
           onSave={handleSave}
           onClose={handleClose}
         />
@@ -166,13 +167,13 @@ export function DataPointDialog({
 
     return selectedOption === "candle-data" ? (
       <CandleDataForm
-      //@ts-ignore
+          //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
       />
     ) : (
       <DaysToExpire
-      //@ts-ignore
+          //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
       />

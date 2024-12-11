@@ -9,7 +9,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertCircle } from "lucide-react";
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
 import { handleAddNode } from "../../_utils/nodeTypes";
@@ -79,11 +80,6 @@ const DashboardSidebar: React.FC = () => {
     setIsDataPointModalOpen(true);
   };
 
-  const handleCloseDialog = () => {
-    setIsDataPointModalOpen(false);
-    setEditingDataPoint(undefined);
-  };
-
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
     removeDataPoint(id);
@@ -127,6 +123,59 @@ const DashboardSidebar: React.FC = () => {
     ));
   };
 
+  const renderIndicators = () => (
+    indicators?.map((indicator) => {
+      const isMissing = !(dataPoints?.map(v => v.elementName).includes(indicator?.onData));
+      
+      return (
+        <TooltipProvider key={indicator.id}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
+                  ${isMissing ? 'border-red-500' : 'border-transparent'}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">
+                    {indicator.elementName}
+                  </span>
+                  {isMissing && (
+                    <AlertCircle className="w-4 h-4 text-red-500" />
+                  )}
+                </div>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingIndicator(indicator);
+                      setIsIndicatorsModalOpen(true);
+                    }}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeIndicator(indicator.id);
+                    }}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+            </TooltipTrigger>
+            {isMissing && (
+              <TooltipContent>
+                <p>Required data point "{indicator.onData}" is missing</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+      );
+    })
+  );
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 overflow-y-auto">
@@ -202,37 +251,7 @@ const DashboardSidebar: React.FC = () => {
                     {
                       item?.title === "Indicators" && (
                         <div className="space-y-2">
-                          {indicators.map((indicator) => (
-                            <div
-                              key={indicator.id}
-                              className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
-                            >
-                              <span className="text-sm">
-                                {indicator.elementName}
-                              </span>
-                              <div className="flex items-center space-x-1">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingIndicator(indicator);
-                                    setIsIndicatorsModalOpen(true);
-                                  }}
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                                >
-                                  <Edit2 className="w-4 h-4 text-gray-500" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeIndicator(indicator.id);
-                                  }}
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                                >
-                                  <X className="w-4 h-4 text-gray-500" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                          {renderIndicators()}
                         </div>
                       )
                     }
