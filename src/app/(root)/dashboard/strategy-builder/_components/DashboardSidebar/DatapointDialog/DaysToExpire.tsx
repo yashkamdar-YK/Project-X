@@ -22,16 +22,19 @@ const DaysToExpire = ({
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
+  // Initialize form data with default values
   const [formData, setFormData] = useState({
     expiryType: initialData?.expiryType || "weekly",
     expiryOrder: initialData?.expiryOrder || "0",
     elementName: initialData?.elementName || "dte"
   });
 
+  // Helper function to update form data state
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Check if weekly expiry is enabled for the selected symbol
   const isWeeklyEnabled = currentSymbolInfo?.isWeekly;
 
   useEffect(() => {
@@ -40,6 +43,7 @@ const DaysToExpire = ({
     }
   }, [isWeeklyEnabled]);
 
+  // Handle form submission and pass data back to parent
   const handleSubmit = () => {
     const formDataToSubmit = {
       elementName: formData.elementName,
@@ -52,6 +56,7 @@ const DaysToExpire = ({
     onSave(formDataToSubmit);
   };
 
+  // If no symbol is selected, show an alert message
   if (!selectedSymbol || !currentSymbolInfo) {
     return (
       <Alert>
@@ -65,6 +70,7 @@ const DaysToExpire = ({
 
   return (
     <div className="space-y-6">
+       {/* Display Selected Symbol */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Underlying:</label>
@@ -74,6 +80,7 @@ const DaysToExpire = ({
         </div>
       </div>
 
+      {/* Expiry Type and Order Selection */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Expiry:</label>
@@ -90,6 +97,7 @@ const DaysToExpire = ({
                 <SelectItem value="monthly">Monthly</SelectItem>
               </SelectContent>
             </Select>
+
             <Select 
               value={formData.expiryOrder} 
               onValueChange={(value) => updateFormData("expiryOrder", value)}
@@ -115,6 +123,7 @@ const DaysToExpire = ({
             onChange={(e) => updateFormData("elementName", e.target.value)}
             className="rounded-lg bg-accent pr-10"
           />
+          {/* Generate Unique Name Button */}
           <Button
             size="icon"
             variant="ghost"

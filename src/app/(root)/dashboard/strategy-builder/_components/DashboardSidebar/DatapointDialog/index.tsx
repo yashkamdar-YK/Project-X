@@ -17,19 +17,19 @@ interface DataPointDialogProps {
   editingDataPoint?: DataPoint;
 }
 
-// Define a type for the form data
-// type DataPointFormData = DataPoint & {
-//   elementName: string;
-// };
-
 export function DataPointDialog({ 
   open, 
   onOpenChange,
   editingDataPoint 
 }: DataPointDialogProps) {
+  
   const addDataPoint = useDataPointsStore((state) => state.addDataPoint);
   const updateDataPoint = useDataPointsStore((state) => state.updateDataPoint);
 
+  const [selectedOption, setSelectedOption] = useState<SelectedOption>(editingDataPoint?.type || null);
+  const [searchValue, setSearchValue] = useState("");
+
+  // Fetch Candle data options using mutation
   const getCandleOptions = useMutation({
     mutationFn: (dataType:DataType) => symbolService.getCandleDataPointsOptions(dataType),
     mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
@@ -41,6 +41,8 @@ export function DataPointDialog({
       })
     }
   })
+
+  // Fetch Days to Expire (DTE) options using mutation
   const getDTEDataPointsOptions = useMutation({
     mutationFn: () => symbolService.getDTEDataPointsOptions(),
     mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
@@ -52,15 +54,14 @@ export function DataPointDialog({
       })
     }
   })
-
-  const [selectedOption, setSelectedOption] = useState<SelectedOption>(
-    editingDataPoint?.type || null
-  );
-
+  
+  // Set the selected option
   const handleOptionSelect = (option: SelectedOption) => {
     setSelectedOption(option);
   };
 
+
+  // Handle save operation for new or existing data points
   const handleSave = async (formData: DataPoint) => {
     if (editingDataPoint) {
       // Update existing data point with partial data
@@ -98,11 +99,24 @@ export function DataPointDialog({
     handleClose();
   };
 
+  // Close dialog and reset state
   const handleClose = () => {
     setSelectedOption(null);
     onOpenChange(false);
   };
 
+  // Filter options based on search input
+  const filteredOptions = useMemo(
+    () =>
+      DATA_POINT_OPTIONS.filter((option) =>
+        [option.title, option.option]
+          .filter(Boolean)
+          .some((text) => text.toLowerCase().includes(searchValue.toLowerCase()))
+      ),
+    [searchValue]
+  );
+
+  // Render dialog content based on the current state
   const renderContent = () => {
     // When editing, show the appropriate form directly
     if (editingDataPoint) {
@@ -122,12 +136,6 @@ export function DataPointDialog({
         />
       );
     }
-
-    const [searchValue, setSearchValue] = useState("");
-    const filteredOptions = DATA_POINT_OPTIONS.filter(option =>
-      option.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      option.option?.toLowerCase().includes(searchValue.toLowerCase())
-    );
   
     // When creating new, show options first then form
     if (!selectedOption) {

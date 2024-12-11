@@ -210,6 +210,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   );
 };
 
+
 export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
