@@ -13,13 +13,13 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, ConditionNode, ActionNode } from "./canvas/CustomNodes";
-import CustomControls from "./canvas/customeControl";
+import { StartNode, ConditionNode, ActionNode } from "./CanvasComponents/CustomNodes";
+import CustomControls from "./CanvasComponents/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { handleDrop, NodeTypes } from "../_utils/nodeTypes";
-import ConditionEdge from "./canvas/ConditionEdge";
-import ActionEdge from "./canvas/ActionEdge";
+import ConditionEdge from "./CanvasComponents/ConditionEdge";
+import ActionEdge from "./CanvasComponents/ActionEdge";
 
 import { debounce } from "lodash";
 import { createContext, useContext } from "react";
