@@ -28,35 +28,51 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   const { symbolInfo, selectedSymbol , selectedTimeFrame} = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
+  // Unique name generation function
+  const generateUniqueElementName = (dataType: DataType): string => {
+    const prefix = dataType.toLowerCase();
+    const timestamp = Date.now().toString().slice(-4);
+    const randomString = Math.random().toString(36).substring(2, 6);
+    return `${prefix}NF_ohlc_${timestamp}_${randomString}`;
+  };
+
+  // Initialize the state with a unique name if it's a new data point
   const [formData, setFormData] = useState({
     dataType: initialData?.dataType || "SPOT" as DataType,
     candleType: initialData?.candleType || "candlestick",
     duration: initialData?.duration || "2",
     expiryType: initialData?.expiryType || "weekly",
     expiryOrder: initialData?.expiryOrder || "0",
-    elementName: initialData?.elementName || `spotNF_ohlc_2d`,
+    elementName: initialData 
+      ? initialData.elementName 
+      : generateUniqueElementName("SPOT"), // Generate unique name for new data point
     strikeSelection: initialData?.strikeSelection || {
       mode: "at" as StrikeMode,
       position: "ATM" as StrikePosition
     }
   });
 
-  const updateFormData = (field: string, value: any) => {
+   // Update form data method
+   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  useEffect(() => {
-    if (formData.dataType === "FUT") {
-      updateFormData("expiryType", "monthly");
-    }
-  }, [formData.dataType]);
 
+
+   // Manually regenerate element name
   const handleGenerateElementName = () => {
-    const prefix = formData.dataType.toLowerCase();
-    const timestamp = Date.now().toString().slice(-4);
-    const newName = `${prefix}NF_${timestamp}`;
+    const newName = generateUniqueElementName(formData.dataType);
     updateFormData("elementName", newName);
   };
+
+  // Update element name dynamically when data type changes
+  useEffect(() => {
+    if (!initialData) {
+      // Generate a new unique name when data type changes
+      const newName = generateUniqueElementName(formData.dataType);
+      updateFormData("elementName", newName);
+    }
+  }, [formData.dataType]);
 
   if (!selectedSymbol || !currentSymbolInfo) {
     return (

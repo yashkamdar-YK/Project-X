@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { WandSparkles } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 import { IndicatorFormWrapper } from ".";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { IndicatorFormData, MovingAverageIndicator } from "./types";
+import { IndicatorFormData, MovingAverageIndicator, IndicatorOption } from "./types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
@@ -21,8 +21,15 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   const { dataPoints } = useDataPointsStore();
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
+  // Enhanced unique element name generation
+  const generateUniqueElementName = (length: string = "9") => {
+    const timestamp = Date.now().toString().slice(-4);
+    const random = Math.random().toString(36).slice(-4);
+    return `sma${length}_${timestamp}${random}`;
+  };
+
   const [formData, setFormData] = useState<IndicatorFormData>({
-    elementName: initialData?.elementName || "sma9",
+    elementName: initialData?.elementName || generateUniqueElementName(),
     onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
@@ -31,8 +38,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
     }
   });
 
-  // Query for SMA indicator requirements
-  const { data } = useQuery({
+  const { data } = useQuery<IndicatorOption>({
     queryFn: () => symbolService.getIndicatorAbility('sma'),
     queryKey: ['sma']
   });
@@ -47,35 +53,50 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
     }
   }, [initialData]);
 
-  // Filter data points that match requirements
+  // Fixed type checking for matchesWithReq
   const matchesWithReq = useMemo(() => {
-    if (!data) return [];
-    if (!dataPoints) return [];
-    //@ts-ignore
-    return dataPoints.filter(v => data?.requirements.type.includes(v.options?.type));
+    if (!data?.requirements.type || !dataPoints) return [];
+    return dataPoints.filter(v => {
+      const pointType = v.options?.type;
+      return pointType && data.requirements.type.includes(pointType as "candleData" | "indicator");
+    });
   }, [dataPoints, data]);
 
-  // Filter indicators that match requirements
+  // Fixed type checking for matchedIndicator
   const matchedIndicator = useMemo(() => {
-    if (!indicators) return [];
-    if (!data) return [];
-    //@ts-ignore
+    if (!indicators || !data?.requirements.type) return [];
     return indicators.filter(v => {
-      if(v.id === initialData?.id) return false;
-      //@ts-ignore
-      return data?.requirements.type.includes(v.options?.type);
+      if (v.id === initialData?.id) return false;
+      return v.options?.type && data.requirements.type.includes(v.options.type as "candleData" | "indicator");
     });
-  }, [initialData, indicators]);
+  }, [initialData, indicators, data]);
 
-  // Combine available data sources
   const onDataOptions = [...matchedIndicator?.map(v => v.elementName), ...matchesWithReq.map(v => v.elementName)];
 
-  // Get available source columns based on selected data
   const sourceOptions = useMemo(() => {
     if (!formData.onData) return [];
     const selectedDataPoint = matchesWithReq.find(v => v.elementName === formData.onData);
     return selectedDataPoint?.options?.columnsAvailable || [];
   }, [formData?.onData]);
+
+  // Handle length change with element name update
+  const handleLengthChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      settings: { ...prev.settings, length: value },
+      ...((!initialData && !prev.elementName.includes('_')) && { 
+        elementName: generateUniqueElementName(value) 
+      })
+    }));
+  };
+
+  // Handle generate new name
+  const handleGenerateElementName = () => {
+    setFormData(prev => ({
+      ...prev,
+      elementName: generateUniqueElementName(prev.settings.length)
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,10 +170,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
               <label className="text-sm font-medium">Length</label>
               <Input
                 value={formData.settings.length}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  settings: { ...prev.settings, length: e.target.value }
-                }))}
+                onChange={(e) => handleLengthChange(e.target.value)}
                 type="number"
               />
             </div>
@@ -161,10 +179,9 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
               <Select
                 disabled={!sourceOptions?.length}
                 value={formData.settings.source}
-                //@ts-ignore
                 onValueChange={(value) => setFormData(prev => ({
                   ...prev,
-                  settings: { ...prev.settings, source: value }
+                  settings: { ...prev.settings, source: value as 'high' | 'low' | 'close' }
                 }))}
               >
                 <SelectTrigger>
@@ -202,19 +219,19 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
                   elementName: e.target.value
                 }))}
                 className="pr-10 bg-accent"
+                disabled={!!initialData} // Disable during edit mode
               />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="absolute right-2 top-1/2 -translate-y-1/2"
-                onClick={() => setFormData(prev => ({
-                  ...prev,
-                  elementName: `sma${prev.settings.length}_${Date.now().toString().slice(-4)}`
-                }))}
-              >
-                <WandSparkles className="h-4 w-4" />
-              </Button>
+              {!initialData && ( // Only show generate button in add mode
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={handleGenerateElementName}
+                >
+                  <WandSparkles className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>

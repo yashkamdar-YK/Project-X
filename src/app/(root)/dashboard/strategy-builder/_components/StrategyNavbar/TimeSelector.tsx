@@ -107,8 +107,6 @@ const TimePicker = () => {
   if (!selectedSymbol || timeOptions.length === 0) return null
 
   console.log(selectedTimeFrame);
-  
-
   return (
     <div className="flex items-center space-x-1">
       {/* Desktop view with quick selection */}
