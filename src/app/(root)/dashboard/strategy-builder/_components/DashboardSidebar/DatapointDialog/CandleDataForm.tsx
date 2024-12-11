@@ -25,7 +25,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   onSave,
   onClose
 }) => {
-  const { symbolInfo, selectedSymbol } = useDataPointStore();
+  const { symbolInfo, selectedSymbol , selectedTimeFrame} = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
   const [formData, setFormData] = useState({
@@ -104,7 +104,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <div className="space-y-2">
           <label className="text-sm font-medium">Time Frame:</label>
           <div className="rounded-lg bg-accent px-4 py-2 text-center text-muted-foreground">
-            15m
+          {selectedTimeFrame}
           </div>
         </div>
       </div>
@@ -235,8 +235,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     <SelectValue placeholder="Select strike" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="at">Strike at</SelectItem>
-                    <SelectItem value="near">Strike near</SelectItem>
+                    <SelectItem value="strike-at">Strike at</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select

@@ -61,7 +61,7 @@ const IndicatorDialog: React.FC<IndicatorDialogProps> = ({
       default:
         return (
           <div className="space-y-4">
-            <div className="relative">
+            <div className="relative mb-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 value={searchValue}
@@ -91,7 +91,7 @@ const IndicatorDialog: React.FC<IndicatorDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {editingIndicator 

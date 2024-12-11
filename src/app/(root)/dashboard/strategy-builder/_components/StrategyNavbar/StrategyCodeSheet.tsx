@@ -9,13 +9,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from '@/components/providers/theme-provider';
 import { Highlight, themes } from 'prism-react-renderer';
+import { useDataPointsStore } from '@/lib/store/dataPointsStore';
+import { useIndicatorStore } from '@/lib/store/IndicatorStore';
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const DEMO_CODE = `import pandas as pd
+const _DEMO_CODE = `import pandas as pd
 import numpy as np
 
 def calculate_strategy(data: pd.DataFrame) -> pd.DataFrame:
@@ -54,6 +56,10 @@ def backtest_strategy(data: pd.DataFrame) -> dict:
 const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = React.useState('python');
+  const {dataPoints} = useDataPointsStore();
+  const {indicators} = useIndicatorStore();
+
+  const DEMO_CODE = JSON.stringify(dataPoints, null, 2) + "\n--------INDICATORS------\n" + JSON.stringify(indicators, null, 2)
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

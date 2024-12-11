@@ -36,7 +36,7 @@ export const symbolService = {
   getCandleDataPointsOptions: async (dataType: DataType) => {
     try {
       if(!dataType) throw new Error('Invalid data type');
-      const url = `/v1/builder/applydata/candleData?dataType=${dataType}`;
+      const url = `/v1/builder/applydata/candleData?dataType=${dataType.toLocaleLowerCase()}`;
       const response = await get<ApiResponse<DataPointOption>>(url);
       
       if (response.data.status && !response.data.error) {

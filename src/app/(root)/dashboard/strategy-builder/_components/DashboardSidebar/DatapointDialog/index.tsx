@@ -9,6 +9,7 @@ import { DATA_POINT_OPTIONS } from "../constants";
 import { useMutation } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { toast } from "@/hooks/use-toast";
+import { Search } from "lucide-react";
 
 interface DataPointDialogProps {
   open: boolean;
@@ -122,13 +123,42 @@ export function DataPointDialog({
       );
     }
 
+    const [searchValue, setSearchValue] = useState("");
+    const filteredOptions = DATA_POINT_OPTIONS.filter(option =>
+      option.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      option.option?.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  
     // When creating new, show options first then form
     if (!selectedOption) {
       return (
-        <InitialOptions
+        <div>
+          {/* search bar with icon */}
+          <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search options..."
+            className="w-full p-2 pl-10 rounded-lg border bg-white dark:bg-gray-800 
+                     border-gray-300 dark:border-gray-700 
+                     text-gray-900 dark:text-white 
+                     placeholder-gray-500 dark:placeholder-gray-400
+                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+          />
+          <Search 
+            size={20} 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" 
+          />
+        </div>
+
+          <div>
+          <InitialOptions
           onSelect={handleOptionSelect}
-          filteredOptions={DATA_POINT_OPTIONS.filter(opt => !opt.comingSoon)}
+          filteredOptions={filteredOptions}
         />
+          </div>
+        </div>
       );
     }
 

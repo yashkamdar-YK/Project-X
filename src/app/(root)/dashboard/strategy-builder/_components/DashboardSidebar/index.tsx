@@ -62,12 +62,14 @@ const DashboardSidebar: React.FC = () => {
     setExpandedItems(value);
   };
 
-  const handleAddDataPoint = () => {
+  const handleAddDataPoint = (e: any) => {
+    e.preventDefault();
     setEditingDataPoint(undefined);
     setIsDataPointModalOpen(true);
   };
 
-  const handleAddIndicators = () => {
+  const handleAddIndicators = (e: any) => {
+    e.preventDefault();
     setEditingIndicator(undefined);
     setIsIndicatorsModalOpen(true);
   }
