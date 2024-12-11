@@ -21,6 +21,7 @@ import { DataPoint } from "./DatapointDialog/types";
 import { Indicator } from "./Indicators/types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import IndicatorDialog from "./Indicators";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
@@ -32,6 +33,7 @@ const DashboardSidebar: React.FC = () => {
   const [editingIndicator, setEditingIndicator] = useState<Indicator | undefined>();
 
   const { dataPoints, removeDataPoint } = useDataPointsStore();
+  const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
 
   const groupedDataPoints = React.useMemo(() => {
@@ -84,45 +86,186 @@ const DashboardSidebar: React.FC = () => {
     event.stopPropagation();
     removeDataPoint(id);
   };
-
+  const validateDataPoint = (dataPoint: DataPoint): { isValid: boolean; error: string } => {
+    if(selectedSymbol === null) {
+      return { isValid: false, error: "Symbol not selected" };
+    }
+    const currentSymbolInfo = symbolInfo[selectedSymbol];
+    if (!currentSymbolInfo) {
+      return { isValid: false, error: "Symbol information not available" };
+    }
+  
+    // Validate timeFrame (duration should be available in symbol's timeFrame)
+    if (dataPoint.duration && !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))) {
+      return { 
+        isValid: false, 
+        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`
+      };
+    }
+  
+    // Validation based on data type
+    switch (dataPoint.dataType) {
+      case "OPT":
+        // Validate weekly expiry availability
+        if (dataPoint.expiryType === "weekly") {
+          if (!currentSymbolInfo.isWeekly) {
+            return { 
+              isValid: false, 
+              error: `Weekly expiry is not available for ${currentSymbolInfo.symbol}` 
+            };
+          }
+          
+          // Validate weekly expiry order
+          const weeklyOrders = currentSymbolInfo.OptExp.weekly;
+          if (!weeklyOrders?.includes(Number(dataPoint.expiryOrder))) {
+            return { 
+              isValid: false, 
+              error: `Invalid weekly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+            };
+          }
+        }
+  
+        // Validate monthly expiry order
+        if (dataPoint.expiryType === "monthly") {
+          if (!currentSymbolInfo.OptExp.monthly.includes(Number(dataPoint.expiryOrder))) {
+            return { 
+              isValid: false, 
+              error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+            };
+          }
+        }
+  
+        // Validate strike selection for options
+        if (dataPoint.strikeSelection) {
+          if (dataPoint.strikeSelection.mode !== "strike-at") {
+            return { 
+              isValid: false, 
+              error: "Invalid strike selection mode" 
+            };
+          }
+  
+          // Validate strike position format
+          const position = dataPoint.strikeSelection.position;
+          if (position !== "ATM") {
+            const [type, number] = position.split('_');
+            if (!['ITM', 'OTM'].includes(type) || isNaN(Number(number)) || Number(number) > 10) {
+              return { 
+                isValid: false, 
+                error: "Invalid strike position" 
+              };
+            }
+          }
+        }
+        break;
+  
+      case "FUT":
+        // Future can only have monthly expiry
+        if (dataPoint.expiryType !== "monthly") {
+          return { 
+            isValid: false, 
+            error: "Futures only support monthly expiry" 
+          };
+        }
+  
+        // Validate future expiry order
+        if (!currentSymbolInfo.FutExp.monthly.includes(Number(dataPoint.expiryOrder))) {
+          return { 
+            isValid: false, 
+            error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+          };
+        }
+        break;
+  
+      case "SPOT":
+        // SPOT shouldn't have expiry related fields
+        if (dataPoint.expiryType || dataPoint.expiryOrder || dataPoint.strikeSelection) {
+          return { 
+            isValid: false, 
+            error: "Spot data should not have expiry or strike selection" 
+          };
+        }
+        break;
+  
+      default:
+        // Invalid data type
+        if (dataPoint.dataType) {
+          return { 
+            isValid: false, 
+            error: "Invalid data type" 
+          };
+        }
+    }
+  
+    // Add validation for candleType if needed
+    if (dataPoint.candleType && !["candlestick", "heikenashi"].includes(dataPoint.candleType)) {
+      return { 
+        isValid: false, 
+        error: "Invalid candle type" 
+      };
+    }
+  
+    // All validations passed
+    return { isValid: true, error: "" };
+  };
+  
   const renderDataPoints = () => {
     return Object.entries(groupedDataPoints).map(([type, points]) => (
       <div key={type} className="space-y-1">
         <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400 pl-2">
           {type === "candle-data" ? "Candle Data" : "Days to Expire"}
         </h4>
-        {points.map((point) => (
-          <div
-            key={point.id}
-            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
-          >
-            <span className="text-sm">
-              {point.elementName}
-              {point.dataType && ` (${point.dataType})`}
-            </span>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditDataPoint(point);
-                }}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-              >
-                <Edit2 className="w-4 h-4 text-gray-500" />
-              </button>
-              <button
-                onClick={(e) => handleRemoveDataPoint(e, point.id)}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-500" />
-              </button>
-            </div>
-          </div>
-        ))}
+        {points.map((point) => {
+          const validation = validateDataPoint(point);
+          
+          return (
+            <TooltipProvider key={point.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
+                      ${!validation.isValid ? 'border-red-500' : 'border-transparent'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        {point.elementName}
+                        {point.dataType && ` (${point.dataType})`}
+                      </span>
+                      {!validation.isValid && (
+                        <AlertCircle className="w-4 h-4 text-red-500" />
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditDataPoint(point);
+                        }}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4 text-gray-500" />
+                      </button>
+                      <button
+                        onClick={(e) => handleRemoveDataPoint(e, point.id)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      >
+                        <X className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                {!validation.isValid && (
+                  <TooltipContent>
+                    <p>{validation.error}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
       </div>
     ));
   };
-
+    
   const renderIndicators = () => (
     indicators?.map((indicator) => {
       //@ts-ignore
