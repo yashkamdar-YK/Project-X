@@ -16,7 +16,7 @@ const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i);
 
 interface CandleDataFormProps {
   initialData?: DataPoint;
-  onSave: (data: Partial<DataPoint>) => void;
+  onSave: (data: Partial<DataPoint>) => Promise<void>;
   onClose?: () => void;
 }
 
@@ -36,7 +36,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     expiryOrder: initialData?.expiryOrder || "0",
     elementName: initialData?.elementName || `spotNF_ohlc_2d`,
     strikeSelection: initialData?.strikeSelection || {
-      mode: "at" as StrikeMode,
+      mode: "strike-at" as StrikeMode,
       position: "ATM" as StrikePosition
     }
   });
@@ -58,20 +58,6 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     updateFormData("elementName", newName);
   };
 
-  if (!selectedSymbol || !currentSymbolInfo) {
-    return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Please select a symbol first to configure data points.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  const isWeeklyEnabled = currentSymbolInfo.isWeekly;
-  const availableExpiryTypes = isWeeklyEnabled ? ["weekly", "monthly"] : ["monthly"];
-
   const handleSubmit = () => {
     const formDataToSubmit = {
       elementName: formData.elementName,
@@ -90,6 +76,21 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     //@ts-ignore
     onSave(formDataToSubmit);
   };
+
+
+  if (!selectedSymbol || !currentSymbolInfo) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select a symbol first to configure data points.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  const isWeeklyEnabled = currentSymbolInfo.isWeekly;
+  const availableExpiryTypes = isWeeklyEnabled ? ["weekly", "monthly"] : ["monthly"];
 
   return (
     <div className="space-y-6">
