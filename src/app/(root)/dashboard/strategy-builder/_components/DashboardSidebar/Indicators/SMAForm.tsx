@@ -22,14 +22,15 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
   // Enhanced unique element name generation
-  const generateUniqueElementName = (length: string = "9") => {
-    const timestamp = Date.now().toString().slice(-4);
-    const random = Math.random().toString(36).slice(-4);
-    return `sma${length}_${timestamp}${random}`;
+  const generateUniqueElementName = (formData: any) => {
+    const parts = ["sma"];
+    if(formData.onData) parts.push(formData.onData);
+    if(formData.settings.source) parts.push(formData.settings.source);
+    return parts.join("_");
   };
 
   const [formData, setFormData] = useState<IndicatorFormData>({
-    elementName: initialData?.elementName || generateUniqueElementName(),
+    elementName: initialData?.elementName || "sma",
     onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
@@ -37,6 +38,16 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
       offset: initialData?.settings.offset || "0",
     }
   });
+
+  useEffect(() => {
+    if (formData) {
+      setFormData((prev) => ({
+        ...prev,
+        elementName: generateUniqueElementName(formData),
+      }));
+    }
+  }, [formData?.onData, formData?.settings.source]);
+  
 
   const { data } = useQuery<IndicatorOption>({
     queryFn: () => symbolService.getIndicatorAbility('sma'),
@@ -84,9 +95,6 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
     setFormData(prev => ({
       ...prev,
       settings: { ...prev.settings, length: value },
-      ...((!initialData && !prev.elementName.includes('_')) && { 
-        elementName: generateUniqueElementName(value) 
-      })
     }));
   };
 
@@ -94,7 +102,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   const handleGenerateElementName = () => {
     setFormData(prev => ({
       ...prev,
-      elementName: generateUniqueElementName(prev.settings.length)
+      elementName: generateUniqueElementName(formData)
     }));
   };
 

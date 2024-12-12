@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DragEvent } from "react";
 import { Search, ChevronDown, Plus, X, Edit2 } from "lucide-react";
@@ -25,7 +25,7 @@ import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["item-2"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["item-3"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
 
@@ -81,6 +81,16 @@ const DashboardSidebar: React.FC = () => {
     setEditingDataPoint(dataPoint);
     setIsDataPointModalOpen(true);
   };
+
+  //handle accordion expand on datapoint add and indicator add
+  useEffect(() => {
+    if(dataPoints.length > 0) {
+      setExpandedItems([...expandedItems, "item-0"]);
+    }
+    if(indicators.length > 0) {
+      setExpandedItems([...expandedItems, "item-1"]);
+    }
+  }, [dataPoints,indicators]);
 
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
@@ -228,7 +238,6 @@ const DashboardSidebar: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-sm">
                         {point.elementName}
-                        {point.dataType && ` (${point.dataType})`}
                       </span>
                       {!validation.isValid && (
                         <AlertCircle className="w-4 h-4 text-red-500" />
@@ -364,7 +373,7 @@ const DashboardSidebar: React.FC = () => {
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
+              <AccordionContent >
                 <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item?.items &&

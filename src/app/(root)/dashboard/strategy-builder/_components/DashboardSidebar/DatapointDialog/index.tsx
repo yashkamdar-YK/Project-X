@@ -17,10 +17,10 @@ interface DataPointDialogProps {
   editingDataPoint?: DataPoint;
 }
 
-export function DataPointDialog({ 
-  open, 
+export function DataPointDialog({
+  open,
   onOpenChange,
-  editingDataPoint 
+  editingDataPoint
 }: DataPointDialogProps) {
   // Move all hooks to the top level
   const [searchValue, setSearchValue] = useState("");
@@ -32,13 +32,13 @@ export function DataPointDialog({
   const updateDataPoint = useDataPointsStore((state) => state.updateDataPoint);
 
   const getCandleOptions = useMutation({
-    mutationFn: (dataType:DataType) => symbolService.getCandleDataPointsOptions(dataType),
+    mutationFn: (dataType: DataType) => symbolService.getCandleDataPointsOptions(dataType),
     mutationKey: ['dataPointOptions' + editingDataPoint?.dataType],
     onError: (error) => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to fetch data points options',
-        variant:"destructive"
+        variant: "destructive"
       })
     }
   });
@@ -50,7 +50,7 @@ export function DataPointDialog({
       toast({
         title: 'Error',
         description: error.message || 'Failed to fetch data points options',
-        variant:"destructive"
+        variant: "destructive"
       })
     }
   });
@@ -68,18 +68,19 @@ export function DataPointDialog({
   };
 
   const handleSave = async (formData: DataPoint) => {
-    if(!formData?.dataType){
+    if (!formData?.dataType && formData.type !== 'days-to-expire') {
       return toast({
         title: 'Error',
         description: 'Please select a data type',
-        variant:"destructive"
+        variant: "destructive"
       })
     };
 
     if (editingDataPoint) {
       updateDataPoint(editingDataPoint.id, formData);
-      const res = formData.type === 'candle-data' 
-        ? await getCandleOptions.mutateAsync(formData?.dataType) 
+      const res = formData.type === 'candle-data'
+        //@ts-ignore
+        ? await getCandleOptions.mutateAsync(formData?.dataType)
         : await getDTEDataPointsOptions.mutateAsync();
       const updatedDataPoint = {
         ...formData,
@@ -100,8 +101,9 @@ export function DataPointDialog({
         strikeSelection: formData.strikeSelection
       };
       addDataPoint(newDataPoint);
-      const res = formData.type === 'candle-data' 
-        ? await getCandleOptions.mutateAsync(formData?.dataType) 
+      const res = formData.type === 'candle-data'
+        //@ts-ignore
+        ? await getCandleOptions.mutateAsync(formData?.dataType)
         : await getDTEDataPointsOptions.mutateAsync();
       const updatedDataPoint = {
         ...newDataPoint,
@@ -122,6 +124,7 @@ export function DataPointDialog({
     if (editingDataPoint) {
       return editingDataPoint.type === "candle-data" ? (
         <CandleDataForm
+          //@ts-ignore
           initialData={editingDataPoint}
           //@ts-ignore
           onSave={handleSave}
@@ -152,9 +155,9 @@ export function DataPointDialog({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
-            <Search 
-              size={20} 
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" 
+            <Search
+              size={20}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
             />
           </div>
           <InitialOptions
@@ -167,13 +170,13 @@ export function DataPointDialog({
 
     return selectedOption === "candle-data" ? (
       <CandleDataForm
-          //@ts-ignore
+        //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
       />
     ) : (
       <DaysToExpire
-          //@ts-ignore
+        //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
       />
@@ -181,8 +184,8 @@ export function DataPointDialog({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           setSelectedOption(null);

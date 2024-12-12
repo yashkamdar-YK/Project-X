@@ -8,14 +8,28 @@ import { AlertCircle } from "lucide-react";
 import { DataType, StrikeMode, StrikePosition, DataPoint } from "./types";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { toast } from "@/hooks/use-toast";
 
 // Constants
 const CANDLE_TYPES = ["candlestick", "heikenashi"] as const;
 const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i);
 const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i);
 
+type TFormData = {
+  dataType: DataType;
+  candleType: typeof CANDLE_TYPES[number];
+  duration: string;
+  expiryType: "weekly" | "monthly";
+  expiryOrder: string;
+  elementName: string;
+  strikeSelection: {
+    mode: StrikeMode;
+    position: StrikePosition;
+  };
+}
 interface CandleDataFormProps {
-  initialData?: DataPoint;
+  initialData?: DataPoint & TFormData;
   onSave: (data: Partial<DataPoint>) => void;
   onClose?: () => void;
 }
@@ -26,26 +40,34 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   onClose
 }) => {
   const { symbolInfo, selectedSymbol , selectedTimeFrame} = useDataPointStore();
+  const {dataPoints} = useDataPointsStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
   // Unique name generation function
-  const generateUniqueElementName = (dataType: DataType): string => {
-    const prefix = dataType.toLowerCase();
-    const timestamp = Date.now().toString().slice(-4);
-    const randomString = Math.random().toString(36).substring(2, 6);
-    return `${prefix}NF_ohlc_${timestamp}_${randomString}`;
+  const generateUniqueElementName = (formData: TFormData): string => {
+    const parts: string[] = [];
+    // Add data type
+    parts.push(formData.dataType.toLowerCase());
+    // Add candle type
+    parts.push(formData.candleType);
+    // Add expiry info for FUT and OPT
+    if (formData.dataType === 'FUT' || formData.dataType === 'OPT') {
+      parts.push(`${formData.expiryType}`);
+    }
+    
+    return parts.join('_').toLowerCase();
   };
 
   // Initialize the state with a unique name if it's a new data point
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TFormData>({
     dataType: initialData?.dataType || "SPOT" as DataType,
     candleType: initialData?.candleType || "candlestick",
     duration: initialData?.duration || "2",
-    expiryType: initialData?.expiryType || "weekly",
+    expiryType: initialData?.expiryType || "monthly",
     expiryOrder: initialData?.expiryOrder || "0",
     elementName: initialData 
       ? initialData.elementName 
-      : generateUniqueElementName("SPOT"), // Generate unique name for new data point
+      : "SPOT", // Generate unique name for new data point
     strikeSelection: initialData?.strikeSelection || {
       mode: "strike-at" as StrikeMode,
       position: "ATM" as StrikePosition
@@ -61,7 +83,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
 
    // Manually regenerate element name
   const handleGenerateElementName = () => {
-    const newName = generateUniqueElementName(formData.dataType);
+    const newName = generateUniqueElementName(formData);
     updateFormData("elementName", newName);
   };
 
@@ -69,10 +91,10 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   useEffect(() => {
     if (!initialData) {
       // Generate a new unique name when data type changes
-      const newName = generateUniqueElementName(formData.dataType);
+      const newName = generateUniqueElementName(formData);
       updateFormData("elementName", newName);
     }
-  }, [formData.dataType]);
+  }, [formData?.candleType , formData?.dataType, formData?.expiryType]);
 
   if (!selectedSymbol || !currentSymbolInfo) {
     return (
@@ -89,6 +111,17 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   const availableExpiryTypes = isWeeklyEnabled ? ["weekly", "monthly"] : ["monthly"];
 
   const handleSubmit = () => {
+    const isDuplicate = dataPoints.some((dataPoint) => {
+      if (initialData) {
+        return dataPoint.elementName === formData.elementName && dataPoint.id !== initialData.id;
+      }
+      return dataPoint.elementName === formData.elementName;
+    });
+    if(isDuplicate) return toast({
+      title: "Duplicate Element Name",
+      description: "Element name must be unique",
+      variant:"destructive"
+    });
     const formDataToSubmit = {
       elementName: formData.elementName,
       dataType: formData.dataType,

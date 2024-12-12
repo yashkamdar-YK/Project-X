@@ -23,10 +23,8 @@ const DaysToExpire = ({
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
   // Unique name generation function
-  const generateUniqueElementName = (): string => {
-    const timestamp = Date.now().toString().slice(-6);
-    const randomString = Math.random().toString(36).substring(2, 6);
-    return `dte_${timestamp}_${randomString}`;
+  const generateUniqueElementName = (formData:any): string => {
+    return `dte_${formData?.expiryType}_${formData?.expiryOrder}`;
   };
 
   // Initialize form data with default values
@@ -35,7 +33,8 @@ const DaysToExpire = ({
     expiryOrder: initialData?.expiryOrder || "0",
     elementName: initialData 
       ? initialData.elementName 
-      : generateUniqueElementName() // Generate unique name for new data point
+      : "dte_weekly_0",
+      type: "days-to-expire"
   });
 
 
@@ -56,10 +55,10 @@ const DaysToExpire = ({
   // Regenerate element name when expiry type changes
   useEffect(() => {
     if (!initialData) {
-      const newName = generateUniqueElementName();
+      const newName = generateUniqueElementName(formData);
       updateFormData("elementName", newName);
     }
-  }, [formData.expiryType]);
+  }, [formData?.expiryType, formData?.expiryOrder]);
 
     // Handle form submission and pass data back to parent
     const handleSubmit = () => {
@@ -76,7 +75,7 @@ const DaysToExpire = ({
 
     // Manually regenerate element name
   const handleGenerateElementName = () => {
-    const newName = generateUniqueElementName();
+    const newName = generateUniqueElementName(formData);
     updateFormData("elementName", newName);
   };
   
