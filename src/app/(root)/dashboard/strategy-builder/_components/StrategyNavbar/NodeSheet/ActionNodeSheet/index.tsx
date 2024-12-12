@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PositionCard from "./PositionCard";
 import { Position } from './types';
+import { transformPositionToPayload, generateActionPayload } from "./transformToPayload";
 
 interface ActionNodeSheetProps {
   node: Node
@@ -93,6 +94,13 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
       }
       return position;
     }));
+  };
+  
+  const handleSubmit = () => {
+    const payload = generateActionPayload(actions, positions);
+
+    console.log('Action Payload:', JSON.stringify(payload, null, 2));
+    console.log('Action positions:', JSON.stringify(positions, null, 2));
   };
 
   return (
@@ -221,6 +229,14 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+          >
+            Submit Action
+          </Button>
+        </div>
     </div>
   );
 };
