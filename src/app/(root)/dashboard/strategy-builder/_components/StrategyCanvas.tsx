@@ -13,7 +13,11 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { StartNode, ConditionNode, ActionNode } from "./CanvasComponents/CustomNodes";
+import {
+  StartNode,
+  ConditionNode,
+  ActionNode,
+} from "./CanvasComponents/CustomNodes";
 import CustomControls from "./CanvasComponents/customeControl";
 import { useSheetStore } from "@/lib/store/SheetStore";
 import { useNodeStore } from "@/lib/store/nodeStore";
@@ -251,7 +255,6 @@ const StrategyCanvas = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedNodeId]);
-
 
   const deleteNode = (id: string) => {
     const nodeToDelete = nodes.find((node) => node.id === id);

@@ -33,6 +33,8 @@ export interface SymbolInfo {
   executionSettings: ExecutionSettings;
   symbol: string;
   timeFrame: number[];
+  segments:DataType[];
+  "data-available": DataType[];
 }
 
 // Data Point Types
