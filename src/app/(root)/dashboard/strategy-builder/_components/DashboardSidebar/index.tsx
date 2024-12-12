@@ -98,7 +98,6 @@ const DashboardSidebar: React.FC = () => {
           >
             <span className="text-sm">
               {point.elementName}
-              {point.dataType && ` (${point.dataType})`}
             </span>
             <div className="flex items-center space-x-1">
               <button

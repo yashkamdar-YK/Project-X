@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Position } from "@xyflow/react";
 import {
   PlayCircle,
@@ -12,6 +12,7 @@ import {
 import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
 import { useCanvasContext } from "../StrategyCanvas";
+import { NodeTypes } from "../../_utils/nodeTypes";
 
 export const StartNode = () => {
   return (
@@ -139,7 +140,6 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
         <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 ">
-
           <div className="opacity-0 group-hover:opacity-100">
             <button
               onClick={handleDelete}
@@ -210,9 +210,14 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   );
 };
 
-
-export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
+export const ActionNode = ({ data, id, position }: { data: Node; id: string; position: Node }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
+
+   // Checking if the action node is connected to a condition node then show number
+  const isConnectedToCondition = edges.some(
+    (edge) => edge.target === id && 
+    nodes.find(node => node.id === edge.source)?.type === NodeTypes.CONDITION
+  );
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -220,9 +225,21 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     setEdges(edges.filter((edge) => edge.source !== id && edge.target !== id));
   };
 
+  // console.log("Position On Action Node", position);
+  
+
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
+
+       {/* Sequence Number Badge - Only visible when connected to a condition node */}
+       {isConnectedToCondition && (
+          <div className="absolute -top-3 -left-3 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+           {/* @ts-ignore */}
+           {data.sequenceNumber}
+          </div>
+        )}
+
         {/* Delete button */}
         <button
           onClick={handleDelete}
