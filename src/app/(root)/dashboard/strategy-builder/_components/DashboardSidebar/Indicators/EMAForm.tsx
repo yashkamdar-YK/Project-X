@@ -33,18 +33,19 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
   // Generate initial element name
-  const generateUniqueElementName = (length: string = "9") => {
-    const timestamp = Date.now().toString().slice(-4);
-    const random = Math.random().toString(36).slice(-4);
-    return `ema${length}_${timestamp}${random}`;
+  const generateUniqueElementName = (formData:any) => {
+    const parts = ["ema"];
+    if(formData.onData) parts.push(formData.onData);
+    if(formData.settings.source) parts.push(formData.settings.source);
+    return parts.join("_");
   };
 
   const [formData, setFormData] = useState<IndicatorFormData>({
-    elementName: initialData?.elementName || generateUniqueElementName(),
+    elementName: initialData?.elementName || "ema",
     onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
-      source: initialData?.settings.source || "high",
+      source: initialData?.settings.source || "",
       offset: initialData?.settings.offset || "0",
     },
   });
@@ -107,11 +108,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const handleLengthChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      settings: { ...prev.settings, length: value },
-      ...(!initialData &&
-        !prev.elementName.includes("_") && {
-          elementName: generateUniqueElementName(value),
-        }),
+      settings: { ...prev.settings, length: value }
     }));
   };
 
@@ -119,9 +116,18 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const handleGenerateElementName = () => {
     setFormData((prev) => ({
       ...prev,
-      elementName: generateUniqueElementName(prev.settings.length),
+      elementName: generateUniqueElementName(formData),
     }));
   };
+
+  useEffect(() => {
+    if (formData) {
+      setFormData((prev) => ({
+        ...prev,
+        elementName: generateUniqueElementName(formData),
+      }));
+    }
+  }, [formData?.onData, formData?.settings.source]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,9 +213,9 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
               <label className="text-sm font-medium">Source</label>
               <Select
                 disabled={!sourceOptions?.length}
-                value={formData.settings.source}
-                //@ts-ignore
+                value={formData.settings.source || ""}
                 onValueChange={(value) =>
+                  //@ts-ignore
                   setFormData((prev) => ({
                     ...prev,
                     settings: { ...prev.settings, source: value },

@@ -21,15 +21,15 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
   const { dataPoints } = useDataPointsStore();
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
 
-  // Enhanced unique element name generation
-  const generateUniqueElementName = (length: string = "10", multiplier: string = "1") => {
-    const timestamp = Date.now().toString().slice(-4);
-    const random = Math.random().toString(36).slice(-4);
-    return `st${length}_${multiplier}_${timestamp}${random}`;
+  const generateUniqueElementName = (formData: any) => {
+    const parts = ["st"];
+    if(formData.onData) parts.push(formData.onData);
+    if(formData.settings.multiplier) parts.push(formData.settings.multiplier);
+    return parts.join("_");
   };
 
   const [formData, setFormData] = useState<IndicatorFormData>({
-    elementName: initialData?.elementName || generateUniqueElementName(),
+    elementName: initialData?.elementName || "st",
     onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "10",
@@ -77,12 +77,6 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
     setFormData(prev => ({
       ...prev,
       settings: { ...prev.settings, [field]: value },
-      ...((!initialData && !prev.elementName.includes('_')) && { 
-        elementName: generateUniqueElementName(
-          field === 'length' ? value : prev.settings.length,
-          field === 'multiplier' ? value : prev.settings.multiplier
-        )
-      })
     }));
   };
 
@@ -90,9 +84,17 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
   const handleGenerateElementName = () => {
     setFormData(prev => ({
       ...prev,
-      elementName: generateUniqueElementName(prev.settings.length, prev.settings.multiplier)
+      elementName: generateUniqueElementName(formData)
     }));
   };
+  useEffect(() => {
+    if (formData) {
+      setFormData(prev => ({
+        ...prev,
+        elementName: generateUniqueElementName(formData)
+      }));
+    }
+  }, [formData?.onData, formData?.settings.multiplier]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

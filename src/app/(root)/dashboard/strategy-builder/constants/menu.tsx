@@ -87,14 +87,14 @@ export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void,onIndicatorAdd
     onClick: onIndicatorAdd,
   },
   {
-    title: "Components",
-    icon: Layers,
-    items: DEFAULT_NODE_TEMPLATES,
+    title: "Actions",
+    icon: Zap,
     onClick: () => {},
   },
   {
-    title: "Actions",
-    icon: Zap,
+    title: "Components",
+    icon: Layers,
+    items: DEFAULT_NODE_TEMPLATES,
     onClick: () => {},
   },
 ];

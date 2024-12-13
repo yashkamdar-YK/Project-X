@@ -46,7 +46,7 @@ export interface IndicatorFormData {
   onData: string | null;
   settings: {
     length: string;
-    source?: 'high' | 'low' | 'close';
+    source?: 'high' | 'low' | 'close' | 'open' | 'oi' | '';
     offset?: string;
     multiplier?: string;
   };
