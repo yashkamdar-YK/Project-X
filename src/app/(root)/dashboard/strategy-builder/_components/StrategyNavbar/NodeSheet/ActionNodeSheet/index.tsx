@@ -126,9 +126,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
         {/* Active Actions */}
         {currentNode.actions.length > 0 && (
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Active Actions
-            </Label>
             {currentNode.actions.map((action) => {
               const actionConfig = availableActions.find(a => a.func === action.func);
               if (!actionConfig) return null;
@@ -163,9 +160,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
         {/* Position Cards */}
         {currentNode.positions.length > 0 && (
           <div className="space-y-4">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Trading Positions
-            </Label>
             <div className="space-y-4">
               {currentNode.positions.map((position) => (
                 <PositionCard
