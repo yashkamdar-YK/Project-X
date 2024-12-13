@@ -148,27 +148,27 @@ const MainSettings: React.FC<MainSettingsProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="-10">OTM 10</SelectItem>
-                <SelectItem value="-9">OTM 9</SelectItem>
-                <SelectItem value="-8">OTM 8</SelectItem>
-                <SelectItem value="-7">OTM 7</SelectItem>
-                <SelectItem value="-6">OTM 6</SelectItem>
-                <SelectItem value="-5">OTM 5</SelectItem>
-                <SelectItem value="-4">OTM 4</SelectItem>
-                <SelectItem value="-3">OTM 3</SelectItem>
-                <SelectItem value="-2">OTM 2</SelectItem>
-                <SelectItem value="-1">OTM 1</SelectItem>
-                <SelectItem value="0">ATM</SelectItem>
-                <SelectItem value="1">ITM 1</SelectItem>
-                <SelectItem value="2">ITM 2</SelectItem>
-                <SelectItem value="3">ITM 3</SelectItem>
-                <SelectItem value="4">ITM 4</SelectItem>
-                <SelectItem value="5">ITM 5</SelectItem>
-                <SelectItem value="6">ITM 6</SelectItem>
-                <SelectItem value="7">ITM 7</SelectItem>
-                <SelectItem value="8">ITM 8</SelectItem>
-                <SelectItem value="9">ITM 9</SelectItem>
-                <SelectItem value="10">ITM 10</SelectItem>
+                  <SelectItem value="10">ITM 10</SelectItem> 
+                  <SelectItem value="9">ITM 9</SelectItem>
+                  <SelectItem value="8">ITM 8</SelectItem>
+                  <SelectItem value="7">ITM 7</SelectItem>
+                  <SelectItem value="6">ITM 6</SelectItem>
+                  <SelectItem value="5">ITM 5</SelectItem>
+                  <SelectItem value="4">ITM 4</SelectItem>
+                  <SelectItem value="3">ITM 3</SelectItem>
+                  <SelectItem value="2">ITM 2</SelectItem>
+                  <SelectItem value="1">ITM 1</SelectItem>
+                  <SelectItem value="0">ATM</SelectItem>
+                  <SelectItem value="-1">OTM 1</SelectItem>
+                  <SelectItem value="-2">OTM 2</SelectItem>
+                  <SelectItem value="-3">OTM 3</SelectItem>
+                  <SelectItem value="-4">OTM 4</SelectItem>
+                  <SelectItem value="-5">OTM 5</SelectItem>
+                  <SelectItem value="-6">OTM 6</SelectItem>
+                  <SelectItem value="-7">OTM 7</SelectItem>
+                  <SelectItem value="-8">OTM 8</SelectItem>
+                  <SelectItem value="-9">OTM 9</SelectItem>
+                  <SelectItem value="-10">OTM 10</SelectItem>
               </SelectContent>
             </Select>
           </div>

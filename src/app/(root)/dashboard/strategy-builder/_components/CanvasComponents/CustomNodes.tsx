@@ -12,6 +12,7 @@ import {
 import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
 import { useCanvasContext } from "../StrategyCanvas";
+import { useActionStore } from "@/lib/store/actionStore";
 
 export const StartNode = () => {
   return (
@@ -213,6 +214,8 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
 
 export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
+  const {actionNodes} = useActionStore();
+  const currentActionNode = actionNodes[id];
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -250,7 +253,7 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
             </div>
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {/* @ts-ignore */}
-              {data.label}
+              {currentActionNode?.nodeName || data.label}
             </div>
           </div>
           <Settings2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
