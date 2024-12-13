@@ -1,5 +1,5 @@
 import React from "react";
-import { Position } from "./types";
+import { Position, PositionSettings } from "./types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +15,7 @@ interface ExpandableSectionProps {
   title: string;
   isExpanded: boolean;
   onToggle: () => void;
-  onSettingChange: (field: string, value: any) => void;
+  onSettingChange: (field: keyof PositionSettings, value: any) => void;
   position: Position;
 }
 
@@ -208,6 +208,7 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
               </Label>
               <Input
                 type="number"
+                disabled={['asap', 'asap-rev','cost','cost-rev'].includes(position.settings.reEntryTgOn)}
                 value={position.settings.reEntryTgVal}
                 onChange={(e) =>
                   onSettingChange("reEntryTgVal", parseFloat(e.target.value))
@@ -262,6 +263,7 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
                 Re-Entry Stop Loss Value
               </Label>
               <Input
+                disabled={['asap', 'asap-rev','cost','cost-rev'].includes(position.settings.reEntrySLOn)}
                 type="number"
                 value={position.settings.reEntrySLVal}
                 onChange={(e) =>

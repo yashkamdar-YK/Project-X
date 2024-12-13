@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import {
   DropdownMenu,
@@ -13,94 +13,79 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PositionCard from "./PositionCard";
-import { Position } from './types';
+import { Position, PositionSettings } from './types';
 import { transformPositionToPayload, generateActionPayload } from "./transformToPayload";
+import { useActionStore } from "@/lib/store/actionStore";
 
 interface ActionNodeSheetProps {
-  node: Node
+  node: Node;
 }
 
 const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
   const { closeSheet } = useSheetStore();
-  const [actions, setActions] = useState<any[]>([]);
-  const [positions, setPositions] = useState<Position[]>( []);
-  const [nodeName, setNodeName] = useState('');
+  const {
+    actionNodes,
+    createActionNode,
+    updateNodeName,
+    addAction,
+    removeAction,
+    addPosition,
+    removePosition,
+    updatePositionSetting,
+  } = useActionStore();
+
+  // Initialize the action node if it doesn't exist
+  useEffect(() => {
+    if (!actionNodes[node.id]) {
+      createActionNode(node.id);
+      updateNodeName(node.id, `Action ${Object.keys(actionNodes).length + 1}`);
+    }
+  }, [node.id, actionNodes, createActionNode]);
+
+  const currentNode = actionNodes[node.id] || { nodeName: '', actions: [], positions: [] };
 
   const availableActions = [
     { 
       label: "Square off all positions",
-      func: "squareoff_all",
+      func: "squareoff_all" as const,
       icon: Trash2
     },
     { 
       label: "Stop wait trade triggers",
-      func: "stop_WaitTrade_triggers",
+      func: "stop_WaitTrade_triggers" as const,
       icon: AlertCircle
     },
     { 
       label: "Add new position",
-      func: "addLeg",
+      func: "addLeg" as const,
       icon: LayoutGrid
     }
-  ] as const;
+  ];
 
   const handleAddAction = (actionType: string) => {
     if (actionType === "addLeg") {
-      const newLegParams = {
-        transactionType: 'buy',
-        segment: 'OPT',
-        optionType: 'CE',
-        qty: 0,
-        expType: 'weekly',
-        expNo: 0,
-        strikeBy: 'strike',
-        strikeVal: 0,
-        legID: positions.length + 1
-      };
-
-      const newPosition: any = {
-        id: `position-${Date.now()}`,
-        type: 'Add Position',
-        settings: newLegParams
-      };
-
-      setPositions([...positions, newPosition]);
+      addPosition(node.id);
     } else {
-      const newAction: any = {
-        func: actionType as 'squareoff_all' | 'stop_WaitTrade_triggers'
-      };
-
-      if (!actions.some(action => action.func === actionType)) {
-        setActions([...actions, newAction]);
-      }
+      addAction(node.id, { func: actionType as 'squareoff_all' | 'stop_WaitTrade_triggers' });
     }
   };
 
   const handleRemoveAction = (actionFunc: string) => {
-    setActions(actions.filter(action => action.func !== actionFunc));
+    removeAction(node.id, actionFunc);
   };
 
   const handleRemovePosition = (positionId: string) => {
-    setPositions(positions.filter(position => position.id !== positionId));
+    removePosition(node.id, positionId);
   };
 
-  const handlePositionSettingChange = (positionId: string, field:any, value: any) => {
-    setPositions(positions.map(position => {
-      if (position.id === positionId) {
-        return {
-          ...position,
-          settings: { ...position.settings, [field]: value }
-        };
-      }
-      return position;
-    }));
+  const handlePositionSettingChange = (positionId: string, field: keyof PositionSettings, value: any) => {
+    updatePositionSetting(node.id, positionId, field, value);
   };
-  
+
   const handleSubmit = () => {
-    const payload = generateActionPayload(actions, positions);
-
+    const payload = generateActionPayload(currentNode.actions, currentNode.positions);
     console.log('Action Payload:', JSON.stringify(payload, null, 2));
-    console.log('Action positions:', JSON.stringify(positions, null, 2));
+    console.log('Action positions:', JSON.stringify(currentNode.positions, null, 2));
   };
 
   return (
@@ -131,34 +116,34 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
           </Label>
           <Input
             id="action-name"
-            value={nodeName}
-            onChange={(e) => setNodeName(e.target.value)}
+            value={currentNode.nodeName}
+            onChange={(e) => updateNodeName(node.id, e.target.value)}
             className="bg-white dark:bg-gray-800"
             placeholder="Enter action name"
           />
         </div>
 
         {/* Active Actions */}
-        {actions.length > 0 && (
+        {currentNode.actions.length > 0 && (
           <div className="space-y-3">
             <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Active Actions
             </Label>
-            {actions.map((action) => {
+            {currentNode.actions.map((action) => {
               const actionConfig = availableActions.find(a => a.func === action.func);
+              if (!actionConfig) return null;
+              
               return (
                 <div
                   key={action.func}
                   className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-3">
-                    {actionConfig?.icon && (
-                      <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700">
-                        <actionConfig.icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                      </div>
-                    )}
+                    <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700">
+                      <actionConfig.icon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                    </div>
                     <p className="font-medium text-gray-900 dark:text-gray-100">
-                      {actionConfig?.label}
+                      {actionConfig.label}
                     </p>
                   </div>
                   <Button
@@ -176,18 +161,20 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
         )}
 
         {/* Position Cards */}
-        {positions.length > 0 && (
+        {currentNode.positions.length > 0 && (
           <div className="space-y-4">
             <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Trading Positions
             </Label>
             <div className="space-y-4">
-              {positions.map((position) => (
+              {currentNode.positions.map((position) => (
                 <PositionCard
                   key={position.id}
                   position={position}
-                  onRemove={handleRemovePosition}
-                  onSettingChange={handlePositionSettingChange}
+                  onRemove={() => handleRemovePosition(position.id)}
+                  onSettingChange={(positionId, field, value) =>
+                    handlePositionSettingChange(positionId, field, value)
+                  }
                 />
               ))}
             </div>
@@ -212,10 +199,13 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
               <DropdownMenuItem
                 key={func}
                 onClick={() => handleAddAction(func)}
-                disabled={func !== "addLeg" && actions.some(action => action.func === func)}
+                disabled={
+                  func !== "addLeg" &&
+                  currentNode.actions.some(action => action.func === func)
+                }
                 className={`
                   flex items-center gap-3 p-3 rounded-md cursor-pointer
-                  ${func !== "addLeg" && actions.some(action => action.func === func)
+                  ${func !== "addLeg" && currentNode.actions.some(action => action.func === func)
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:bg-gray-100 dark:hover:bg-gray-700'}
                 `}
@@ -228,8 +218,9 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+
+        {/* Submit Button */}
+        <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
           <Button
             onClick={handleSubmit}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -237,6 +228,7 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
             Submit Action
           </Button>
         </div>
+      </div>
     </div>
   );
 };

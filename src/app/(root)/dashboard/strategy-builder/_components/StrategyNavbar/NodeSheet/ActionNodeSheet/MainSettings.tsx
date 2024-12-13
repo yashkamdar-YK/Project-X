@@ -8,11 +8,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Position, TransactionType, Segment, OptionType, ExpirationType } from "./types";
+import {
+  Position,
+  TransactionType,
+  Segment,
+  OptionType,
+  ExpirationType,
+  PositionSettings,
+} from "./types";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 interface MainSettingsProps {
   position: Position;
-  onSettingChange: (id: string, field: string, value: any) => void;
+  onSettingChange: (
+    id: string,
+    field: keyof PositionSettings,
+    value: any
+  ) => void;
   currentSymbol: any;
 }
 
@@ -21,6 +33,15 @@ const MainSettings: React.FC<MainSettingsProps> = ({
   onSettingChange,
   currentSymbol,
 }) => {
+  const { selectedSymbol, symbolInfo } = useDataPointStore();
+  if (!selectedSymbol) return null;
+
+  const currentSymbolInfo = symbolInfo[selectedSymbol];
+  const availableExpiryTypes =
+    position?.settings?.segment == "FUT"
+      ? currentSymbolInfo?.FutExp
+      : currentSymbolInfo?.OptExp;
+
   return (
     <div className="p-4 space-y-4">
       {/* First Row: Segment, Transaction, Option */}
@@ -63,9 +84,7 @@ const MainSettings: React.FC<MainSettingsProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="buy">
-                <span className="text-green-600 dark:text-green-400">
-                  BUY
-                </span>
+                <span className="text-green-600 dark:text-green-400">BUY</span>
               </SelectItem>
               <SelectItem value="sell">
                 <span className="text-red-600 dark:text-red-400">SELL</span>
@@ -129,9 +148,27 @@ const MainSettings: React.FC<MainSettingsProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="-1">-1 (OTM)</SelectItem>
-                <SelectItem value="0">0 (ATM)</SelectItem>
-                <SelectItem value="1">+1 (ITM)</SelectItem>
+                <SelectItem value="-10">OTM 10</SelectItem>
+                <SelectItem value="-9">OTM 9</SelectItem>
+                <SelectItem value="-8">OTM 8</SelectItem>
+                <SelectItem value="-7">OTM 7</SelectItem>
+                <SelectItem value="-6">OTM 6</SelectItem>
+                <SelectItem value="-5">OTM 5</SelectItem>
+                <SelectItem value="-4">OTM 4</SelectItem>
+                <SelectItem value="-3">OTM 3</SelectItem>
+                <SelectItem value="-2">OTM 2</SelectItem>
+                <SelectItem value="-1">OTM 1</SelectItem>
+                <SelectItem value="0">ATM</SelectItem>
+                <SelectItem value="1">ITM 1</SelectItem>
+                <SelectItem value="2">ITM 2</SelectItem>
+                <SelectItem value="3">ITM 3</SelectItem>
+                <SelectItem value="4">ITM 4</SelectItem>
+                <SelectItem value="5">ITM 5</SelectItem>
+                <SelectItem value="6">ITM 6</SelectItem>
+                <SelectItem value="7">ITM 7</SelectItem>
+                <SelectItem value="8">ITM 8</SelectItem>
+                <SelectItem value="9">ITM 9</SelectItem>
+                <SelectItem value="10">ITM 10</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -156,8 +193,11 @@ const MainSettings: React.FC<MainSettingsProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
+                {Object.keys(availableExpiryTypes).map((expiryType: string) => (
+                  <SelectItem key={expiryType} value={expiryType}>
+                    {expiryType}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -166,20 +206,36 @@ const MainSettings: React.FC<MainSettingsProps> = ({
             <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">
               Expiry Number
             </Label>
-            <Input
+            <Select
+              value={position.settings.expNo.toString()}
+              onValueChange={(value) =>
+                onSettingChange(position.id, "expNo", parseInt(value))
+              }
+            >
+              <SelectTrigger className="w-full bg-white dark:bg-gray-900">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {/* @ts-ignore */}
+                {availableExpiryTypes[position.settings.expType].map(
+                  (expiryNo: number) => (
+                    <SelectItem key={expiryNo} value={expiryNo.toString()}>
+                      {`${expiryNo === 0 ? "Current" : `Next ${expiryNo}`}`}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+            {/* <Input
               type="number"
               value={position.settings.expNo}
               onChange={(e) =>
-                onSettingChange(
-                  position.id,
-                  "expNo",
-                  parseInt(e.target.value)
-                )
+                onSettingChange(position.id, "expNo", parseInt(e.target.value))
               }
               min={0}
               className="w-full bg-white dark:bg-gray-900"
               placeholder="0 for current expiry"
-            />
+            /> */}
           </div>
         </div>
       )}
@@ -188,4 +244,3 @@ const MainSettings: React.FC<MainSettingsProps> = ({
 };
 
 export default MainSettings;
-

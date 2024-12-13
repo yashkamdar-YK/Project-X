@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { X } from 'lucide-react';
-import { Position } from "./types";
+import { Position, PositionSettings } from "./types";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 import MainSettings from "./MainSettings";
 import ExpandableActions from "./ExpandableActions";
@@ -9,7 +9,7 @@ import ExpandableActions from "./ExpandableActions";
 interface PositionCardProps {
   position: Position;
   onRemove: (id: string) => void;
-  onSettingChange: (id: string, field: string, value: any) => void;
+  onSettingChange: (id: string, field: keyof PositionSettings, value: any) => void;
 }
 
 const PositionCard: React.FC<PositionCardProps> = ({
@@ -29,9 +29,6 @@ const PositionCard: React.FC<PositionCardProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
             Position Leg {position.settings.legID}
-          </span>
-          <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100">
-            {position.settings.segment}
           </span>
         </div>
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Position } from "./types";
+import { Position, PositionSettings } from "./types";
 
 export const useExpandableSections = (
   position: Position,
-  onSettingChange: (id: string, field: string, value: any) => void
+  onSettingChange: (id: string, field: keyof PositionSettings, value: any) => void
 ) => {
   const [sections, setSections] = useState({
     target: false,
@@ -18,7 +18,7 @@ export const useExpandableSections = (
     setSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const handleTargetToggle = (field: string, value: any) => {
+  const handleTargetToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.target) {
       onSettingChange(position.id, "isTarget", true);
       onSettingChange(position.id, "targetOn", "%");
@@ -31,7 +31,7 @@ export const useExpandableSections = (
     onSettingChange(position.id, field, value);
   };
 
-  const handleSLToggle = (field: string, value: any) => {
+  const handleSLToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.stopLoss) {
       onSettingChange(position.id, "isSL", true);
       onSettingChange(position.id, "SLon", "%");
@@ -44,7 +44,7 @@ export const useExpandableSections = (
     onSettingChange(position.id, field, value);
   };
 
-  const handleTrailSLToggle = (field: string, value: any) => {
+  const handleTrailSLToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.trailStopLoss) {
       onSettingChange(position.id, "isTrailSL", true);
       onSettingChange(position.id, "trailSLon", "%");
@@ -59,7 +59,7 @@ export const useExpandableSections = (
     onSettingChange(position.id, field, value);
   };
 
-  const handleReEntryTargetToggle = (field: string, value: any) => {
+  const handleReEntryTargetToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.reEntryTarget) {
       onSettingChange(position.id, "isReEntryTg", true);
       onSettingChange(position.id, "reEntryTgOn", "asap");
@@ -74,7 +74,7 @@ export const useExpandableSections = (
     onSettingChange(position.id, field, value);
   };
 
-  const handleReEntrySLToggle = (field: string, value: any) => {
+  const handleReEntrySLToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.reEntryStopLoss) {
       onSettingChange(position.id, "isReEntrySL", true);
       onSettingChange(position.id, "reEntrySLOn", "asap");
@@ -89,7 +89,7 @@ export const useExpandableSections = (
     onSettingChange(position.id, field, value);
   };
 
-  const handleWTToggle = (field: string, value: any) => {
+  const handleWTToggle = (field: keyof PositionSettings, value: any) => {
     if (!sections.waitTrade) {
       onSettingChange(position.id, "isWT", true);
       onSettingChange(position.id, "wtOn", "val-up");

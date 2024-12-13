@@ -1,11 +1,11 @@
 import React from "react";
-import { Position } from "./types";
+import { Position, PositionSettings } from "./types";
 import ExpandableSection from "./ExpandableSection";
 import { useExpandableSections } from "./useExpandableSections";
 
 interface ExpandableActionsProps {
   position: Position;
-  onSettingChange: (id: string, field: string, value: any) => void;
+  onSettingChange: (id: string, field: keyof PositionSettings, value: any) => void;
 }
 
 const ExpandableActions: React.FC<ExpandableActionsProps> = ({
