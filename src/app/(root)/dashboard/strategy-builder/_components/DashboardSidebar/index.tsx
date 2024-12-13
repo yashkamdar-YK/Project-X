@@ -9,7 +9,12 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AlertCircle } from "lucide-react";
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
@@ -22,19 +27,33 @@ import { Indicator } from "./Indicators/types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import IndicatorDialog from "./Indicators";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { useActionStore } from "@/lib/store/actionStore";
+import ActionDialog from "./Action";
+import ConditionDialog from "./Condition";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-3"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
+  const [editingDataPoint, setEditingDataPoint] = useState<
+    DataPoint | undefined
+  >();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<Indicator | undefined>();
+  const [editingIndicator, setEditingIndicator] = useState<
+    Indicator | undefined
+  >();
+
+  // New state for Action Dialog
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  // const [editingActionNode, setEditingActionNode] = useState< Action | undefined>();
+
+  const [isConditionModalOpen, setConditionModalOpen] = useState(false)
 
   const { dataPoints, removeDataPoint } = useDataPointsStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
+  const { actionNodes, createActionNode } = useActionStore(); // Use action store
 
   const groupedDataPoints = React.useMemo(() => {
     return dataPoints.reduce((acc, dp) => {
@@ -65,6 +84,17 @@ const DashboardSidebar: React.FC = () => {
     setExpandedItems(value);
   };
 
+  const handleAddActions = (e: any) => {
+    e.preventDefault();
+    console.log("Opening action modal"); // Add this for debugging
+    setIsActionModalOpen(true);
+  };
+
+  const handleAddCondition = (e: any) => {
+    e.preventDefault();
+    setConditionModalOpen(true);
+  };
+
   const handleAddDataPoint = (e: any) => {
     e.preventDefault();
     setEditingDataPoint(undefined);
@@ -75,7 +105,7 @@ const DashboardSidebar: React.FC = () => {
     e.preventDefault();
     setEditingIndicator(undefined);
     setIsIndicatorsModalOpen(true);
-  }
+  };
 
   const handleEditDataPoint = (dataPoint: DataPoint) => {
     setEditingDataPoint(dataPoint);
@@ -84,214 +114,218 @@ const DashboardSidebar: React.FC = () => {
 
   //handle accordion expand on datapoint add and indicator add
   useEffect(() => {
-    if(dataPoints.length > 0) {
+    if (dataPoints.length > 0) {
       setExpandedItems([...expandedItems, "item-0"]);
     }
-    if(indicators.length > 0) {
+    if (indicators.length > 0) {
       setExpandedItems([...expandedItems, "item-1"]);
     }
-  }, [dataPoints,indicators]);
+  }, [dataPoints, indicators]);
 
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
     removeDataPoint(id);
   };
-  const validateDataPoint = (dataPoint: DataPoint): { isValid: boolean; error: string } => {
-    if(selectedSymbol === null) {
+  const validateDataPoint = (
+    dataPoint: DataPoint
+  ): { isValid: boolean; error: string } => {
+    if (selectedSymbol === null) {
       return { isValid: false, error: "Symbol not selected" };
     }
     const currentSymbolInfo = symbolInfo[selectedSymbol];
     if (!currentSymbolInfo) {
       return { isValid: false, error: "Symbol information not available" };
     }
-  
+
     // Validate timeFrame (duration should be available in symbol's timeFrame)
-    if (dataPoint.duration && !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))) {
-      return { 
-        isValid: false, 
-        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`
+    if (
+      dataPoint.duration &&
+      !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))
+    ) {
+      return {
+        isValid: false,
+        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`,
       };
     }
-  
+
     // Validation based on data type
     switch (dataPoint.dataType) {
       case "OPT":
         // Validate weekly expiry availability
         if (dataPoint.expiryType === "weekly") {
           if (!currentSymbolInfo.isWeekly) {
-            return { 
-              isValid: false, 
-              error: `Weekly expiry is not available for ${currentSymbolInfo.symbol}` 
+            return {
+              isValid: false,
+              error: `Weekly expiry is not available for ${currentSymbolInfo.symbol}`,
             };
           }
-          
+
           // Validate weekly expiry order
           const weeklyOrders = currentSymbolInfo.OptExp.weekly;
           if (!weeklyOrders?.includes(Number(dataPoint.expiryOrder))) {
-            return { 
-              isValid: false, 
-              error: `Invalid weekly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+            return {
+              isValid: false,
+              error: `Invalid weekly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
             };
           }
         }
-  
+
         // Validate monthly expiry order
         if (dataPoint.expiryType === "monthly") {
-          if (!currentSymbolInfo.OptExp.monthly.includes(Number(dataPoint.expiryOrder))) {
-            return { 
-              isValid: false, 
-              error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+          if (
+            !currentSymbolInfo.OptExp.monthly.includes(
+              Number(dataPoint.expiryOrder)
+            )
+          ) {
+            return {
+              isValid: false,
+              error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
             };
           }
         }
-  
+
         // Validate strike selection for options
         if (dataPoint.strikeSelection) {
           if (dataPoint.strikeSelection.mode !== "strike-at") {
-            return { 
-              isValid: false, 
-              error: "Invalid strike selection mode" 
+            return {
+              isValid: false,
+              error: "Invalid strike selection mode",
             };
           }
-  
+
           // Validate strike position format
           const position = dataPoint.strikeSelection.position;
           if (position !== "ATM") {
-            const [type, number] = position.split('_');
-            if (!['ITM', 'OTM'].includes(type) || isNaN(Number(number)) || Number(number) > 10) {
-              return { 
-                isValid: false, 
-                error: "Invalid strike position" 
+            const [type, number] = position.split("_");
+            if (
+              !["ITM", "OTM"].includes(type) ||
+              isNaN(Number(number)) ||
+              Number(number) > 10
+            ) {
+              return {
+                isValid: false,
+                error: "Invalid strike position",
               };
             }
           }
         }
         break;
-  
+
       case "FUT":
         // Future can only have monthly expiry
         if (dataPoint.expiryType !== "monthly") {
-          return { 
-            isValid: false, 
-            error: "Futures only support monthly expiry" 
+          return {
+            isValid: false,
+            error: "Futures only support monthly expiry",
           };
         }
-  
+
         // Validate future expiry order
-        if (!currentSymbolInfo.FutExp.monthly.includes(Number(dataPoint.expiryOrder))) {
-          return { 
-            isValid: false, 
-            error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+        if (
+          !currentSymbolInfo.FutExp.monthly.includes(
+            Number(dataPoint.expiryOrder)
+          )
+        ) {
+          return {
+            isValid: false,
+            error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
           };
         }
         break;
-  
+
       case "SPOT":
         // SPOT shouldn't have expiry related fields
-        if (dataPoint.expiryType || dataPoint.expiryOrder || dataPoint.strikeSelection) {
-          return { 
-            isValid: false, 
-            error: "Spot data should not have expiry or strike selection" 
+        if (
+          dataPoint.expiryType ||
+          dataPoint.expiryOrder ||
+          dataPoint.strikeSelection
+        ) {
+          return {
+            isValid: false,
+            error: "Spot data should not have expiry or strike selection",
           };
         }
         break;
-  
+
       default:
         // Invalid data type
         if (dataPoint.dataType) {
-          return { 
-            isValid: false, 
-            error: "Invalid data type" 
+          return {
+            isValid: false,
+            error: "Invalid data type",
           };
         }
     }
-  
+
     // Add validation for candleType if needed
-    if (dataPoint.candleType && !["candlestick", "heikenashi"].includes(dataPoint.candleType)) {
-      return { 
-        isValid: false, 
-        error: "Invalid candle type" 
+    if (
+      dataPoint.candleType &&
+      !["candlestick", "heikenashi"].includes(dataPoint.candleType)
+    ) {
+      return {
+        isValid: false,
+        error: "Invalid candle type",
       };
     }
-  
+
     // All validations passed
     return { isValid: true, error: "" };
   };
-  
+
   const renderDataPoints = () => {
     return Object.entries(groupedDataPoints).map(([type, points]) => (
       <div key={type} className="space-y-1">
         <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400 pl-2">
           {type === "candle-data" ? "Candle Data" : "Days to Expire"}
         </h4>
-        {points.map((point) => {
-          const validation = validateDataPoint(point);
-          
-          return (
-            <TooltipProvider key={point.id}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
-                      ${!validation.isValid ? 'border-red-500' : 'border-transparent'}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {point.elementName}
-                      </span>
-                      {!validation.isValid && (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditDataPoint(point);
-                        }}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4 text-gray-500" />
-                      </button>
-                      <button
-                        onClick={(e) => handleRemoveDataPoint(e, point.id)}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                      >
-                        <X className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                {!validation.isValid && (
-                  <TooltipContent>
-                    <p>{validation.error}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          );
-        })}
+        {points.map((point) => (
+          <div
+            key={point.id}
+            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md"
+          >
+            <span className="text-sm">{point.elementName}</span>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditDataPoint(point);
+                }}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <Edit2 className="w-4 h-4 text-gray-500" />
+              </button>
+              <button
+                onClick={(e) => handleRemoveDataPoint(e, point.id)}
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     ));
   };
-    
-  const renderIndicators = () => (
+
+  const renderIndicators = () =>
     indicators?.map((indicator) => {
       //@ts-ignore
-      const isMissing = !([...dataPoints?.map(v => v.elementName), ...indicators?.map(v =>v.elementName)].includes(indicator?.onData));
-      
+      const isMissing = ![
+        ...dataPoints?.map((v) => v.elementName),
+        ...indicators?.map((v) => v.elementName),
+        //@ts-ignore
+      ].includes(indicator?.onData);
+
       return (
         <TooltipProvider key={indicator.id}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div
                 className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
-                  ${isMissing ? 'border-red-500' : 'border-transparent'}`}
+                  ${isMissing ? "border-red-500" : "border-transparent"}`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">
-                    {indicator.elementName}
-                  </span>
+                  <span className="text-sm">{indicator.elementName}</span>
                   {isMissing && (
                     <AlertCircle className="w-4 h-4 text-red-500" />
                   )}
@@ -322,15 +356,16 @@ const DashboardSidebar: React.FC = () => {
             {isMissing && (
               <TooltipContent>
                 <p>
-                  Required data point <span className="font-semibold">{indicator.onData}</span> is missing
+                  Required data point{" "}
+                  <span className="font-semibold">{indicator.onData}</span> is
+                  missing
                 </p>
               </TooltipContent>
             )}
           </Tooltip>
         </TooltipProvider>
       );
-    })
-  );
+    });
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 overflow-y-auto">
@@ -356,7 +391,12 @@ const DashboardSidebar: React.FC = () => {
           value={expandedItems}
           onValueChange={handleAccordionChange}
         >
-          {SIDEBAR_SECTIONS(handleAddDataPoint, handleAddIndicators).map((item, index) => (
+          {SIDEBAR_SECTIONS(
+            handleAddDataPoint,
+            handleAddIndicators,
+            handleAddActions,
+            handleAddCondition
+          ).map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
@@ -373,7 +413,7 @@ const DashboardSidebar: React.FC = () => {
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
-              <AccordionContent >
+              <AccordionContent>
                 <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item?.items &&
@@ -398,18 +438,12 @@ const DashboardSidebar: React.FC = () => {
                       ))}
                     {/* Data Points items */}
                     {item.title === "Data Points" && (
-                      <div className="space-y-2">
-                        {renderDataPoints()}
-                      </div>
+                      <div className="space-y-2">{renderDataPoints()}</div>
                     )}
                     {/*  Indicators items*/}
-                    {
-                      item?.title === "Indicators" && (
-                        <div className="space-y-2">
-                          {renderIndicators()}
-                        </div>
-                      )
-                    }
+                    {item?.title === "Indicators" && (
+                      <div className="space-y-2">{renderIndicators()}</div>
+                    )}
                   </div>
                 </div>
               </AccordionContent>
@@ -463,6 +497,21 @@ const DashboardSidebar: React.FC = () => {
           if (!open) setEditingIndicator(undefined);
         }}
         editingIndicator={editingIndicator}
+      />
+
+      <ActionDialog
+        open={isActionModalOpen}
+        onOpenChange={(open: boolean | ((prevState: boolean) => boolean)) => {
+          console.log("Action Dialog onOpenChange:", open); // Add this for debugging
+          setIsActionModalOpen(open);
+        }}
+      />
+      
+      <ConditionDialog
+      open={isConditionModalOpen}
+      onOpenChange={(open) => {
+        setConditionModalOpen(open)
+      }}
       />
     </>
   );

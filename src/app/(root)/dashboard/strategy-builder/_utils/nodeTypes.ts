@@ -5,61 +5,6 @@ export const NodeTypes = {
   START: "START",
 };
 
-// Helper functions for node positioning
-// const getNodePosition = (
-//   nodes: Node[],
-//   newNodeType: string | undefined,
-//   edges: Edge[]
-// ) => {
-//   // For condition nodes
-//   if (newNodeType === NodeTypes.CONDITION) {
-//     // Find most recent condition node
-//     const nodeWithSingleConnection = nodes.find((node) => {
-//       if (node.type === NodeTypes.CONDITION || node.type === NodeTypes.START) {
-//         const incomingEdge = edges.find((edge) => edge.target === node.id);
-//         const outgoingEdge = edges.find((edge) => edge.source === node.id);
-//         return incomingEdge && !outgoingEdge;
-//       }
-//     });
-
-//     if (nodeWithSingleConnection) {
-//       return {
-//         x: nodeWithSingleConnection.position.x,
-//         y: nodeWithSingleConnection.position.y + 200,
-//       };
-//     }
-//   }
-
-//   // For action nodes
-//   if (newNodeType === NodeTypes.ACTION) {
-//     const existingActionNodes = nodes.filter(
-//       (node) => node.type === NodeTypes.ACTION
-//     );
-//     const firstConditionNode = nodes.find(
-//       (node) => node.type === NodeTypes.CONDITION
-//     );
-
-//     if (existingActionNodes.length === 0 && firstConditionNode) {
-//       // First action node - position relative to first condition node
-//       return {
-//         x: firstConditionNode.position.x + 400,
-//         y: firstConditionNode.position.y,
-//       };
-//     } else if (existingActionNodes.length > 0) {
-//       // Subsequent action nodes - stack vertically
-//       const lastActionNode = [...existingActionNodes].sort(
-//         (a, b) => b.position.y - a.position.y
-//       )[0];
-//       return {
-//         x: lastActionNode.position.x,
-//         y: lastActionNode.position.y + 200,
-//       };
-//     }
-//   }
-//   // Default positioning if no reference nodes found
-//   return { x: 250, y: 100 };
-// };
-
 const getNodePosition = (
   nodes: Node[],
   newNodeType: string | undefined,
@@ -113,60 +58,33 @@ const getNodePosition = (
   return { x: 250, y: 100 };
 };
 
-
-//  COMMENDET HANDLEADDNODE FUNCTION YOU SHOULD SEE CHANGES
-// const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
-//   const newNodeId = `node-${Date.now()}`;
-//   const position = getNodePosition(nodes, item.type, edges);
-
-//   const newNode = {
-//     id: newNodeId,
-//     type: item.type,
-//     position,
-//     data: { label: item.data.label },
-//     sourcePosition: Position.Bottom,
-//     targetPosition: Position.Top,
-//   };
-
-//   let newEdges = [...edges];
-
-//   // Find the node with a single connection
-//   const nodeWithSingleConnection = nodes.find((node) => {
-//     const incomingEdge = edges.find((edge) => edge.target === node.id);
-//     const outgoingEdge = edges.find((edge) => edge.source === node.id);
-//     return incomingEdge && !outgoingEdge;
-//   });
-
-//   if (nodeWithSingleConnection && item.type === NodeTypes.CONDITION) {
-//     newEdges.push({
-//       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
-//       source: nodeWithSingleConnection.id,
-//       target: newNodeId,
-//       sourceHandle: `${nodeWithSingleConnection.id}-bottom`,
-//       targetHandle: `${newNodeId}-top`,
-//       type: "conditionEdge",
-//     });
-//   } else if (item.type === NodeTypes.CONDITION) {
-//     // Connect to start node if no condition nodes exist
-//     newEdges.push({
-//       id: `start-${newNodeId}`,
-//       source: "start",
-//       target: newNodeId,
-//       type: "conditionEdge",
-//     });
-//   }
-//   return { newNode, newEdges };
-// };
-
 const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const newNodeId = `node-${Date.now()}`;
   const position = getNodePosition(nodes, item.type, edges);
+
+  // Find connected condition node before adding sequence
+  const connectedConditionNode = edges.find(
+    edge => edge.target === newNodeId && 
+    nodes.find(node => node.id === edge.source)?.type === NodeTypes.CONDITION
+  );
+
+    // Count existing Action Nodes to generate sequence number
+    const actionNodes = nodes.filter(node => node.type === NodeTypes.ACTION);
+    const sequenceNumber = actionNodes.length + 1;
 
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
-    data: { label: item.data.label },
+    data: {
+       label: item.data.label,
+      // Only add sequence for Action Nodes connected to a condition
+      ...(item.type === NodeTypes.ACTION && connectedConditionNode 
+        ? { 
+            sequenceNumber: nodes.filter(node => node.type === NodeTypes.ACTION).length + 1 
+          } 
+        : {})
+    },
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top,
   };
@@ -195,47 +113,6 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   return { newNode, newEdges };
 };
 
-// const handleDrop = (
-//   event: React.DragEvent,
-//   nodes: Node[],
-//   edges: Edge[],
-//   item: Node,
-//   bounds: DOMRect
-// ) => {
-//   const position = getNodePosition(nodes, item.type, edges);
-//   const newNodeId = `node-${nodes.length + 1}`;
-//   const newNode = {
-//     id: newNodeId,
-//     type: item.type,
-//     position,
-//     data: { label: item.data.label },
-//     sourcePosition: Position.Bottom, // Add default positions
-//     targetPosition: Position.Top,
-//   };
-
-//   let newEdges = [...edges];
-
-//   // Find node with a single connection
-//   const nodeWithSingleConnection = nodes.find((node) => {
-//     const incomingEdge = edges.find((edge) => edge.target === node.id);
-//     const outgoingEdge = edges.find((edge) => edge.source === node.id);
-//     return incomingEdge && !outgoingEdge;
-//   });
-
-//   if (nodeWithSingleConnection && item.type === NodeTypes.CONDITION) {
-//     newEdges.push({
-//       id: `${nodeWithSingleConnection.id}-${newNodeId}`,
-//       source: nodeWithSingleConnection.id,
-//       target: newNodeId,
-//       sourceHandle: `${nodeWithSingleConnection.id}-bottom`, // Add specific handle
-//       targetHandle: `${newNodeId}-top`, // Add specific handle
-//       type: "conditionEdge",
-//     });
-//   }
-
-//   return { newNode, newEdges };
-// };
-
 const handleDrop = (
   event: React.DragEvent,
   nodes: Node[],
@@ -244,29 +121,45 @@ const handleDrop = (
   bounds: DOMRect
 ) => {
   const position = getNodePosition(nodes, item.type, edges);
-  const newNodeId = `node-${Date.now()}`; // Use timestamp to ensure unique ID
+  const newNodeId = `node-${Date.now()}`; 
+
+  // Get connected action nodes and sort them by Y position
+  const connectedActionNodes = nodes.filter(node => 
+    node.type === NodeTypes.ACTION &&
+    edges.some(edge => 
+      edge.target === node.id && 
+      nodes.find(n => n.id === edge.source)?.type === NodeTypes.CONDITION
+    )
+  ).sort((a, b) => a.position.y - b.position.y);
+
+  // Calculate the sequence number based on Y position
+  const newSequenceNumber = connectedActionNodes.length + 1;
+
   const newNode = {
     id: newNodeId,
     type: item.type,
     position,
-    data: { label: item.data.label },
+    data: { 
+      ...item.data,
+      label: item.data.label,
+      // Initialize sequenceNumber only if it's an Action node
+      ...(item.type === NodeTypes.ACTION ? { sequenceNumber: newSequenceNumber } : {})
+    },
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top,
   };
 
   let newEdges = [...edges];
 
-  // Find the most recently added node without an outgoing connection
-  const nodeWithSingleConnection = nodes.find((node) => {
-    const incomingEdge = edges.find((edge) => edge.target === node.id);
-    const outgoingEdge = edges.find((edge) => edge.source === node.id);
-    return incomingEdge && !outgoingEdge;
-  });
-
-  // Connect Condition nodes
+  // Connect only Condition nodes
   if (item.type === NodeTypes.CONDITION) {
+    const nodeWithSingleConnection = nodes.find((node) => {
+      const incomingEdge = edges.find((edge) => edge.target === node.id);
+      const outgoingEdge = edges.find((edge) => edge.source === node.id);
+      return incomingEdge && !outgoingEdge;
+    });
+
     if (nodeWithSingleConnection) {
-      // If a node with a single connection exists, connect to it
       newEdges.push({
         id: `${nodeWithSingleConnection.id}-${newNodeId}`,
         source: nodeWithSingleConnection.id,
@@ -282,23 +175,6 @@ const handleDrop = (
         source: "start",
         target: newNodeId,
         type: "smoothstep",
-      });
-    }
-  }
-
-  // Connect Action nodes
-  if (item.type === NodeTypes.ACTION) {
-    const latestConditionNode = nodes
-      .filter((node) => node.type === NodeTypes.CONDITION)
-      .sort((a, b) => b.position.y - a.position.y)[0];
-
-    if (latestConditionNode) {
-      newEdges.push({
-        id: `${latestConditionNode.id}-${newNodeId}`,
-        source: latestConditionNode.id,
-        target: newNodeId,
-        sourceHandle: `${latestConditionNode.id}-right`,
-        type: "actionEdge",
       });
     }
   }

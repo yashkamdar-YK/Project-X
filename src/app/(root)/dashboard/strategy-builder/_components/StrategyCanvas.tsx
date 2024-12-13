@@ -149,15 +149,51 @@ const StrategyCanvas = () => {
     saveState(nodes, edges);
   }, [nodes, edges, saveState]);
 
+
   // Handle nodes changes
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      const updatedNodes = applyNodeChanges(changes, nodes);
-      setNodes(updatedNodes);
-      saveState(updatedNodes, edges);
-    },
-    [nodes, edges, setNodes, saveState]
-  );
+const onNodesChange = useCallback(
+  (changes: NodeChange[]) => {
+    const updatedNodes = applyNodeChanges(changes, nodes);
+    
+    // Find action nodes connected to condition nodes
+    const connectedActionNodes = updatedNodes.filter(node => 
+      node.type === NodeTypes.ACTION && 
+      edges.some(edge => 
+        edge.target === node.id && 
+        nodes.find(n => n.id === edge.source)?.type === NodeTypes.CONDITION
+      )
+    );
+
+    // Sort connected action nodes by Y position
+    const sortedActionNodes = [...connectedActionNodes].sort(
+      (a, b) => a.position.y - b.position.y
+    );
+
+    // Update sequence numbers based on Y position
+    const finalNodes = updatedNodes.map(node => {
+      if (node.type === NodeTypes.ACTION && 
+          edges.some(edge => 
+            edge.target === node.id && 
+            nodes.find(n => n.id === edge.source)?.type === NodeTypes.CONDITION
+          )
+      ) {
+        const index = sortedActionNodes.findIndex(n => n.id === node.id);
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            sequenceNumber: index + 1
+          }
+        };
+      }
+      return node;
+    });
+
+    setNodes(finalNodes);
+    saveState(finalNodes, edges);
+  },
+  [nodes, edges, setNodes, saveState]
+);
 
   // Handle edges changes
   const onEdgesChange = useCallback(
@@ -279,6 +315,7 @@ const StrategyCanvas = () => {
                 onNodeClick={onNodeClick}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
+                /* @ts-ignore */
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
                 panOnScroll={true}

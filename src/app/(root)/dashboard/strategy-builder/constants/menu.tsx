@@ -1,4 +1,4 @@
-import { Database, BarChart2, Layers, Zap } from "lucide-react";
+import { Database, BarChart2, Layers, Zap, AlertCircle } from "lucide-react";
 import { NodeTypes } from "../_utils/nodeTypes";
 import { Edge, Node, Position } from "@xyflow/react";
 
@@ -75,7 +75,12 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
   },
 ];
 
-export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void,onIndicatorAdd: (e: any) => void) => [
+export const SIDEBAR_SECTIONS = (
+  onDataPointAdd: (e: any) => void,
+  onIndicatorAdd: (e: any) => void,
+  onActionAdd: (e: any) => void,
+  onConditionAdd: (e: any) => void
+) => [
   {
     title: "Data Points",
     icon: Database,
@@ -89,7 +94,12 @@ export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void,onIndicatorAdd
   {
     title: "Actions",
     icon: Zap,
-    onClick: () => {},
+    onClick: onActionAdd,
+  },
+  {
+    title: "Condition",
+    icon: AlertCircle,
+    onClick: onConditionAdd
   },
   {
     title: "Components",
