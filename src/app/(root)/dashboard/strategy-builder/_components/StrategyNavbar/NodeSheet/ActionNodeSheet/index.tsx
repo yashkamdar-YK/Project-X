@@ -14,8 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import PositionCard from "./PositionCard";
 import { Position, PositionSettings } from './types';
-import { transformPositionToPayload, generateActionPayload } from "./transformToPayload";
 import { useActionStore } from "@/lib/store/actionStore";
+import { transformToActionPayload } from "./transformToActionPayload ";
 
 interface ActionNodeSheetProps {
   node: Node;
@@ -83,9 +83,11 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
   };
 
   const handleSubmit = () => {
-    const payload = generateActionPayload(currentNode.actions, currentNode.positions);
+    const currentNode = useActionStore.getState().actionNodes[node.id];
+    if (!currentNode) return;
+  
+    const payload = transformToActionPayload(currentNode.actions, currentNode.positions);
     console.log('Action Payload:', JSON.stringify(payload, null, 2));
-    console.log('Action positions:', JSON.stringify(currentNode.positions, null, 2));
   };
 
   return (

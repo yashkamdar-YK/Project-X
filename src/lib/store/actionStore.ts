@@ -2,7 +2,7 @@ import { Position, PositionSettings } from '@/app/(root)/dashboard/strategy-buil
 import { create } from 'zustand';
 
 // Define action types
-interface Action {
+export interface Action {
   func: 'squareoff_all' | 'stop_WaitTrade_triggers';
 }
 

@@ -1,7 +1,6 @@
 import React from "react";
 import { Position, PositionSettings } from "./types";
 import ExpandableSection from "./ExpandableSection";
-import { useExpandableSections } from "./useExpandableSections";
 
 interface ExpandableActionsProps {
   position: Position;
@@ -12,60 +11,74 @@ const ExpandableActions: React.FC<ExpandableActionsProps> = ({
   position,
   onSettingChange,
 }) => {
-  const {
-    sections,
-    toggleSection,
-    handleTargetToggle,
-    handleSLToggle,
-    handleTrailSLToggle,
-    handleReEntryTargetToggle,
-    handleReEntrySLToggle,
-    handleWTToggle,
-  } = useExpandableSections(position, onSettingChange);
+  // Handle toggle for each section by directly updating the corresponding boolean field
+  const handleTargetToggle = () => {
+    onSettingChange(position.id, "isTarget", !position.settings.isTarget);
+  };
+
+  const handleSLToggle = () => {
+    onSettingChange(position.id, "isSL", !position.settings.isSL);
+  };
+
+  const handleTrailSLToggle = () => {
+    onSettingChange(position.id, "isTrailSL", !position.settings.isTrailSL);
+  };
+
+  const handleReEntryTargetToggle = () => {
+    onSettingChange(position.id, "isReEntryTg", !position.settings.isReEntryTg);
+  };
+
+  const handleReEntrySLToggle = () => {
+    onSettingChange(position.id, "isReEntrySL", !position.settings.isReEntrySL);
+  };
+
+  const handleWTToggle = () => {
+    onSettingChange(position.id, "isWT", !position.settings.isWT);
+  };
 
   return (
     <div className="border-t border-gray-200 dark:border-gray-700 p-4">
       <div className="space-y-4">
         <ExpandableSection
           title="Target"
-          isExpanded={sections.target}
-          onToggle={() => toggleSection("target")}
-          onSettingChange={handleTargetToggle}
+          isExpanded={position.settings.isTarget}
+          onToggle={handleTargetToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
         <ExpandableSection
           title="Stop Loss"
-          isExpanded={sections.stopLoss}
-          onToggle={() => toggleSection("stopLoss")}
-          onSettingChange={handleSLToggle}
+          isExpanded={position.settings.isSL}
+          onToggle={handleSLToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
         <ExpandableSection
           title="Trail Stop Loss"
-          isExpanded={sections.trailStopLoss}
-          onToggle={() => toggleSection("trailStopLoss")}
-          onSettingChange={handleTrailSLToggle}
+          isExpanded={position.settings.isTrailSL}
+          onToggle={handleTrailSLToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
         <ExpandableSection
           title="Re-Entry Target"
-          isExpanded={sections.reEntryTarget}
-          onToggle={() => toggleSection("reEntryTarget")}
-          onSettingChange={handleReEntryTargetToggle}
+          isExpanded={position.settings.isReEntryTg}
+          onToggle={handleReEntryTargetToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
         <ExpandableSection
           title="Re-Entry Stop Loss"
-          isExpanded={sections.reEntryStopLoss}
-          onToggle={() => toggleSection("reEntryStopLoss")}
-          onSettingChange={handleReEntrySLToggle}
+          isExpanded={position.settings.isReEntrySL}
+          onToggle={handleReEntrySLToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
         <ExpandableSection
           title="Wait Trade"
-          isExpanded={sections.waitTrade}
-          onToggle={() => toggleSection("waitTrade")}
-          onSettingChange={handleWTToggle}
+          isExpanded={position.settings.isWT}
+          onToggle={handleWTToggle}
+          onSettingChange={(field, value) => onSettingChange(position.id, field, value)}
           position={position}
         />
       </div>
@@ -74,4 +87,3 @@ const ExpandableActions: React.FC<ExpandableActionsProps> = ({
 };
 
 export default ExpandableActions;
-
