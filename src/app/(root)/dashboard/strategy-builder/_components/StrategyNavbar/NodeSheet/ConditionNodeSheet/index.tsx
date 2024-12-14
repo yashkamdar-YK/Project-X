@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -29,8 +29,9 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     updateSubSection,
     removeSubSection,
     toggleAddBadge,
-    toggleBlockRelation,
-    getBlockRelation,
+    addBlock,
+    removeBlock,
+    updateBlockRelation,
   } = useConditionStore();
 
   const [maxEntries, setMaxEntries] = React.useState("1");
@@ -43,10 +44,9 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     }
   }, [node.id, conditionBlocks, createConditionBlock]);
 
-  const currentBlock = conditionBlocks[node.id];
+  const currentNode = conditionBlocks[node.id];
   
-  if (!currentBlock) return null;
-
+  if (!currentNode) return null;
 
   return (
     <div className="bg-gray-900 p-6 rounded-lg">
@@ -113,22 +113,64 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               </div>
             </div>
           </div>
-          </CardContent>
+        </CardContent>
       </Card>
       
-      <Card className="bg-gray-900 border-gray-800">
-        <CardContent className="space-y-8 p-6">
-          <ConditionBlock
-            block={currentBlock}
-            nodeId={node.id}
-            dataPoints={dataPoints}
-            addSubSection={addSubSection}
-            updateSubSection={updateSubSection}
-            removeSubSection={removeSubSection}
-            toggleAddBadge={toggleAddBadge}
-            toggleBlockRelation={toggleBlockRelation}
-            getBlockRelation={getBlockRelation}
-          />
+      <Card className="bg-gray-900 border-gray-800 mt-6">
+        <CardContent className="space-y-4 p-6">
+          <div className="space-y-8">
+            {currentNode.blocks.map((block, index) => (
+              <React.Fragment key={block.id}>
+                <div className="relative">
+                  <ConditionBlock
+                    block={block}
+                    nodeId={node.id}
+                    blockId={block.id}
+                    dataPoints={dataPoints}
+                    addSubSection={(nodeId) => addSubSection(nodeId, block.id)}
+                    updateSubSection={(nodeId, subSectionId, field, value) => 
+                      updateSubSection(nodeId, block.id, subSectionId, field, value)}
+                    removeSubSection={(nodeId, subSectionId) => 
+                      removeSubSection(nodeId, block.id, subSectionId)}
+                    toggleAddBadge={(nodeId, subSectionId) => 
+                      toggleAddBadge(nodeId, block.id, subSectionId)}
+                  />
+                  {currentNode.blocks.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute -right-4 -top-4 text-red-500 hover:text-red-600 hover:bg-red-900/20"
+                      onClick={() => removeBlock(node.id, block.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {index < currentNode.blocks.length - 1 && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="secondary"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-8"
+                      onClick={() => updateBlockRelation(node.id, index)}
+                    >
+                      {currentNode.blockRelations[index] || "AND"}
+                    </Button>
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={() => addBlock(node.id)}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Block
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -136,4 +178,3 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 };
 
 export default ConditionNodeSheet;
-

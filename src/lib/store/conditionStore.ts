@@ -1,23 +1,38 @@
-import { ConditionBlockMap , SubSection, BlockRelation} from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
+import { ConditionBlockMap, SubSection, BlockRelation } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
 import { create } from 'zustand';
 
+interface ConditionNode {
+  blocks: {
+    id: string;
+    subSections: SubSection[];
+    relation: BlockRelation;
+  }[];
+  blockRelations: BlockRelation[];
+}
+
+interface ExtendedConditionBlockMap {
+  [nodeId: string]: ConditionNode;
+}
+
 interface ConditionStore {
-  conditionBlocks: ConditionBlockMap;
+  conditionBlocks: ExtendedConditionBlockMap;
   createConditionBlock: (nodeId: string) => void;
-  addSubSection: (nodeId: string) => void;
+  addBlock: (nodeId: string) => void;
+  removeBlock: (nodeId: string, blockId: string) => void;
+  addSubSection: (nodeId: string, blockId: string) => void;
   updateSubSection: (
     nodeId: string,
+    blockId: string,
     subSectionId: number,
     field: keyof SubSection,
     value: string
   ) => void;
-  removeSubSection: (nodeId: string, subSectionId: number) => void;
-  toggleAddBadge: (nodeId: string, subSectionId: number) => void;
-  toggleBlockRelation: (nodeId: string) => void;
-  getBlockRelation: (nodeId: string) => BlockRelation;
+  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
+  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => void;
+  updateBlockRelation: (nodeId: string, index: number) => void;
 }
 
-export const useConditionStore = create<ConditionStore>((set, get) => ({
+export const useConditionStore = create<ConditionStore>((set) => ({
   conditionBlocks: {},
 
   createConditionBlock: (nodeId: string) =>
@@ -25,124 +40,212 @@ export const useConditionStore = create<ConditionStore>((set, get) => ({
       conditionBlocks: {
         ...state.conditionBlocks,
         [nodeId]: {
-          subSections: [
+          blocks: [
             {
-              id: 0,
-              addBadge: "AND",
-              lhs: "",
-              operator: "",
-              rhs: "",
+              id: `block-${Date.now()}`,
+              subSections: [
+                {
+                  id: 0,
+                  addBadge: "AND",
+                  lhs: "",
+                  operator: "",
+                  rhs: "",
+                },
+              ],
+              relation: "AND",
             },
           ],
-          relation: "AND",
+          blockRelations: [],
         },
       },
     })),
 
-  addSubSection: (nodeId: string) =>
+  addBlock: (nodeId: string) =>
     set((state) => {
-      const currentBlock = state.conditionBlocks[nodeId];
-      if (!currentBlock) return state;
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
 
       return {
         conditionBlocks: {
           ...state.conditionBlocks,
           [nodeId]: {
-            ...currentBlock,
-            subSections: [
-              ...currentBlock.subSections,
+            ...currentNode,
+            blocks: [
+              ...currentNode.blocks,
               {
-                id: currentBlock.subSections.length,
-                addBadge: "AND",
-                lhs: "",
-                operator: "",
-                rhs: "",
+                id: `block-${Date.now()}`,
+                subSections: [
+                  {
+                    id: 0,
+                    addBadge: "AND",
+                    lhs: "",
+                    operator: "",
+                    rhs: "",
+                  },
+                ],
+                relation: "AND",
               },
             ],
+            blockRelations: [...currentNode.blockRelations, "AND"],
           },
         },
       };
     }),
 
-  updateSubSection: (nodeId, subSectionId, field, value) =>
+  removeBlock: (nodeId: string, blockId: string) =>
     set((state) => {
-      const currentBlock = state.conditionBlocks[nodeId];
-      if (!currentBlock) return state;
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      const blockIndex = currentNode.blocks.findIndex(block => block.id === blockId);
+      const newBlocks = currentNode.blocks.filter(block => block.id !== blockId);
+      const newBlockRelations = [...currentNode.blockRelations];
+      if (blockIndex !== -1) {
+        newBlockRelations.splice(blockIndex - 1, 1);
+      }
 
       return {
         conditionBlocks: {
           ...state.conditionBlocks,
           [nodeId]: {
-            ...currentBlock,
-            subSections: currentBlock.subSections.map((subSection) =>
-              subSection.id === subSectionId
-                ? { ...subSection, [field]: value }
-                : subSection
-            ),
+            ...currentNode,
+            blocks: newBlocks,
+            blockRelations: newBlockRelations,
           },
         },
       };
     }),
 
-  removeSubSection: (nodeId, subSectionId) =>
+  addSubSection: (nodeId: string, blockId: string) =>
     set((state) => {
-      const currentBlock = state.conditionBlocks[nodeId];
-      if (!currentBlock) return state;
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
 
       return {
         conditionBlocks: {
           ...state.conditionBlocks,
           [nodeId]: {
-            ...currentBlock,
-            subSections: currentBlock.subSections.filter(
-              (subSection) => subSection.id !== subSectionId
-            ),
-          },
-        },
-      };
-    }),
-
-  toggleAddBadge: (nodeId, subSectionId) =>
-    set((state) => {
-      const currentBlock = state.conditionBlocks[nodeId];
-      if (!currentBlock) return state;
-
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentBlock,
-            subSections: currentBlock.subSections.map((subSection) =>
-              subSection.id === subSectionId
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
                 ? {
-                    ...subSection,
-                    addBadge: subSection.addBadge === "AND" ? "OR" : "AND",
+                    ...block,
+                    subSections: [
+                      ...block.subSections,
+                      {
+                        id: block.subSections.length,
+                        addBadge: "AND",
+                        lhs: "",
+                        operator: "",
+                        rhs: "",
+                      },
+                    ],
                   }
-                : subSection
+                : block
             ),
           },
         },
       };
     }),
 
-  toggleBlockRelation: (nodeId) =>
+  updateSubSection: (nodeId, blockId, subSectionId, field, value) =>
     set((state) => {
-      const currentBlock = state.conditionBlocks[nodeId];
-      if (!currentBlock) return state;
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
 
       return {
         conditionBlocks: {
           ...state.conditionBlocks,
           [nodeId]: {
-            ...currentBlock,
-            relation: currentBlock.relation === "AND" ? "OR" : "AND",
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.map((subSection) =>
+                      subSection.id === subSectionId
+                        ? { ...subSection, [field]: value }
+                        : subSection
+                    ),
+                  }
+                : block
+            ),
           },
         },
       };
     }),
 
-  getBlockRelation: (nodeId) => {
-    const block = get().conditionBlocks[nodeId];
-    return block?.relation || "AND";
-  },
+  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.filter(
+                      (subSection) => subSection.id !== subSectionId
+                    ),
+                  }
+                : block
+            ),
+          },
+        },
+      };
+    }),
+
+  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.map((subSection) =>
+                      subSection.id === subSectionId
+                        ? {
+                            ...subSection,
+                            addBadge: subSection.addBadge === "AND" ? "OR" : "AND",
+                          }
+                        : subSection
+                    ),
+                  }
+                : block
+            ),
+          },
+        },
+      };
+    }),
+
+  updateBlockRelation: (nodeId: string, index: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      const newBlockRelations = [...currentNode.blockRelations];
+      newBlockRelations[index] = newBlockRelations[index] === "AND" ? "OR" : "AND";
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blockRelations: newBlockRelations,
+          },
+        },
+      };
+    }),
 }));

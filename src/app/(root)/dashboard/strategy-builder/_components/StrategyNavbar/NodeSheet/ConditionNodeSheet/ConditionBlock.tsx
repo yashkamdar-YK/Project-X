@@ -2,32 +2,38 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { ConditionSubSection } from './ConditionSubSection';
-import { BlockRelationButton } from './BlockRelationButton';
-import { ConditionBlock as TConditionBlock, SubSection } from './types';
+import { SubSection } from './types';
 import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
 
 interface ConditionBlockProps {
-  block: TConditionBlock;
+  block: {
+    id: string;
+    subSections: SubSection[];
+    relation: "AND" | "OR";
+  };
   nodeId: string;
+  blockId: string;
   dataPoints: DataPoint[];
   addSubSection: (nodeId: string) => void;
-  updateSubSection: (nodeId: string, subSectionId: number, field: keyof SubSection, value: string) => void;
+  updateSubSection: (
+    nodeId: string, 
+    subSectionId: number, 
+    field: keyof SubSection, 
+    value: string
+  ) => void;
   removeSubSection: (nodeId: string, subSectionId: number) => void;
   toggleAddBadge: (nodeId: string, subSectionId: number) => void;
-  toggleBlockRelation: (nodeId: string) => void;
-  getBlockRelation: (nodeId: string) => "AND" | "OR";
 }
 
 export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   block,
   nodeId,
+  blockId,
   dataPoints,
   addSubSection,
   updateSubSection,
   removeSubSection,
   toggleAddBadge,
-  toggleBlockRelation,
-  getBlockRelation,
 }) => {
   return (
     <div className="relative">
@@ -37,6 +43,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
             key={subSection.id}
             subSection={subSection}
             nodeId={nodeId}
+            blockId={blockId}
             dataPoints={dataPoints}
             updateSubSection={updateSubSection}
             toggleAddBadge={toggleAddBadge}
@@ -56,11 +63,6 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
           </Button>
         </div>
       </div>
-      
-      <BlockRelationButton
-        relation={getBlockRelation(nodeId)}
-        onClick={() => toggleBlockRelation(nodeId)}
-      />
     </div>
   );
 };

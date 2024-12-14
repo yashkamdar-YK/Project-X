@@ -9,8 +9,14 @@ import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
 interface ConditionSubSectionProps {
   subSection: SubSection;
   nodeId: string;
+  blockId: string;
   dataPoints: DataPoint[];
-  updateSubSection: (nodeId: string, subSectionId: number, field: keyof SubSection, value: string) => void;
+  updateSubSection: (
+    nodeId: string,
+    subSectionId: number,
+    field: keyof SubSection,
+    value: string
+  ) => void;
   toggleAddBadge: (nodeId: string, subSectionId: number) => void;
   removeSubSection: (nodeId: string, subSectionId: number) => void;
   isLastSubSection: boolean;
@@ -19,11 +25,12 @@ interface ConditionSubSectionProps {
 export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   subSection,
   nodeId,
+  blockId,
   dataPoints,
   updateSubSection,
   toggleAddBadge,
   removeSubSection,
-  isLastSubSection
+  isLastSubSection,
 }) => {
   const lhsOptions = dataPoints.map((dataPoint) => dataPoint.elementName);
   const selectedDatapoint = dataPoints.find((dataPoint) => dataPoint.elementName === subSection.lhs);
