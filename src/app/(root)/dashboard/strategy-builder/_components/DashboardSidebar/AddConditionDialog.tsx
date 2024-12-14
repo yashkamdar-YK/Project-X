@@ -33,16 +33,16 @@ export default function ConditionDialog({ open, onOpenChange }: AddConditionDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-w-[350px]">
         <DialogHeader>
           <DialogTitle className="text-xl">Add Condition</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-[2fr,3fr] gap-4 p-4">
+        <div className="grid sm:grid-cols-[2fr,3fr] grid-1  gap-4 p-4">
           <div className="space-y-4">
             <Button
               variant="outline"
               size="lg"
-              className="w-full h-24 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
+              className="w-full sm:h-24 h-16 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
               onClick={() => {
                 handleAction('Entry Condition')
                 onOpenChange(false)
@@ -53,7 +53,7 @@ export default function ConditionDialog({ open, onOpenChange }: AddConditionDial
             <Button
               variant="outline"
               size="lg"
-              className="w-full h-24 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
+              className="w-full sm:h-24 h-16 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
               onClick={() => {
                 handleAction('Exit Condition')
                 onOpenChange(false)
@@ -64,24 +64,24 @@ export default function ConditionDialog({ open, onOpenChange }: AddConditionDial
             <Button
               variant="outline"
               size="lg"
-              className="w-full h-24 border-2 border-dashed flex flex-col items-center justify-center"
+              className="w-full sm:h-24 h-16 border-2 border-dashed flex flex-col items-center justify-center"
               disabled
             >
-              <span className="text-sm">Adjustments</span>
-              <span className="text-sm text-muted-foreground">Coming Soon</span>
+              <span className="text-lg">Adjustments</span>
+              <span className="text-[10px] absolute text-muted-foreground mt-10">Coming Soon</span>
             </Button>
           </div>
           <Button
             variant="outline"
             size="lg"
-            className="h-full flex flex-col items-center justify-center"
+            className="sm:h-full flex flex-col h-16 items-center justify-center"
             disabled
           >
             <span className="text-lg">Select From Templates</span>
-            <span className="text-sm text-muted-foreground mt-2">Coming Soon</span>
+            <span className="text-[10px] absolute text-muted-foreground mt-10">Coming Soon</span>
           </Button>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end mr-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

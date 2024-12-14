@@ -184,7 +184,7 @@ const StrategyCanvas = () => {
       setSelectedNodeId(node.id); // Set the selected node ID
       openSheet("node", node);
     },
-    [openSheet]
+    [openSheet]    
   );
 
   // Handle drag over
