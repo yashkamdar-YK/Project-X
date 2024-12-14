@@ -49,7 +49,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   if (!currentNode) return null;
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg">
+    <div className="bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-100">
           Condition Builder
@@ -116,9 +116,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </CardContent>
       </Card>
       
-      <Card className="bg-gray-900 border-gray-800 mt-6">
-        <CardContent className="space-y-4 p-6">
-          <div className="space-y-8">
+          <div className="space-y-8 mt-8">
             {currentNode.blocks.map((block, index) => (
               <React.Fragment key={block.id}>
                 <div className="relative">
@@ -171,8 +169,6 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               Add Block
             </Button>
           </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -1,6 +1,4 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Plus } from 'lucide-react';
 import { ConditionSubSection } from './ConditionSubSection';
 import { SubSection } from './types';
 import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
@@ -48,20 +46,10 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
             updateSubSection={updateSubSection}
             toggleAddBadge={toggleAddBadge}
             removeSubSection={removeSubSection}
+            addSubSection={addSubSection}
             isLastSubSection={index === block.subSections.length - 1}
           />
         ))}
-
-        <div className="flex justify-end mt-4">
-          <Button
-            size="sm"
-            onClick={() => addSubSection(nodeId)}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add Condition
-          </Button>
-        </div>
       </div>
     </div>
   );

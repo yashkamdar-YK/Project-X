@@ -54,7 +54,6 @@ export interface DataPointOption {
   type: "candleData" | "dte";
   columnsAvailable: string[];
   canComparedwith: ['candleData' , 'values' ,'indicators']
-  allowedOperations: string[];
 }
 
 export interface DataPoint {
