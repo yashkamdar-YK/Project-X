@@ -9,7 +9,12 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AlertCircle } from "lucide-react";
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
@@ -24,15 +29,21 @@ import IndicatorDialog from "./Indicators";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 import ActionDialog from "./ActionsDialog";
 import ConditionDialog from "./AddConditionDialog";
+import { useActionStore } from "@/lib/store/actionStore";
+import { useSheetStore } from "@/lib/store/SheetStore";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-4"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
+  const [editingDataPoint, setEditingDataPoint] = useState<
+    DataPoint | undefined
+  >();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<Indicator | undefined>();
+  const [editingIndicator, setEditingIndicator] = useState<
+    Indicator | undefined
+  >();
 
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
@@ -40,6 +51,11 @@ const DashboardSidebar: React.FC = () => {
   const { dataPoints, removeDataPoint } = useDataPointsStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
+
+  const { actionNodes, removeActionNode } = useActionStore();
+
+  // Add this from useSheetStore
+  const { openSheet } = useSheetStore();
 
   const groupedDataPoints = React.useMemo(() => {
     return dataPoints.reduce((acc, dp) => {
@@ -80,157 +96,209 @@ const DashboardSidebar: React.FC = () => {
     e.preventDefault();
     setEditingIndicator(undefined);
     setIsIndicatorsModalOpen(true);
-  }
+  };
   const handleAddAction = (e: any) => {
     e.preventDefault();
     setIsActionModalOpen(true);
-  }
+  };
   const handleAddCondition = (e: any) => {
     e.preventDefault();
     setIsConditionModalOpen(true);
-  }
+  };
 
   const handleEditDataPoint = (dataPoint: DataPoint) => {
     setEditingDataPoint(dataPoint);
     setIsDataPointModalOpen(true);
   };
 
+  const handleEditActionNode = (nodeId: string) => {
+    const actionNode = actionNodes[nodeId];
+    console.log("Editing Action Node:", {
+      id: nodeId,
+      name: actionNode.nodeName,
+      actions: actionNode.actions,
+      positions: actionNode.positions,
+    });
+
+    openSheet("node", {
+      id: nodeId,
+      type: "action",
+      data: actionNode,
+    });
+  };
+
   //handle accordion expand on datapoint add and indicator add
   useEffect(() => {
-    if(dataPoints.length > 0) {
+    if (dataPoints.length > 0) {
       setExpandedItems([...expandedItems, "item-0"]);
     }
-    if(indicators.length > 0) {
+    if (indicators.length > 0) {
       setExpandedItems([...expandedItems, "item-1"]);
     }
-  }, [dataPoints,indicators]);
+  }, [dataPoints, indicators]);
 
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
     removeDataPoint(id);
   };
-  const validateDataPoint = (dataPoint: DataPoint): { isValid: boolean; error: string } => {
-    if(selectedSymbol === null) {
+ 
+  const handleRemoveActionNode = (nodeId: string, ) => {
+    removeActionNode(nodeId);
+     // Remove node from canvas
+     setNodes(nodes.filter(node => node.id !== nodeId));
+    
+     // Remove connected edges
+     setEdges(edges.filter(edge => 
+       edge.source !== nodeId && edge.target !== nodeId
+     ));
+  };
+
+  const validateDataPoint = (
+    dataPoint: DataPoint
+  ): { isValid: boolean; error: string } => {
+    if (selectedSymbol === null) {
       return { isValid: false, error: "Symbol not selected" };
     }
     const currentSymbolInfo = symbolInfo[selectedSymbol];
     if (!currentSymbolInfo) {
       return { isValid: false, error: "Symbol information not available" };
     }
-  
+
     // Validate timeFrame (duration should be available in symbol's timeFrame)
-    if (dataPoint.duration && !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))) {
-      return { 
-        isValid: false, 
-        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`
+    if (
+      dataPoint.duration &&
+      !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))
+    ) {
+      return {
+        isValid: false,
+        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`,
       };
     }
-  
+
     // Validation based on data type
     switch (dataPoint.dataType) {
       case "OPT":
         // Validate weekly expiry availability
         if (dataPoint.expiryType === "weekly") {
           if (!currentSymbolInfo.isWeekly) {
-            return { 
-              isValid: false, 
-              error: `Weekly expiry is not available for ${currentSymbolInfo.symbol}` 
+            return {
+              isValid: false,
+              error: `Weekly expiry is not available for ${currentSymbolInfo.symbol}`,
             };
           }
-          
+
           // Validate weekly expiry order
           const weeklyOrders = currentSymbolInfo.OptExp.weekly;
           if (!weeklyOrders?.includes(Number(dataPoint.expiryOrder))) {
-            return { 
-              isValid: false, 
-              error: `Invalid weekly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+            return {
+              isValid: false,
+              error: `Invalid weekly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
             };
           }
         }
-  
+
         // Validate monthly expiry order
         if (dataPoint.expiryType === "monthly") {
-          if (!currentSymbolInfo.OptExp.monthly.includes(Number(dataPoint.expiryOrder))) {
-            return { 
-              isValid: false, 
-              error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+          if (
+            !currentSymbolInfo.OptExp.monthly.includes(
+              Number(dataPoint.expiryOrder)
+            )
+          ) {
+            return {
+              isValid: false,
+              error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
             };
           }
         }
-  
+
         // Validate strike selection for options
         if (dataPoint.strikeSelection) {
           if (dataPoint.strikeSelection.mode !== "strike-at") {
-            return { 
-              isValid: false, 
-              error: "Invalid strike selection mode" 
+            return {
+              isValid: false,
+              error: "Invalid strike selection mode",
             };
           }
-  
+
           // Validate strike position format
           const position = dataPoint.strikeSelection.position;
           if (position !== "ATM") {
-            const [type, number] = position.split('_');
-            if (!['ITM', 'OTM'].includes(type) || isNaN(Number(number)) || Number(number) > 10) {
-              return { 
-                isValid: false, 
-                error: "Invalid strike position" 
+            const [type, number] = position.split("_");
+            if (
+              !["ITM", "OTM"].includes(type) ||
+              isNaN(Number(number)) ||
+              Number(number) > 10
+            ) {
+              return {
+                isValid: false,
+                error: "Invalid strike position",
               };
             }
           }
         }
         break;
-  
+
       case "FUT":
         // Future can only have monthly expiry
         if (dataPoint.expiryType !== "monthly") {
-          return { 
-            isValid: false, 
-            error: "Futures only support monthly expiry" 
+          return {
+            isValid: false,
+            error: "Futures only support monthly expiry",
           };
         }
-  
+
         // Validate future expiry order
-        if (!currentSymbolInfo.FutExp.monthly.includes(Number(dataPoint.expiryOrder))) {
-          return { 
-            isValid: false, 
-            error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}` 
+        if (
+          !currentSymbolInfo.FutExp.monthly.includes(
+            Number(dataPoint.expiryOrder)
+          )
+        ) {
+          return {
+            isValid: false,
+            error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
           };
         }
         break;
-  
+
       case "SPOT":
         // SPOT shouldn't have expiry related fields
-        if (dataPoint.expiryType || dataPoint.expiryOrder || dataPoint.strikeSelection) {
-          return { 
-            isValid: false, 
-            error: "Spot data should not have expiry or strike selection" 
+        if (
+          dataPoint.expiryType ||
+          dataPoint.expiryOrder ||
+          dataPoint.strikeSelection
+        ) {
+          return {
+            isValid: false,
+            error: "Spot data should not have expiry or strike selection",
           };
         }
         break;
-  
+
       default:
         // Invalid data type
         if (dataPoint.dataType) {
-          return { 
-            isValid: false, 
-            error: "Invalid data type" 
+          return {
+            isValid: false,
+            error: "Invalid data type",
           };
         }
     }
-  
+
     // Add validation for candleType if needed
-    if (dataPoint.candleType && !["candlestick", "heikenashi"].includes(dataPoint.candleType)) {
-      return { 
-        isValid: false, 
-        error: "Invalid candle type" 
+    if (
+      dataPoint.candleType &&
+      !["candlestick", "heikenashi"].includes(dataPoint.candleType)
+    ) {
+      return {
+        isValid: false,
+        error: "Invalid candle type",
       };
     }
-  
+
     // All validations passed
     return { isValid: true, error: "" };
   };
-  
+
   const renderDataPoints = () => {
     return Object.entries(groupedDataPoints).map(([type, points]) => (
       <div key={type} className="space-y-1">
@@ -239,19 +307,21 @@ const DashboardSidebar: React.FC = () => {
         </h4>
         {points.map((point) => {
           const validation = validateDataPoint(point);
-          
+
           return (
             <TooltipProvider key={point.id}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
                     className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
-                      ${!validation.isValid ? 'border-red-500' : 'border-transparent'}`}
+                      ${
+                        !validation.isValid
+                          ? "border-red-500"
+                          : "border-transparent"
+                      }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {point.elementName}
-                      </span>
+                      <span className="text-sm">{point.elementName}</span>
                       {!validation.isValid && (
                         <AlertCircle className="w-4 h-4 text-red-500" />
                       )}
@@ -287,24 +357,26 @@ const DashboardSidebar: React.FC = () => {
       </div>
     ));
   };
-    
-  const renderIndicators = () => (
+
+  const renderIndicators = () =>
     indicators?.map((indicator) => {
       //@ts-ignore
-      const isMissing = !([...dataPoints?.map(v => v.elementName), ...indicators?.map(v =>v.elementName)].includes(indicator?.onData));
-      
+      const isMissing = ![
+        ...dataPoints?.map((v) => v.elementName),
+        ...indicators?.map((v) => v.elementName),
+        //@ts-ignore
+      ].includes(indicator?.onData);
+
       return (
         <TooltipProvider key={indicator.id}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div
                 className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md border 
-                  ${isMissing ? 'border-red-500' : 'border-transparent'}`}
+                  ${isMissing ? "border-red-500" : "border-transparent"}`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">
-                    {indicator.elementName}
-                  </span>
+                  <span className="text-sm">{indicator.elementName}</span>
                   {isMissing && (
                     <AlertCircle className="w-4 h-4 text-red-500" />
                   )}
@@ -335,15 +407,56 @@ const DashboardSidebar: React.FC = () => {
             {isMissing && (
               <TooltipContent>
                 <p>
-                  Required data point <span className="font-semibold">{indicator.onData}</span> is missing
+                  Required data point{" "}
+                  <span className="font-semibold">{indicator.onData}</span> is
+                  missing
                 </p>
               </TooltipContent>
             )}
           </Tooltip>
         </TooltipProvider>
       );
-    })
-  );
+    });
+
+  const renderActions = () =>
+    Object.entries(actionNodes).map(([nodeId, actionNode]) => (
+      <TooltipProvider key={nodeId}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {actionNode.nodeName || `Action Node ${nodeId}`}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1">
+                {/* Edit Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditActionNode(nodeId);
+                  }}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <Edit2 className="w-4 h-4 text-gray-500" />
+                </button>
+                {/* Remove Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveActionNode(nodeId);
+                  }}
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+          </TooltipTrigger>
+        </Tooltip>
+      </TooltipProvider>
+    ));
+
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 overflow-y-auto">
@@ -369,7 +482,12 @@ const DashboardSidebar: React.FC = () => {
           value={expandedItems}
           onValueChange={handleAccordionChange}
         >
-          {SIDEBAR_SECTIONS(handleAddDataPoint, handleAddIndicators, handleAddAction, handleAddCondition).map((item, index) => (
+          {SIDEBAR_SECTIONS(
+            handleAddDataPoint,
+            handleAddIndicators,
+            handleAddAction,
+            handleAddCondition
+          ).map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
@@ -386,7 +504,7 @@ const DashboardSidebar: React.FC = () => {
                   <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 group-data-[state=open]:rotate-180 transition-transform duration-200" />
                 </div>
               </AccordionTrigger>
-              <AccordionContent >
+              <AccordionContent>
                 <div className="mt-1 pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
                   <div className="mt-1 space-y-1">
                     {item?.items &&
@@ -411,18 +529,16 @@ const DashboardSidebar: React.FC = () => {
                       ))}
                     {/* Data Points items */}
                     {item.title === "Data Points" && (
-                      <div className="space-y-2">
-                        {renderDataPoints()}
-                      </div>
+                      <div className="space-y-2">{renderDataPoints()}</div>
                     )}
                     {/*  Indicators items*/}
-                    {
-                      item?.title === "Indicators" && (
-                        <div className="space-y-2">
-                          {renderIndicators()}
-                        </div>
-                      )
-                    }
+                    {item?.title === "Indicators" && (
+                      <div className="space-y-2">{renderIndicators()}</div>
+                    )}
+                    {/*  Action items*/}
+                    {item?.title === "Actions" && (
+                      <div className="space-y-2">{renderActions()}</div>
+                    )}
                   </div>
                 </div>
               </AccordionContent>
@@ -494,3 +610,21 @@ const DashboardSidebar: React.FC = () => {
 };
 
 export default DashboardSidebar;
+function setEditingActionNodeId(nodeId: string) {
+  throw new Error("Function not implemented.");
+}
+
+function openSheet(
+  arg0: string,
+  arg1: {
+    id: string;
+    type: string;
+    data: {
+      nodeName: string;
+      actions: import("@/lib/store/actionStore").Action[];
+      positions: import("../StrategyNavbar/NodeSheet/ActionNodeSheet/types").Position[];
+    };
+  }
+) {
+  throw new Error("Function not implemented.");
+}

@@ -1,9 +1,12 @@
-import { Position, PositionSettings } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ActionNodeSheet/types';
-import { create } from 'zustand';
+import {
+  Position,
+  PositionSettings,
+} from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ActionNodeSheet/types";
+import { create } from "zustand";
 
 // Define action types
 export interface Action {
-  func: 'squareoff_all' | 'stop_WaitTrade_triggers';
+  func: "squareoff_all" | "stop_WaitTrade_triggers";
 }
 
 // Define the store state interface
@@ -20,6 +23,7 @@ interface ActionState {
   updateNodeName: (nodeId: string, name: string) => void;
   addAction: (nodeId: string, action: Action) => void;
   removeAction: (nodeId: string, actionFunc: string) => void;
+  removeActionNode: (nodeId: string) => void;
   addPosition: (nodeId: string) => void;
   removePosition: (nodeId: string, positionId: string) => void;
   updatePositionSetting: (
@@ -39,7 +43,7 @@ export const useActionStore = create<ActionState>((set) => ({
       actionNodes: {
         ...state.actionNodes,
         [nodeId]: {
-          nodeName: '',
+          nodeName: "",
           actions: [],
           positions: [],
         },
@@ -88,9 +92,19 @@ export const useActionStore = create<ActionState>((set) => ({
           ...state.actionNodes,
           [nodeId]: {
             ...currentNode,
-            actions: currentNode.actions.filter((action) => action.func !== actionFunc),
+            actions: currentNode.actions.filter(
+              (action) => action.func !== actionFunc
+            ),
           },
         },
+      };
+    }),
+
+  removeActionNode: (nodeId: string) =>
+    set((state: { actionNodes: { [x: string]: any } }) => {
+      const { [nodeId]: _, ...rest } = state.actionNodes;
+      return {
+        actionNodes: rest,
       };
     }),
 
@@ -101,36 +115,36 @@ export const useActionStore = create<ActionState>((set) => ({
 
       const newPosition: Position = {
         id: `position-${Date.now()}`,
-        type: 'Add Position',
+        type: "Add Position",
         settings: {
           legID: currentNode.positions.length + 1,
-          transactionType: 'buy',
-          segment: 'OPT',
-          optionType: 'CE',
+          transactionType: "buy",
+          segment: "OPT",
+          optionType: "CE",
           qty: 0,
-          expType: 'weekly',
+          expType: "weekly",
           expNo: 0,
-          strikeBy: 'moneyness',
+          strikeBy: "moneyness",
           strikeVal: 0,
           isTarget: false,
-          targetOn: '%',
+          targetOn: "%",
           targetValue: 0,
           isSL: false,
-          SLon: '%',
+          SLon: "%",
           SLvalue: 0,
           isTrailSL: false,
-          trailSLon: '%',
+          trailSLon: "%",
           trailSL_X: 0,
           trailSL_Y: 0,
           isWT: false,
-          wtOn: 'val-up',
+          wtOn: "val-up",
           wtVal: 0,
           isReEntryTg: false,
-          reEntryTgOn: 'asap',
+          reEntryTgOn: "asap",
           reEntryTgVal: 0,
           reEntryTgMaxNo: 1,
           isReEntrySL: false,
-          reEntrySLOn: 'asap',
+          reEntrySLOn: "asap",
           reEntrySLVal: 0,
           reEntrySLMaxNo: 1,
         },
@@ -157,7 +171,9 @@ export const useActionStore = create<ActionState>((set) => ({
           ...state.actionNodes,
           [nodeId]: {
             ...currentNode,
-            positions: currentNode.positions.filter((position) => position.id !== positionId),
+            positions: currentNode.positions.filter(
+              (position) => position.id !== positionId
+            ),
           },
         },
       };
