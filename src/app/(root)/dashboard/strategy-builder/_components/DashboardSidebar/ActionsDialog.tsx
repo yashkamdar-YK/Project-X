@@ -18,7 +18,6 @@ interface ActionDialogProps {
 
 export default function ActionDialog({ open, onOpenChange }: ActionDialogProps) {
   const { nodes, edges, setEdges, setNodes } = useNodeStore();
-  const { createActionNode } = useActionStore();
   
   const handleAction = () => {
     //@ts-ignore

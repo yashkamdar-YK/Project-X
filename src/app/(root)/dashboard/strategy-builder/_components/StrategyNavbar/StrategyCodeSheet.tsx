@@ -14,6 +14,7 @@ import { useIndicatorStore } from '@/lib/store/IndicatorStore';
 import { useActionStore } from '@/lib/store/actionStore';
 import { useConditionStore } from '@/lib/store/conditionStore';
 import compileConditionState from './NodeSheet/ConditionNodeSheet/compileConditionState';
+import { transformToActionPayload } from './NodeSheet/ActionNodeSheet/transformToActionPayload ';
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
@@ -63,11 +64,31 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const {indicators} = useIndicatorStore();
   const {conditionBlocks} = useConditionStore();
   const _conditionBlocks = compileConditionState(conditionBlocks);
-const {
-  actionNodes
-} = useActionStore();
 
-  const DEMO_CODE = JSON.stringify(dataPoints, null, 2) + "\n--------INDICATORS------\n" + JSON.stringify(indicators, null, 2) + "\n--------ACTIONS------\n" + JSON.stringify(actionNodes, null, 2) +
+  const {
+    actionNodes
+  } = useActionStore();
+  const _actionNodes = () => {
+    let data: { [key: string]: any } = {};
+    
+    Object.keys(actionNodes).forEach(nodeId => {
+      const node = actionNodes[nodeId];
+      if (node.actions && node.positions) {
+        // Transform both actions and positions for each node
+        const transformedPayload = transformToActionPayload(node.actions, node.positions);
+        
+        // Store the transformed payload under the nodeId
+        data[nodeId] = {
+          nodeName: node.nodeName,
+          payload: transformedPayload
+        };
+      }
+    });
+    
+    return data;
+  };
+
+  const DEMO_CODE = JSON.stringify(dataPoints, null, 2) + "\n--------INDICATORS------\n" + JSON.stringify(indicators, null, 2) + "\n--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
     "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
 
   return (

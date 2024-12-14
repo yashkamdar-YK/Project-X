@@ -19,6 +19,7 @@ export interface ConditionBlockMap {
 }
 
 interface ConditionNode {
+  name:string
   blocks: {
     id: string;
     subSections: SubSection[];

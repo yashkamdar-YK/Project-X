@@ -227,7 +227,7 @@ const MainSettings: React.FC<MainSettingsProps> = ({
               </SelectTrigger>
               <SelectContent>
                 {/* @ts-ignore */}
-                {availableExpiryTypes[position.settings.expType].map(
+                {availableExpiryTypes[position.settings.expType]?.map(
                   (expiryNo: number) => (
                     <SelectItem key={expiryNo} value={expiryNo.toString()}>
                       {`${expiryNo === 0 ? "Current" : `Next ${expiryNo}`}`}

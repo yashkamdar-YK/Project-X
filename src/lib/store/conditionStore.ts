@@ -1,9 +1,14 @@
-import { ConditionBlockMap, SubSection, BlockRelation } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
-import { create } from 'zustand';
+import {
+  ConditionBlockMap,
+  SubSection,
+  BlockRelation,
+} from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
+import { create } from "zustand";
 
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
-  createConditionBlock: (nodeId: string) => void;
+  createConditionBlock: (nodeId: string, name: string) => void;
+  removeConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
   addSubSection: (nodeId: string, blockId: string) => void;
@@ -14,19 +19,28 @@ interface ConditionStore {
     field: keyof SubSection,
     value: string
   ) => void;
-  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
-  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => void;
+  removeSubSection: (
+    nodeId: string,
+    blockId: string,
+    subSectionId: number
+  ) => void;
+  toggleAddBadge: (
+    nodeId: string,
+    blockId: string,
+    subSectionId: number
+  ) => void;
   updateBlockRelation: (nodeId: string, index: number) => void;
 }
 
 export const useConditionStore = create<ConditionStore>((set) => ({
   conditionBlocks: {},
 
-  createConditionBlock: (nodeId: string) =>
+  createConditionBlock: (nodeId: string, name: string) =>
     set((state) => ({
       conditionBlocks: {
         ...state.conditionBlocks,
         [nodeId]: {
+          name,
           blocks: [
             {
               id: `block-${Date.now()}`,
@@ -46,6 +60,11 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         },
       },
     })),
+  removeConditionBlock: (nodeId: string) =>
+    set((state) => {
+      const { [nodeId]: _, ...conditionBlocks } = state.conditionBlocks;
+      return { conditionBlocks };
+    }),
 
   addBlock: (nodeId: string) =>
     set((state) => {
@@ -84,8 +103,12 @@ export const useConditionStore = create<ConditionStore>((set) => ({
       const currentNode = state.conditionBlocks[nodeId];
       if (!currentNode) return state;
 
-      const blockIndex = currentNode.blocks.findIndex(block => block.id === blockId);
-      const newBlocks = currentNode.blocks.filter(block => block.id !== blockId);
+      const blockIndex = currentNode.blocks.findIndex(
+        (block) => block.id === blockId
+      );
+      const newBlocks = currentNode.blocks.filter(
+        (block) => block.id !== blockId
+      );
       const newBlockRelations = [...currentNode.blockRelations];
       if (blockIndex !== -1) {
         newBlockRelations.splice(blockIndex - 1, 1);
@@ -205,7 +228,8 @@ export const useConditionStore = create<ConditionStore>((set) => ({
                       subSection.id === subSectionId
                         ? {
                             ...subSection,
-                            addBadge: subSection.addBadge === "AND" ? "OR" : "AND",
+                            addBadge:
+                              subSection.addBadge === "AND" ? "OR" : "AND",
                           }
                         : subSection
                     ),
@@ -223,7 +247,8 @@ export const useConditionStore = create<ConditionStore>((set) => ({
       if (!currentNode) return state;
 
       const newBlockRelations = [...currentNode.blockRelations];
-      newBlockRelations[index] = newBlockRelations[index] === "AND" ? "OR" : "AND";
+      newBlockRelations[index] =
+        newBlockRelations[index] === "AND" ? "OR" : "AND";
 
       return {
         conditionBlocks: {

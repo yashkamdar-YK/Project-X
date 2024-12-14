@@ -24,7 +24,7 @@ export const INITIAL_NODES: Node[] = [
     position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
     type: NodeTypes.CONDITION,
     data: {
-      label: "Entry Condition",
+      label: "Entry_Condition",
     },
   },
 ];

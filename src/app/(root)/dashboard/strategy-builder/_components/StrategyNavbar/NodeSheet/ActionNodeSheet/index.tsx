@@ -16,6 +16,7 @@ import PositionCard from "./PositionCard";
 import { Position, PositionSettings } from './types';
 import { useActionStore } from "@/lib/store/actionStore";
 import { transformToActionPayload } from "./transformToActionPayload ";
+import { handleNameInputChange } from "@/lib/utils";
 
 interface ActionNodeSheetProps {
   node: Node;
@@ -110,7 +111,7 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
           <Input
             id="action-name"
             value={currentNode.nodeName}
-            onChange={(e) => updateNodeName(node.id, e.target.value)}
+            onChange={(e) => updateNodeName(node.id, handleNameInputChange(e.target.value))}
             className="bg-white dark:bg-gray-800"
             placeholder="Enter action name"
           />

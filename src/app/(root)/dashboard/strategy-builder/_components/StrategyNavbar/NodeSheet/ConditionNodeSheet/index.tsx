@@ -24,7 +24,6 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const { dataPoints } = useDataPointsStore();
   const {
     conditionBlocks,
-    createConditionBlock,
     addSubSection,
     updateSubSection,
     removeSubSection,
@@ -37,12 +36,6 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const [maxEntries, setMaxEntries] = React.useState("1");
   const [waitTrigger, setWaitTrigger] = React.useState(false);
   const [positionOpen, setPositionOpen] = React.useState(false);
-
-  useEffect(() => {
-    if (!conditionBlocks[node.id]) {
-      createConditionBlock(node.id);
-    }
-  }, [node.id, conditionBlocks, createConditionBlock]);
 
   const currentNode = conditionBlocks[node.id];
   

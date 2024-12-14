@@ -32,7 +32,6 @@ import ConditionDialog from "./AddConditionDialog";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useSheetStore } from "@/lib/store/SheetStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
-import { ConditionBlock } from "../StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
@@ -51,14 +50,29 @@ const DashboardSidebar: React.FC = () => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
 
-  const { actionNodes, removeActionNode } = useActionStore();
-
-   // Add this new state for condition nodes
-   const { conditionBlocks } = useConditionStore();
-   const [conditionNodes, setConditionNodes] = useState<string[]>([]);
+  const { actionNodes, removeActionNode, createActionNode } = useActionStore();
+  const { conditionBlocks, removeConditionBlock, createConditionBlock } = useConditionStore();
 
   // Add this from useSheetStore
   const { openSheet } = useSheetStore();
+
+  //create nodes which are not present in actionNode and conditionNodes 
+  useEffect(() =>{
+    const missingActionNodes = nodes.filter(node => node.type === NodeTypes.ACTION && !actionNodes[node.id]);
+    const missingConditionNodes = nodes.filter(node => node.type === NodeTypes.CONDITION && !conditionBlocks[node.id]);
+
+    //create action node if not present
+    missingActionNodes.forEach(node => {
+      // @ts-ignore
+      createActionNode(node.id, node.data.label);
+    });
+
+    //create condition node if not present
+    missingConditionNodes.forEach(node => {
+      // @ts-ignore
+      createConditionBlock(node.id, node.data.label);
+    });
+  },[]); 
 
   const groupedDataPoints = React.useMemo(() => {
     return dataPoints.reduce((acc, dp) => {
@@ -124,12 +138,6 @@ const DashboardSidebar: React.FC = () => {
 
   const handleEditActionNode = (nodeId: string) => {
     const actionNode = actionNodes[nodeId];
-    console.log("Editing Action Node:", {
-      id: nodeId,
-      name: actionNode.nodeName,
-      actions: actionNode.actions,
-      positions: actionNode.positions,
-    });
     openSheet("node", {
       id: nodeId,
       type: NodeTypes.ACTION,
@@ -138,23 +146,11 @@ const DashboardSidebar: React.FC = () => {
   };
 
   const handleEditConditionNode = (nodeId: string) => {
-    console.log("Editing Condition Node:", nodeId);
     openSheet('node', { 
       id: nodeId, 
-      type: 'condition'
+      type: NodeTypes.CONDITION
     });
   };
-
-
-  useEffect(() => {
-    const conditionNodesOnCanvas = nodes
-      .filter(node => node.type === 'condition')
-      .map(node => node.id);
-    
-    console.log("Condition nodes on canvas:", conditionNodesOnCanvas);
-    setConditionNodes(conditionNodesOnCanvas);
-  }, [nodes]);
-
 
   //handle accordion expand on datapoint add and indicator add
   useEffect(() => {
@@ -167,10 +163,10 @@ const DashboardSidebar: React.FC = () => {
     if (Object.keys(actionNodes).length > 0) {
       setExpandedItems([...expandedItems, "item-2"]);
     }
-    if (conditionNodes.length > 0) {
+    if (Object.keys(conditionBlocks).length > 0) {
       setExpandedItems([...expandedItems, "item-3"]);
     }
-  }, [dataPoints, indicators, actionNodes, conditionNodes]);
+  }, [dataPoints, indicators, actionNodes, conditionBlocks]);
 
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
@@ -190,12 +186,12 @@ const DashboardSidebar: React.FC = () => {
 
    const handleRemoveConditionNode = (nodeId: string) => {
     // Remove node from canvas
+    removeConditionBlock(nodeId);
     setNodes(nodes.filter(node => node.id !== nodeId));
     // Remove connected edges
     setEdges(edges.filter(edge => 
       edge.source !== nodeId && edge.target !== nodeId
     ));
-    console.log("Removed Condition Node:", nodeId);
   };
 
   const validateDataPoint = (
@@ -504,14 +500,13 @@ const DashboardSidebar: React.FC = () => {
 
 
     const renderConditions = () => {
-      console.log("Rendering condition nodes:", conditionNodes);
-      return conditionNodes.map((nodeId) => (
+      return Object.keys(conditionBlocks).map((nodeId) => (
         <TooltipProvider key={nodeId}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">Condition Node {nodeId}</span>
+                  <span className="text-sm">{conditionBlocks[nodeId].name}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <button
@@ -699,21 +694,3 @@ const DashboardSidebar: React.FC = () => {
 };
 
 export default DashboardSidebar;
-function setEditingActionNodeId(nodeId: string) {
-  throw new Error("Function not implemented.");
-}
-
-function openSheet(
-  arg0: string,
-  arg1: {
-    id: string;
-    type: string;
-    data: {
-      nodeName: string;
-      actions: import("@/lib/store/actionStore").Action[];
-      positions: import("../StrategyNavbar/NodeSheet/ActionNodeSheet/types").Position[];
-    };
-  }
-) {
-  throw new Error("Function not implemented.");
-}

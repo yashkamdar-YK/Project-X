@@ -19,7 +19,7 @@ interface ActionState {
     };
   };
   // Actions to modify state
-  createActionNode: (nodeId: string) => void;
+  createActionNode: (nodeId: string,name:string) => void;
   updateNodeName: (nodeId: string, name: string) => void;
   addAction: (nodeId: string, action: Action) => void;
   removeAction: (nodeId: string, actionFunc: string) => void;
@@ -38,12 +38,12 @@ interface ActionState {
 export const useActionStore = create<ActionState>((set) => ({
   actionNodes: {},
 
-  createActionNode: (nodeId: string) =>
+  createActionNode: (nodeId, name) =>
     set((state) => ({
       actionNodes: {
         ...state.actionNodes,
         [nodeId]: {
-          nodeName: "",
+          nodeName: name,
           actions: [],
           positions: [],
         },
