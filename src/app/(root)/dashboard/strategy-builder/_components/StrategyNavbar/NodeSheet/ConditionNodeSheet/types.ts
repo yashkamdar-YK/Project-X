@@ -7,36 +7,36 @@ export interface SubSection {
   lhs: string;
   column?: string;
   selectedPeriod?: string;
-  nValue?: number;
+  nValue?: string;
   operator: string;
   rhs: string;
-  _rhsValue?: number;
+  _rhsValue?: string;
 }
 
-export interface ConditionBlock {
-  id: number;
-  subSections: SubSection[];
-  relation?: BlockRelation;
+
+export interface ConditionBlockMap {
+  [nodeId: string]: ConditionNode;
 }
 
-export interface ConditionState {
-  blocks: ConditionBlock[];
-  getBlockRelation: (blockId: number) => BlockRelation | undefined;
-  toggleBlockRelation: (blockId: number) => void;
+interface ConditionNode {
+  blocks: {
+    id: string;
+    subSections: SubSection[];
+    relation: BlockRelation;
+  }[];
+  blockRelations: BlockRelation[];
 }
 
-export interface DataPointOption {
-  applyIndicators: boolean;
-  candleLocation: boolean;
-  type: "candleData" | "dte";
-  columnsAvailable: string[];
-  canComparedwith: ['candleData', 'values', 'indicators'];
-  allowedOperations: string[];
-}
+// export interface DataPointOption {
+//   applyIndicators: boolean;
+//   candleLocation: boolean;
+//   type: "candleData" | "dte";
+//   columnsAvailable: string[];
+//   allowedOperations: string[];
+// }
 
-export interface DataPoint {
-  id: string;
-  elementName: string;
-  options?: DataPointOption;
-}
-
+// export interface DataPoint {
+//   id: string;
+//   elementName: string;
+//   options?: DataPointOption;
+// }
