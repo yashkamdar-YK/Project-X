@@ -18,14 +18,14 @@ export default function ActionDialog({ open, onOpenChange, editingActionNode}: A
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Create Action</DialogTitle>
+          <DialogTitle className="text-xl text-center">Create Action</DialogTitle>
         </DialogHeader>
        
-        <div className="grid grid-cols-2 gap-4 p-4">
+        <div className="grid grid-cols-2 gap-4 px-4 pt-2">
           <Button
             variant="outline"
             size="lg"
-            className="h-48 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
+            className="h-44 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
             onClick={handleAction}
           >
             <span className="text-base">Blank Action</span>
@@ -33,7 +33,7 @@ export default function ActionDialog({ open, onOpenChange, editingActionNode}: A
           <Button
             variant="outline"
             size="lg"
-            className="h-48 flex flex-col items-center justify-center"
+            className="h-44 flex flex-col items-center justify-center"
             disabled
           >
             <span className="text-base">Select From Templates</span>
@@ -42,7 +42,7 @@ export default function ActionDialog({ open, onOpenChange, editingActionNode}: A
             </span>
           </Button>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end mr-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             DONE
           </Button>
