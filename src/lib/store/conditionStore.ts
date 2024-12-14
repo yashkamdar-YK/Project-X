@@ -1,116 +1,238 @@
-import { BlockRelation, ConditionBlock, SubSection } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
+import { ConditionBlockMap, SubSection, BlockRelation } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
 import { create } from 'zustand';
 
 interface ConditionStore {
-  conditionBlocks: ConditionBlock[];
-  addConditionBlock: () => void;
-  addSubSection: (blockId: number) => void;
-  updateSubSection: (blockId: number, subSectionId: number, field: keyof SubSection, value: string) => void;
-  removeSubSection: (blockId: number, subSectionId: number) => void;
-  toggleAddBadge: (blockId: number, subSectionId: number) => void;
-  toggleBlockRelation: (blockId: number) => void;
-  getBlockRelation: (blockId: number) => BlockRelation | undefined;
+  conditionBlocks: ConditionBlockMap;
+  createConditionBlock: (nodeId: string) => void;
+  addBlock: (nodeId: string) => void;
+  removeBlock: (nodeId: string, blockId: string) => void;
+  addSubSection: (nodeId: string, blockId: string) => void;
+  updateSubSection: (
+    nodeId: string,
+    blockId: string,
+    subSectionId: number,
+    field: keyof SubSection,
+    value: string
+  ) => void;
+  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
+  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => void;
+  updateBlockRelation: (nodeId: string, index: number) => void;
 }
 
-export const useConditionStore = create<ConditionStore>((set, get) => ({
-  conditionBlocks: [
-    {
-      id: 0,
-      subSections: [{ id: 0, addBadge: "AND", lhs: "", operator: "", rhs: "" }],
-      relation: "AND"
-    },
-  ],
+export const useConditionStore = create<ConditionStore>((set) => ({
+  conditionBlocks: {},
 
-  addConditionBlock: () => set((state) => ({
-    conditionBlocks: [
-      ...state.conditionBlocks,
-      {
-        id: state.conditionBlocks.length,
-        subSections: [{ id: 0, addBadge: "AND", lhs: "", operator: "", rhs: "" }],
-        relation: "AND"
+  createConditionBlock: (nodeId: string) =>
+    set((state) => ({
+      conditionBlocks: {
+        ...state.conditionBlocks,
+        [nodeId]: {
+          blocks: [
+            {
+              id: `block-${Date.now()}`,
+              subSections: [
+                {
+                  id: 0,
+                  addBadge: "AND",
+                  lhs: "",
+                  operator: "",
+                  rhs: "",
+                },
+              ],
+              relation: "AND",
+            },
+          ],
+          blockRelations: [],
+        },
       },
-    ],
-  })),
+    })),
 
-  addSubSection: (blockId) => set((state) => ({
-    conditionBlocks: state.conditionBlocks.map((block) =>
-      block.id === blockId
-        ? {
-            ...block,
-            subSections: [
-              ...block.subSections,
+  addBlock: (nodeId: string) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: [
+              ...currentNode.blocks,
               {
-                id: block.subSections.length,
-                addBadge: "AND",
-                lhs: "",
-                operator: "",
-                rhs: "",
+                id: `block-${Date.now()}`,
+                subSections: [
+                  {
+                    id: 0,
+                    addBadge: "AND",
+                    lhs: "",
+                    operator: "",
+                    rhs: "",
+                  },
+                ],
+                relation: "AND",
               },
             ],
-          }
-        : block
-    ),
-  })),
+            blockRelations: [...currentNode.blockRelations, "AND"],
+          },
+        },
+      };
+    }),
 
-  updateSubSection: (blockId, subSectionId, field, value) => set((state) => ({
-    conditionBlocks: state.conditionBlocks.map((block) =>
-      block.id === blockId
-        ? {
-            ...block,
-            subSections: block.subSections.map((subSection) =>
-              subSection.id === subSectionId
-                ? { ...subSection, [field]: value }
-                : subSection
-            ),
-          }
-        : block
-    ),
-  })),
+  removeBlock: (nodeId: string, blockId: string) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
 
-  removeSubSection: (blockId, subSectionId) => set((state) => ({
-    conditionBlocks: state.conditionBlocks.map((block) =>
-      block.id === blockId
-        ? {
-            ...block,
-            subSections: block.subSections.filter(
-              (subSection) => subSection.id !== subSectionId
-            ),
-          }
-        : block
-    ),
-  })),
+      const blockIndex = currentNode.blocks.findIndex(block => block.id === blockId);
+      const newBlocks = currentNode.blocks.filter(block => block.id !== blockId);
+      const newBlockRelations = [...currentNode.blockRelations];
+      if (blockIndex !== -1) {
+        newBlockRelations.splice(blockIndex - 1, 1);
+      }
 
-  toggleAddBadge: (blockId, subSectionId) => set((state) => ({
-    conditionBlocks: state.conditionBlocks.map((block) =>
-      block.id === blockId
-        ? {
-            ...block,
-            subSections: block.subSections.map((subSection) =>
-              subSection.id === subSectionId
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: newBlocks,
+            blockRelations: newBlockRelations,
+          },
+        },
+      };
+    }),
+
+  addSubSection: (nodeId: string, blockId: string) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
                 ? {
-                    ...subSection,
-                    addBadge: subSection.addBadge === "AND" ? "OR" : "AND",
+                    ...block,
+                    subSections: [
+                      ...block.subSections,
+                      {
+                        id: block.subSections.length,
+                        addBadge: "AND",
+                        lhs: "",
+                        operator: "",
+                        rhs: "",
+                      },
+                    ],
                   }
-                : subSection
+                : block
             ),
-          }
-        : block
-    ),
-  })),
+          },
+        },
+      };
+    }),
 
-  toggleBlockRelation: (blockId) => set((state) => ({
-    conditionBlocks: state.conditionBlocks.map((block) =>
-      block.id === blockId
-        ? {
-            ...block,
-            relation: block.relation === "AND" ? "OR" : "AND",
-          }
-        : block
-    ),
-  })),
+  updateSubSection: (nodeId, blockId, subSectionId, field, value) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
 
-  getBlockRelation: (blockId) => {
-    const block = get().conditionBlocks.find((b) => b.id === blockId);
-    return block?.relation;
-  },
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.map((subSection) =>
+                      subSection.id === subSectionId
+                        ? { ...subSection, [field]: value }
+                        : subSection
+                    ),
+                  }
+                : block
+            ),
+          },
+        },
+      };
+    }),
+
+  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.filter(
+                      (subSection) => subSection.id !== subSectionId
+                    ),
+                  }
+                : block
+            ),
+          },
+        },
+      };
+    }),
+
+  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blocks: currentNode.blocks.map((block) =>
+              block.id === blockId
+                ? {
+                    ...block,
+                    subSections: block.subSections.map((subSection) =>
+                      subSection.id === subSectionId
+                        ? {
+                            ...subSection,
+                            addBadge: subSection.addBadge === "AND" ? "OR" : "AND",
+                          }
+                        : subSection
+                    ),
+                  }
+                : block
+            ),
+          },
+        },
+      };
+    }),
+
+  updateBlockRelation: (nodeId: string, index: number) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      const newBlockRelations = [...currentNode.blockRelations];
+      newBlockRelations[index] = newBlockRelations[index] === "AND" ? "OR" : "AND";
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            blockRelations: newBlockRelations,
+          },
+        },
+      };
+    }),
 }));

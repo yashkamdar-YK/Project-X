@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -12,20 +12,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 interface ConditionNodeSheetProps {
   node: Node & {
     type: typeof NodeTypes.CONDITION;
-    data: {
-      label: string;
-      settings?: {
-        indicator?: string;
-        period?: number;
-        threshold?: number;
-        comparison?: string;
-      };
-    };
   };
 }
 
@@ -34,21 +24,32 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const { dataPoints } = useDataPointsStore();
   const {
     conditionBlocks,
-    addConditionBlock,
+    createConditionBlock,
     addSubSection,
     updateSubSection,
     removeSubSection,
     toggleAddBadge,
-    toggleBlockRelation,
-    getBlockRelation,
+    addBlock,
+    removeBlock,
+    updateBlockRelation,
   } = useConditionStore();
 
   const [maxEntries, setMaxEntries] = React.useState("1");
   const [waitTrigger, setWaitTrigger] = React.useState(false);
   const [positionOpen, setPositionOpen] = React.useState(false);
 
+  useEffect(() => {
+    if (!conditionBlocks[node.id]) {
+      createConditionBlock(node.id);
+    }
+  }, [node.id, conditionBlocks, createConditionBlock]);
+
+  const currentNode = conditionBlocks[node.id];
+  
+  if (!currentNode) return null;
+
   return (
-    <div className="bg-gray-900 p-6 rounded-lg">
+    <div className="bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-100">
           Condition Builder
@@ -112,33 +113,64 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               </div>
             </div>
           </div>
-          </CardContent>
-      </Card>
-
-      <Card className="bg-gray-900 border-gray-800">
-        <CardContent className="space-y-8 p-6">
-          {conditionBlocks.map((block, blockIndex) => (
-            <ConditionBlock
-              key={block.id}
-              block={block}
-              blockIndex={blockIndex}
-              totalBlocks={conditionBlocks.length}
-              // @ts-ignore
-              dataPoints={dataPoints}
-              addSubSection={addSubSection}
-              updateSubSection={updateSubSection}
-              removeSubSection={removeSubSection}
-              toggleAddBadge={toggleAddBadge}
-              toggleBlockRelation={toggleBlockRelation}
-              getBlockRelation={getBlockRelation}
-              addConditionBlock={addConditionBlock}
-            />
-          ))}
         </CardContent>
       </Card>
+      
+          <div className="space-y-8 mt-8">
+            {currentNode.blocks.map((block, index) => (
+              <React.Fragment key={block.id}>
+                <div className="relative">
+                  <ConditionBlock
+                    block={block}
+                    nodeId={node.id}
+                    blockId={block.id}
+                    dataPoints={dataPoints}
+                    addSubSection={(nodeId) => addSubSection(nodeId, block.id)}
+                    updateSubSection={(nodeId, subSectionId, field, value) => 
+                      updateSubSection(nodeId, block.id, subSectionId, field, value)}
+                    removeSubSection={(nodeId, subSectionId) => 
+                      removeSubSection(nodeId, block.id, subSectionId)}
+                    toggleAddBadge={(nodeId, subSectionId) => 
+                      toggleAddBadge(nodeId, block.id, subSectionId)}
+                  />
+                  {currentNode.blocks.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute -right-4 -top-4 text-red-500 hover:text-red-600 hover:bg-red-900/20"
+                      onClick={() => removeBlock(node.id, block.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                
+                {index < currentNode.blocks.length - 1 && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="secondary"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-8"
+                      onClick={() => updateBlockRelation(node.id, index)}
+                    >
+                      {currentNode.blockRelations[index] || "AND"}
+                    </Button>
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+          
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={() => addBlock(node.id)}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Block
+            </Button>
+          </div>
     </div>
   );
 };
 
 export default ConditionNodeSheet;
-
