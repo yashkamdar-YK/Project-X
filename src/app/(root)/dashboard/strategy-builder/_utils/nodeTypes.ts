@@ -1,4 +1,5 @@
 import { useActionStore } from "@/lib/store/actionStore";
+import { useConditionStore } from "@/lib/store/conditionStore";
 import { Edge, Node, Position } from "@xyflow/react";
 export const NodeTypes = {
   CONDITION: "CONDITION",
@@ -164,8 +165,8 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const position = getNodePosition(nodes, item.type, edges);
   //@ts-ignore
   const label:string = item?.data?.label ? item.data.label : item.type === 'ACTION'
-    ? `Action ${Object.keys(useActionStore.getState().actionNodes).length + 1}`
-    : 'Condition';
+    ? `Action_${Object.keys(useActionStore.getState().actionNodes).length + 1}`
+    : `Condition_${Object.keys(useConditionStore.getState().conditionBlocks).length + 1}`;
 
   const newNode = {
     id: newNodeId,
@@ -199,8 +200,10 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
 
   //create in there store
   if (item.type === NodeTypes.ACTION) {
-    useActionStore.getState().createActionNode(newNodeId);
-    useActionStore.getState().updateNodeName(newNodeId, label);
+    useActionStore.getState().createActionNode(newNodeId,label);
+  }
+  if(item.type === NodeTypes.CONDITION){
+    useConditionStore.getState().createConditionBlock(newNodeId, label);
   }
 
   return { newNode, newEdges };

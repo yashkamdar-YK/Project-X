@@ -106,3 +106,7 @@ body {
     background-color: #555;
   }
 }
+
+.react-flow__attribution{
+  display: none !important;
+}

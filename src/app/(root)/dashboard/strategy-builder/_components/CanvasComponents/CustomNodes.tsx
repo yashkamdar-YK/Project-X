@@ -13,6 +13,7 @@ import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
 import { useCanvasContext } from "../StrategyCanvas";
 import { useActionStore } from "@/lib/store/actionStore";
+import { useConditionStore } from "@/lib/store/conditionStore";
 
 export const StartNode = () => {
   return (
@@ -33,7 +34,7 @@ export const StartNode = () => {
 export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   const { deleteNode } = useCanvasContext() || {};
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
-
+  const { conditionBlocks } = useConditionStore();
   const conditionNodes = React.useMemo(() => {
     return nodes
       .filter((node) => node.type === "CONDITION")
@@ -46,6 +47,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
 
   const isFirstConditionNode = nodeIndex === 0;
   const isLastConditionNode = nodeIndex === conditionNodes.length - 1;
+  const currentNode = conditionBlocks[id];
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -185,7 +187,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
             </div>
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {/* @ts-ignore */}
-              {data.label}
+              {currentNode?.name || data.label}
             </div>
           </div>
         </div>
