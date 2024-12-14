@@ -22,15 +22,20 @@ import { Indicator } from "./Indicators/types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import IndicatorDialog from "./Indicators";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import ActionDialog from "./ActionsDialog";
+import ConditionDialog from "./AddConditionDialog";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
-  const [expandedItems, setExpandedItems] = useState<string[]>(["item-3"]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(["item-4"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
   const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
   const [editingIndicator, setEditingIndicator] = useState<Indicator | undefined>();
+
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
 
   const { dataPoints, removeDataPoint } = useDataPointsStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
@@ -75,6 +80,14 @@ const DashboardSidebar: React.FC = () => {
     e.preventDefault();
     setEditingIndicator(undefined);
     setIsIndicatorsModalOpen(true);
+  }
+  const handleAddAction = (e: any) => {
+    e.preventDefault();
+    setIsActionModalOpen(true);
+  }
+  const handleAddCondition = (e: any) => {
+    e.preventDefault();
+    setIsConditionModalOpen(true);
   }
 
   const handleEditDataPoint = (dataPoint: DataPoint) => {
@@ -356,7 +369,7 @@ const DashboardSidebar: React.FC = () => {
           value={expandedItems}
           onValueChange={handleAccordionChange}
         >
-          {SIDEBAR_SECTIONS(handleAddDataPoint, handleAddIndicators).map((item, index) => (
+          {SIDEBAR_SECTIONS(handleAddDataPoint, handleAddIndicators, handleAddAction, handleAddCondition).map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="flex items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
                 <div className="flex items-center">
@@ -463,6 +476,18 @@ const DashboardSidebar: React.FC = () => {
           if (!open) setEditingIndicator(undefined);
         }}
         editingIndicator={editingIndicator}
+      />
+      <ActionDialog
+        open={isActionModalOpen}
+        onOpenChange={(open) => {
+          setIsActionModalOpen(open);
+        }}
+      />
+      <ConditionDialog
+        open={isConditionModalOpen}
+        onOpenChange={(open) => {
+          setIsConditionModalOpen(open);
+        }}
       />
     </>
   );

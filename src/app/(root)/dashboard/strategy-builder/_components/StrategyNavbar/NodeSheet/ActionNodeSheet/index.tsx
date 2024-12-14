@@ -25,7 +25,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
   const { closeSheet } = useSheetStore();
   const {
     actionNodes,
-    createActionNode,
     updateNodeName,
     addAction,
     removeAction,
@@ -33,14 +32,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
     removePosition,
     updatePositionSetting,
   } = useActionStore();
-
-  // Initialize the action node if it doesn't exist
-  useEffect(() => {
-    if (!actionNodes[node.id]) {
-      createActionNode(node.id);
-      updateNodeName(node.id, `Action ${Object.keys(actionNodes).length + 1}`);
-    }
-  }, [node.id, actionNodes, createActionNode]);
 
   const currentNode = actionNodes[node.id] || { nodeName: '', actions: [], positions: [] };
 
