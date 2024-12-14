@@ -18,7 +18,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
 import { Node } from "@xyflow/react";
-import { handleAddNode } from "../../_utils/nodeTypes";
+import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { DataPointDialog } from "./DatapointDialog";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -31,28 +31,31 @@ import ActionDialog from "./ActionsDialog";
 import ConditionDialog from "./AddConditionDialog";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useSheetStore } from "@/lib/store/SheetStore";
+import { useConditionStore } from "@/lib/store/conditionStore";
+import { ConditionBlock } from "../StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-4"]);
+
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState<
-    DataPoint | undefined
-  >();
+  const [editingDataPoint, setEditingDataPoint] = useState< DataPoint | undefined >();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<
-    Indicator | undefined
-  >();
+  const [editingIndicator, setEditingIndicator] = useState< Indicator | undefined >();
 
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
-
+  
   const { dataPoints, removeDataPoint } = useDataPointsStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
 
   const { actionNodes, removeActionNode } = useActionStore();
+
+   // Add this new state for condition nodes
+   const { conditionBlocks } = useConditionStore();
+   const [conditionNodes, setConditionNodes] = useState<string[]>([]);
 
   // Add this from useSheetStore
   const { openSheet } = useSheetStore();
@@ -85,26 +88,34 @@ const DashboardSidebar: React.FC = () => {
   const handleAccordionChange = (value: string[]) => {
     setExpandedItems(value);
   };
+ 
 
+  // Add DataPoint
   const handleAddDataPoint = (e: any) => {
     e.preventDefault();
     setEditingDataPoint(undefined);
     setIsDataPointModalOpen(true);
   };
 
+  // Add Indicator
   const handleAddIndicators = (e: any) => {
     e.preventDefault();
     setEditingIndicator(undefined);
     setIsIndicatorsModalOpen(true);
   };
+
+  // Add Action
   const handleAddAction = (e: any) => {
     e.preventDefault();
     setIsActionModalOpen(true);
   };
+
+  // Add Condition
   const handleAddCondition = (e: any) => {
     e.preventDefault();
     setIsConditionModalOpen(true);
   };
+
 
   const handleEditDataPoint = (dataPoint: DataPoint) => {
     setEditingDataPoint(dataPoint);
@@ -119,13 +130,31 @@ const DashboardSidebar: React.FC = () => {
       actions: actionNode.actions,
       positions: actionNode.positions,
     });
-
     openSheet("node", {
       id: nodeId,
-      type: "action",
+      type: NodeTypes.ACTION,
       data: actionNode,
     });
   };
+
+  const handleEditConditionNode = (nodeId: string) => {
+    console.log("Editing Condition Node:", nodeId);
+    openSheet('node', { 
+      id: nodeId, 
+      type: 'condition'
+    });
+  };
+
+
+  useEffect(() => {
+    const conditionNodesOnCanvas = nodes
+      .filter(node => node.type === 'condition')
+      .map(node => node.id);
+    
+    console.log("Condition nodes on canvas:", conditionNodesOnCanvas);
+    setConditionNodes(conditionNodesOnCanvas);
+  }, [nodes]);
+
 
   //handle accordion expand on datapoint add and indicator add
   useEffect(() => {
@@ -135,7 +164,13 @@ const DashboardSidebar: React.FC = () => {
     if (indicators.length > 0) {
       setExpandedItems([...expandedItems, "item-1"]);
     }
-  }, [dataPoints, indicators]);
+    if (Object.keys(actionNodes).length > 0) {
+      setExpandedItems([...expandedItems, "item-2"]);
+    }
+    if (conditionNodes.length > 0) {
+      setExpandedItems([...expandedItems, "item-3"]);
+    }
+  }, [dataPoints, indicators, actionNodes, conditionNodes]);
 
   const handleRemoveDataPoint = (event: React.MouseEvent, id: string) => {
     event.stopPropagation();
@@ -151,6 +186,16 @@ const DashboardSidebar: React.FC = () => {
      setEdges(edges.filter(edge => 
        edge.source !== nodeId && edge.target !== nodeId
      ));
+  };
+
+   const handleRemoveConditionNode = (nodeId: string) => {
+    // Remove node from canvas
+    setNodes(nodes.filter(node => node.id !== nodeId));
+    // Remove connected edges
+    setEdges(edges.filter(edge => 
+      edge.source !== nodeId && edge.target !== nodeId
+    ));
+    console.log("Removed Condition Node:", nodeId);
   };
 
   const validateDataPoint = (
@@ -457,6 +502,46 @@ const DashboardSidebar: React.FC = () => {
       </TooltipProvider>
     ));
 
+
+    const renderConditions = () => {
+      console.log("Rendering condition nodes:", conditionNodes);
+      return conditionNodes.map((nodeId) => (
+        <TooltipProvider key={nodeId}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Condition Node {nodeId}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditConditionNode(nodeId);
+                    }}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveConditionNode(nodeId);
+                    }}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+            </TooltipTrigger>
+          </Tooltip>
+        </TooltipProvider>
+      ));
+    };
+
+
+
   const SidebarContent = () => (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 overflow-y-auto">
@@ -538,6 +623,10 @@ const DashboardSidebar: React.FC = () => {
                     {/*  Action items*/}
                     {item?.title === "Actions" && (
                       <div className="space-y-2">{renderActions()}</div>
+                    )}
+                    {/*  Condition items*/}
+                    {item?.title === "Conditions" && (
+                      <div className="space-y-2">{renderConditions()}</div>
                     )}
                   </div>
                 </div>

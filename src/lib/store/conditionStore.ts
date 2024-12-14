@@ -19,7 +19,7 @@ export const useConditionStore = create<ConditionStore>((set, get) => ({
       subSections: [{ id: 0, addBadge: "AND", lhs: "", operator: "", rhs: "" }],
       relation: "AND"
     },
-  ],
+  ],  
 
   addConditionBlock: () => set((state) => ({
     conditionBlocks: [
