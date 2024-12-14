@@ -8,6 +8,7 @@ import { create } from "zustand";
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
   createConditionBlock: (nodeId: string, name: string) => void;
+  updateName: (nodeId: string, name: string) => void;
   removeConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
@@ -60,6 +61,21 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         },
       },
     })),
+  updateName: (nodeId: string, name: string) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [nodeId]: {
+            ...currentNode,
+            name,
+          },
+        },
+      };
+    }),
   removeConditionBlock: (nodeId: string) =>
     set((state) => {
       const { [nodeId]: _, ...conditionBlocks } = state.conditionBlocks;

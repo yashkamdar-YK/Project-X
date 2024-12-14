@@ -42,7 +42,7 @@ const ConditionEdge = ({
       id: newNodeId,
       type: NodeTypes.CONDITION,
       position: { x: centerX - 125, y: centerY - 25 },
-      data: { label: 'New Condition' },
+      data: { label: 'New_Condition' },
     };
 
     // Remove the original edge

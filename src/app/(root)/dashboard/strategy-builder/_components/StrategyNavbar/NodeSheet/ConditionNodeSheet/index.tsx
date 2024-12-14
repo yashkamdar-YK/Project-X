@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { validateName } from "@/lib/utils";
 
 interface ConditionNodeSheetProps {
   node: Node & {
@@ -30,6 +31,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     toggleAddBadge,
     addBlock,
     removeBlock,
+    updateName,
     updateBlockRelation,
   } = useConditionStore();
 
@@ -59,6 +61,16 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
       <Card className="dark:bg-gray-900 border-l mt-4 border-gray-200 dark:border-gray-800">
         <CardContent className="space-y-8 mt-6">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="condition-name">Condition Name:</Label>
+            <Input
+              id="condition-name"
+              value={currentNode.name}
+              onChange={(e) => updateName(node.id, validateName(e.target.value))}
+              className="w-60"
+            />
+          </div>
+        
           <Tabs defaultValue="entry" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="entry">Entry</TabsTrigger>
@@ -109,7 +121,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </CardContent>
       </Card>
       
-          <div className="space-y-8 mt-8">
+          <div className="space-y-8 mt-8 -mx-4">
             {currentNode.blocks.map((block, index) => (
               <React.Fragment key={block.id}>
                 <div className="relative">
