@@ -13,6 +13,7 @@ import { useDataPointsStore } from '@/lib/store/dataPointsStore';
 import { useIndicatorStore } from '@/lib/store/IndicatorStore';
 import { useActionStore } from '@/lib/store/actionStore';
 import { useConditionStore } from '@/lib/store/conditionStore';
+import compileConditionState from './NodeSheet/ConditionNodeSheet/compileConditionState';
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
@@ -61,12 +62,13 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const {dataPoints} = useDataPointsStore();
   const {indicators} = useIndicatorStore();
   const {conditionBlocks} = useConditionStore();
+  const _conditionBlocks = compileConditionState(conditionBlocks);
 const {
   actionNodes
 } = useActionStore();
 
   const DEMO_CODE = JSON.stringify(dataPoints, null, 2) + "\n--------INDICATORS------\n" + JSON.stringify(indicators, null, 2) + "\n--------ACTIONS------\n" + JSON.stringify(actionNodes, null, 2) +
-    "\n--------CONDITIONS------\n" + JSON.stringify(conditionBlocks, null, 2) 
+    "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

@@ -13,13 +13,18 @@ export interface SubSection {
   _rhsValue?: string;
 }
 
-export interface ConditionBlock {
-  subSections: SubSection[];
-  relation: BlockRelation;
-}
 
 export interface ConditionBlockMap {
-  [nodeId: string]: ConditionBlock;
+  [nodeId: string]: ConditionNode;
+}
+
+interface ConditionNode {
+  blocks: {
+    id: string;
+    subSections: SubSection[];
+    relation: BlockRelation;
+  }[];
+  blockRelations: BlockRelation[];
 }
 
 // export interface DataPointOption {

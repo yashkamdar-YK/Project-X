@@ -1,21 +1,8 @@
 import { ConditionBlockMap, SubSection, BlockRelation } from '@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types';
 import { create } from 'zustand';
 
-interface ConditionNode {
-  blocks: {
-    id: string;
-    subSections: SubSection[];
-    relation: BlockRelation;
-  }[];
-  blockRelations: BlockRelation[];
-}
-
-interface ExtendedConditionBlockMap {
-  [nodeId: string]: ConditionNode;
-}
-
 interface ConditionStore {
-  conditionBlocks: ExtendedConditionBlockMap;
+  conditionBlocks: ConditionBlockMap;
   createConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
