@@ -1,4 +1,4 @@
-import { Database, BarChart2, Layers, Zap } from "lucide-react";
+import { Database, BarChart2, Layers, Zap, AlertCircle } from "lucide-react";
 import { NodeTypes } from "../_utils/nodeTypes";
 import { Edge, Node, Position } from "@xyflow/react";
 
@@ -75,29 +75,36 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
   },
 ];
 
-export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void,onIndicatorAdd: (e: any) => void) => [
+export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void, onIndicatorAdd: (e: any) => void,
+  onActionAdd: (e: any) => void, onConditionAdd: (e: any) => void
+) => [
+    {
+      title: "Data Points",
+      icon: Database,
+      onClick: onDataPointAdd,
+    },
+    {
+      title: "Indicators",
+      icon: BarChart2,
+      onClick: onIndicatorAdd,
+    },
+    {
+      title: "Actions",
+      icon: Zap,
+      onClick: onActionAdd,
+    },
+    {
+      title: "Conditions",
+      icon: AlertCircle,
+      onClick: onConditionAdd,
+    },
   {
-    title: "Data Points",
-    icon: Database,
-    onClick: onDataPointAdd,
-  },
-  {
-    title: "Indicators",
-    icon: BarChart2,
-    onClick: onIndicatorAdd,
-  },
-  {
-    title: "Actions",
-    icon: Zap,
-    onClick: () => {},
-  },
-  {
-    title: "Components",
-    icon: Layers,
-    items: DEFAULT_NODE_TEMPLATES,
-    onClick: () => {},
-  },
-];
+      title: "Components",
+      icon: Layers,
+      items: DEFAULT_NODE_TEMPLATES,
+      onClick: () => { },
+    },
+  ];
 
 export const STRATEGY_TEMPLATES = {
   MOVING_AVERAGE_CROSSOVER: {
