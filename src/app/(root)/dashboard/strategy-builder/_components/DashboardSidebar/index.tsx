@@ -36,10 +36,14 @@ const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-4"]);
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState< DataPoint | undefined >();
+  const [editingDataPoint, setEditingDataPoint] = useState<
+    DataPoint | undefined
+  >();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState< Indicator | undefined >();
+  const [editingIndicator, setEditingIndicator] = useState<
+    Indicator | undefined
+  >();
 
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
@@ -48,11 +52,10 @@ const DashboardSidebar: React.FC = () => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
 
-  const { actionNodes, removeAction } = useActionStore();
+  const { actionNodes, removeActionNode } = useActionStore();
 
-    // Add this from useSheetStore
-    const { openSheet } = useSheetStore();
-
+  // Add this from useSheetStore
+  const { openSheet } = useSheetStore();
 
   const groupedDataPoints = React.useMemo(() => {
     return dataPoints.reduce((acc, dp) => {
@@ -114,30 +117,14 @@ const DashboardSidebar: React.FC = () => {
       id: nodeId,
       name: actionNode.nodeName,
       actions: actionNode.actions,
-      positions: actionNode.positions
+      positions: actionNode.positions,
     });
-    
-    openSheet('node', { 
-      id: nodeId, 
-      type: 'action', 
-      data: actionNode 
+
+    openSheet("node", {
+      id: nodeId,
+      type: "action",
+      data: actionNode,
     });
-  };
-
-
-  const handleRemoveActionNode = (nodeId: string) => {
-    // Remove from actionStore
-    removeAction(nodeId, 'all');
-    
-    // Remove node from canvas
-    setNodes(nodes.filter(node => node.id !== nodeId));
-    
-    // Remove connected edges
-    setEdges(edges.filter(edge => 
-      edge.source !== nodeId && edge.target !== nodeId
-    ));
-    
-    console.log("Removed Action Node:", nodeId);
   };
 
   //handle accordion expand on datapoint add and indicator add
@@ -154,7 +141,17 @@ const DashboardSidebar: React.FC = () => {
     event.stopPropagation();
     removeDataPoint(id);
   };
-
+ 
+  const handleRemoveActionNode = (nodeId: string, ) => {
+    removeActionNode(nodeId);
+     // Remove node from canvas
+     setNodes(nodes.filter(node => node.id !== nodeId));
+    
+     // Remove connected edges
+     setEdges(edges.filter(edge => 
+       edge.source !== nodeId && edge.target !== nodeId
+     ));
+  };
 
   const validateDataPoint = (
     dataPoint: DataPoint
@@ -435,7 +432,7 @@ const DashboardSidebar: React.FC = () => {
               <div className="flex items-center space-x-1">
                 {/* Edit Button */}
                 <button
-                   onClick={(e) => {
+                  onClick={(e) => {
                     e.stopPropagation();
                     handleEditActionNode(nodeId);
                   }}
@@ -617,7 +614,17 @@ function setEditingActionNodeId(nodeId: string) {
   throw new Error("Function not implemented.");
 }
 
-function openSheet(arg0: string, arg1: { id: string; type: string; data: { nodeName: string; actions: import("@/lib/store/actionStore").Action[]; positions: import("../StrategyNavbar/NodeSheet/ActionNodeSheet/types").Position[]; }; }) {
+function openSheet(
+  arg0: string,
+  arg1: {
+    id: string;
+    type: string;
+    data: {
+      nodeName: string;
+      actions: import("@/lib/store/actionStore").Action[];
+      positions: import("../StrategyNavbar/NodeSheet/ActionNodeSheet/types").Position[];
+    };
+  }
+) {
   throw new Error("Function not implemented.");
 }
-
