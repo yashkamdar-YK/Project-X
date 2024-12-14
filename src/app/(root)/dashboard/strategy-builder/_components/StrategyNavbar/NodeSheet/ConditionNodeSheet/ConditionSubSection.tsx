@@ -3,21 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from 'lucide-react';
-import { SubSection, DataPoint } from "./types";
+import { SubSection } from "./types";
+import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
-  blockId: number;
+  nodeId: string;
   dataPoints: DataPoint[];
-  updateSubSection: (blockId: number, subSectionId: number, field: keyof SubSection, value: string) => void;
-  toggleAddBadge: (blockId: number, subSectionId: number) => void;
-  removeSubSection: (blockId: number, subSectionId: number) => void;
+  updateSubSection: (nodeId: string, subSectionId: number, field: keyof SubSection, value: string) => void;
+  toggleAddBadge: (nodeId: string, subSectionId: number) => void;
+  removeSubSection: (nodeId: string, subSectionId: number) => void;
   isLastSubSection: boolean;
 }
 
 export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   subSection,
-  blockId,
+  nodeId,
   dataPoints,
   updateSubSection,
   toggleAddBadge,
@@ -37,7 +38,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
         <div className="flex-1 flex items-center -space-x-0.5">
           <Select
             value={subSection.lhs}
-            onValueChange={(value) => updateSubSection(blockId, subSection.id, "lhs", value)}
+            onValueChange={(value) => updateSubSection(nodeId, subSection.id, "lhs", value)}
           >
             <SelectTrigger className="w-fit">
               <SelectValue placeholder="Select variable" />
@@ -48,12 +49,13 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               ))}
             </SelectContent>
           </Select>
+
           {columns.length > 0 && (
             <Select
               value={subSection.column}
-              onValueChange={(value) => updateSubSection(blockId, subSection.id, "column", value)}
+              onValueChange={(value) => updateSubSection(nodeId, subSection.id, "column", value)}
             >
-              <SelectTrigger className='w-fit' >
+              <SelectTrigger className='w-fit'>
                 <SelectValue placeholder="Select column" />
               </SelectTrigger>
               <SelectContent>
@@ -63,10 +65,11 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               </SelectContent>
             </Select>
           )}
+
           {hasCandleLocation && (
             <Select
               value={subSection.selectedPeriod}
-              onValueChange={(value) => updateSubSection(blockId, subSection.id, "selectedPeriod", value)}
+              onValueChange={(value) => updateSubSection(nodeId, subSection.id, "selectedPeriod", value)}
             >
               <SelectTrigger className="w-fit">
                 <SelectValue placeholder="Select period" />
@@ -78,11 +81,12 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               </SelectContent>
             </Select>
           )}
+
           {subSection.selectedPeriod === "prev-n" && (
             <Input
               type="number"
               value={subSection.nValue}
-              onChange={(e) => updateSubSection(blockId, subSection.id, "nValue", e.target.value)}
+              onChange={(e) => updateSubSection(nodeId, subSection.id, "nValue", e.target.value)}
               placeholder="n (1-20)"
               className="w-20"
               min="1"
@@ -93,7 +97,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
 
         <Select
           value={subSection.operator}
-          onValueChange={(value) => updateSubSection(blockId, subSection.id, "operator", value)}
+          onValueChange={(value) => updateSubSection(nodeId, subSection.id, "operator", value)}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Select operator" />
@@ -108,7 +112,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
         <div className="flex-1 flex items-center space-x-2">
           <Select
             value={subSection.rhs}
-            onValueChange={(value) => updateSubSection(blockId, subSection.id, "rhs", value)}
+            onValueChange={(value) => updateSubSection(nodeId, subSection.id, "rhs", value)}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select variable" />
@@ -119,11 +123,12 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               ))}
             </SelectContent>
           </Select>
+
           {subSection.rhs === "values" && (
             <Input
               type="text"
               value={subSection._rhsValue}
-              onChange={(e) => updateSubSection(blockId, subSection.id, "_rhsValue", e.target.value)}
+              onChange={(e) => updateSubSection(nodeId, subSection.id, "_rhsValue", e.target.value)}
               placeholder="Enter value"
               className="w-[150px]"
             />
@@ -134,7 +139,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => toggleAddBadge(blockId, subSection.id)}
+            onClick={() => toggleAddBadge(nodeId, subSection.id)}
             className="bg-gray-700 hover:bg-gray-600"
           >
             {subSection.addBadge}
@@ -143,7 +148,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => removeSubSection(blockId, subSection.id)}
+              onClick={() => removeSubSection(nodeId, subSection.id)}
               className="text-red-500 hover:text-red-600 hover:bg-red-900"
             >
               <Trash2 className="w-4 h-4" />
@@ -154,4 +159,3 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     </div>
   );
 };
-

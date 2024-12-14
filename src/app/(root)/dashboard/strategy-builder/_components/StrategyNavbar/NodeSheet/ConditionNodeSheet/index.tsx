@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
@@ -12,20 +12,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 interface ConditionNodeSheetProps {
   node: Node & {
     type: typeof NodeTypes.CONDITION;
-    data: {
-      label: string;
-      settings?: {
-        indicator?: string;
-        period?: number;
-        threshold?: number;
-        comparison?: string;
-      };
-    };
   };
 }
 
@@ -34,7 +24,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const { dataPoints } = useDataPointsStore();
   const {
     conditionBlocks,
-    addConditionBlock,
+    createConditionBlock,
     addSubSection,
     updateSubSection,
     removeSubSection,
@@ -46,6 +36,17 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const [maxEntries, setMaxEntries] = React.useState("1");
   const [waitTrigger, setWaitTrigger] = React.useState(false);
   const [positionOpen, setPositionOpen] = React.useState(false);
+
+  useEffect(() => {
+    if (!conditionBlocks[node.id]) {
+      createConditionBlock(node.id);
+    }
+  }, [node.id, conditionBlocks, createConditionBlock]);
+
+  const currentBlock = conditionBlocks[node.id];
+  
+  if (!currentBlock) return null;
+
 
   return (
     <div className="bg-gray-900 p-6 rounded-lg">
@@ -114,26 +115,20 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
           </div>
           </CardContent>
       </Card>
-
+      
       <Card className="bg-gray-900 border-gray-800">
         <CardContent className="space-y-8 p-6">
-          {conditionBlocks.map((block, blockIndex) => (
-            <ConditionBlock
-              key={block.id}
-              block={block}
-              blockIndex={blockIndex}
-              totalBlocks={conditionBlocks.length}
-              // @ts-ignore
-              dataPoints={dataPoints}
-              addSubSection={addSubSection}
-              updateSubSection={updateSubSection}
-              removeSubSection={removeSubSection}
-              toggleAddBadge={toggleAddBadge}
-              toggleBlockRelation={toggleBlockRelation}
-              getBlockRelation={getBlockRelation}
-              addConditionBlock={addConditionBlock}
-            />
-          ))}
+          <ConditionBlock
+            block={currentBlock}
+            nodeId={node.id}
+            dataPoints={dataPoints}
+            addSubSection={addSubSection}
+            updateSubSection={updateSubSection}
+            removeSubSection={removeSubSection}
+            toggleAddBadge={toggleAddBadge}
+            toggleBlockRelation={toggleBlockRelation}
+            getBlockRelation={getBlockRelation}
+          />
         </CardContent>
       </Card>
     </div>

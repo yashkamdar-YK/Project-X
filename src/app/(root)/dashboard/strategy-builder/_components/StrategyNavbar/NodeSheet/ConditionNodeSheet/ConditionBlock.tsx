@@ -3,26 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { ConditionSubSection } from './ConditionSubSection';
 import { BlockRelationButton } from './BlockRelationButton';
-import { DataPoint,ConditionBlock as TConditionBlock, SubSection } from './types';
+import { ConditionBlock as TConditionBlock, SubSection } from './types';
+import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
 
 interface ConditionBlockProps {
   block: TConditionBlock;
-  blockIndex: number;
-  totalBlocks: number;
+  nodeId: string;
   dataPoints: DataPoint[];
-  addSubSection: (blockId: number) => void;
-  updateSubSection: (blockId: number, subSectionId: number, field: keyof SubSection, value: string) => void;
-  removeSubSection: (blockId: number, subSectionId: number) => void;
-  toggleAddBadge: (blockId: number, subSectionId: number) => void;
-  toggleBlockRelation: (blockId: number) => void;
-  getBlockRelation: (blockId: number) => "AND" | "OR" | undefined;
-  addConditionBlock: () => void;
+  addSubSection: (nodeId: string) => void;
+  updateSubSection: (nodeId: string, subSectionId: number, field: keyof SubSection, value: string) => void;
+  removeSubSection: (nodeId: string, subSectionId: number) => void;
+  toggleAddBadge: (nodeId: string, subSectionId: number) => void;
+  toggleBlockRelation: (nodeId: string) => void;
+  getBlockRelation: (nodeId: string) => "AND" | "OR";
 }
 
 export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   block,
-  blockIndex,
-  totalBlocks,
+  nodeId,
   dataPoints,
   addSubSection,
   updateSubSection,
@@ -30,16 +28,15 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   toggleAddBadge,
   toggleBlockRelation,
   getBlockRelation,
-  addConditionBlock
 }) => {
   return (
     <div className="relative">
-      <div className="border border-gray-800 rounded-lg p-6 -mb-6 bg-gray-900">
+      <div className="border border-gray-800 rounded-lg p-6 bg-gray-900">
         {block.subSections.map((subSection, index) => (
           <ConditionSubSection
             key={subSection.id}
             subSection={subSection}
-            blockId={block.id}
+            nodeId={nodeId}
             dataPoints={dataPoints}
             updateSubSection={updateSubSection}
             toggleAddBadge={toggleAddBadge}
@@ -51,7 +48,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
         <div className="flex justify-end mt-4">
           <Button
             size="sm"
-            onClick={() => addSubSection(block.id)}
+            onClick={() => addSubSection(nodeId)}
             className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -60,24 +57,10 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
         </div>
       </div>
       
-      {blockIndex < totalBlocks - 1 && (
-        <BlockRelationButton
-          relation={getBlockRelation(block.id) || "AND"}
-          onClick={() => toggleBlockRelation(block.id)}
-        />
-      )}
-      
-      {blockIndex === totalBlocks - 1 && (
-        <Button
-          size="sm"
-          onClick={addConditionBlock}
-          className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Add Block
-        </Button>
-      )}
+      <BlockRelationButton
+        relation={getBlockRelation(nodeId)}
+        onClick={() => toggleBlockRelation(nodeId)}
+      />
     </div>
   );
 };
-
