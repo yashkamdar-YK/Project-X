@@ -55,3 +55,5 @@ const VALID_DAYS = [
   "Friday",
   "Saturday",
 ];
+
+export const DEFAULT_OPTIONS = ["day_mtm", "mtm_from_first_open_pos", "open_mtm", "candle_time","candle_close_time","day_of_week", "time_Values"]

@@ -1,4 +1,3 @@
-import { LucideIcon } from "lucide-react";
 
 // API Types
 export interface ApiResponse<T> {
