@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2 } from 'lucide-react';
 import { SubSection } from "./types";
 import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
-import { ALLOWED_OPERATIONS } from './_const';
+import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS } from './_const';
+import { useIndicatorStore } from '@/lib/store/IndicatorStore';
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -35,7 +36,10 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   addSubSection,
   isLastSubSection,
 }) => {
-  const lhsOptions = dataPoints.map((dataPoint) => dataPoint.elementName);
+  const {indicators} = useIndicatorStore();
+  const lhsOptions = [...dataPoints.map((dataPoint) => dataPoint.elementName),
+    ...indicators.map((indicator) => indicator.elementName),
+    ...DEFAULT_OPTIONS];
   const selectedDatapoint = dataPoints.find((dataPoint) => dataPoint.elementName === subSection.lhs);
   const columns = selectedDatapoint?.options?.columnsAvailable || [];
   const hasCandleLocation = selectedDatapoint?.options?.candleLocation || false;
@@ -43,7 +47,16 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   //@ts-ignore
   const allowedOperations = ALLOWED_OPERATIONS[selectedDatapoint?.options?.type] || [];
   
-  const canCompareWith = selectedDatapoint?.options?.canComparedwith || [];
+  const _canCompareWith = selectedDatapoint?.options?.canComparedwith?.map(v => v.toLocaleLowerCase()) || [];
+
+  const canCompareWith = [
+    //@ts-ignore
+    ...dataPoints?.filter(v => _canCompareWith.includes(v.options?.type.toLocaleLowerCase())).map(v => v.elementName),
+    //@ts-ignore
+    ...indicators?.filter(v => _canCompareWith.includes(v.options?.type.toLocaleLowerCase())).map(v => v.elementName),
+    ...(_canCompareWith.includes("values") ? ["value"] : []),
+    ...DEFAULT_OPTIONS
+  ];
 
   return (
     <div className="mb-6 last:mb-0 pb-6 border-b border-gray-700 last:border-b-0">
@@ -135,7 +148,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               value={subSection.rhs}
               onValueChange={(value) => updateSubSection(nodeId, subSection.id, "rhs", value)}
             >
-              <SelectTrigger className={`w-fit ${subSection.rhs === "values" ? 'rounded-r-none border-r-0' : ''}`}>
+              <SelectTrigger className={`w-fit ${subSection.rhs === "value" ? 'rounded-r-none border-r-0' : ''}`}>
                 <SelectValue placeholder="Select variable" />
               </SelectTrigger>
               <SelectContent>
@@ -145,7 +158,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               </SelectContent>
             </Select>
 
-            {subSection.rhs === "values" && (
+            {subSection.rhs === "value" && (
               <Input
                 type="text"
                 value={subSection._rhsValue}
