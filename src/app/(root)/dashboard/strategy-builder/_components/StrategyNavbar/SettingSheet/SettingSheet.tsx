@@ -7,21 +7,31 @@ import OrderOperation from "./OrderOperation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import {useSettingStore} from "@/lib/store/settingStore"
 
 const SettingSheet = () => {
   const { closeSheet, type } = useSheetStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
+
+  const { strategyType, setStrategyType } = useSettingStore();
   
   // Get the current symbol's info
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
-  
-  const [strategyType, setStrategyType] = useState<"Intraday" | "Positional">("Intraday");
   const [productType, setProductType] = useState<"Intraday" | "Delivery">(
     (currentSymbolInfo?.executionSettings?.productType[0] as "Intraday" | "Delivery") || "Intraday"
   );
   const [orderType, setOrderType] = useState<"Limit" | "Market">(
     (currentSymbolInfo?.executionSettings?.orderType[0] as "Limit" | "Market") || "Limit"
   );
+  
+
+  const [squareOffTime, setSquareOffTime] = useState<string>('');
+
+  // Handle the change in square-off time
+  const handleSquareOffTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSquareOffTime(e.target.value);
+  };
+
 
   // Available options from API or defaults
   const availableProductTypes = currentSymbolInfo?.executionSettings?.productType || ["Intraday", "Delivery"];
@@ -72,7 +82,7 @@ const SettingSheet = () => {
                 Strategy Type
               </span>
               <Button
-                onClick={() => setStrategyType(prev => prev === "Intraday" ? "Positional" : "Intraday")}
+                onClick={() => setStrategyType(strategyType === "Intraday" ? "Positional" : "Intraday")}
                 className={buttonClass}
                 disabled={!selectedSymbol}
               >
@@ -164,6 +174,23 @@ const SettingSheet = () => {
               )}
             </div>
           </div>
+
+                {/* Show square-off time input if Intraday is selected */}
+      {strategyType === "Intraday" && (
+        <div className="space-y-4 px-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+             Time
+            </span>
+            <input
+            type="time"    
+              className="h-9 px-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg transition-all duration-200"
+            >
+            
+            </input>
+          </div>
+        </div>
+      )}
         </div>
       </div>
     </div>
