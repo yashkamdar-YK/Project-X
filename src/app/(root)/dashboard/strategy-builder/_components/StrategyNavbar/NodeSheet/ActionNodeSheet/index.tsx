@@ -17,6 +17,7 @@ import { Position, PositionSettings } from './types';
 import { useActionStore } from "@/lib/store/actionStore";
 import { transformToActionPayload } from "./transformToActionPayload ";
 import { validateName } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ActionNodeSheetProps {
   node: Node;
@@ -99,6 +100,10 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
             <X className="w-5 h-5" />
           </Button>
         </div>
+
+        <Badge>
+          ID : {node.id}
+        </Badge>
         
         {/* Action Name Input */}
         <div className="space-y-2">

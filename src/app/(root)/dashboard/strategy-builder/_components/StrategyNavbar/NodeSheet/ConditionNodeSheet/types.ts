@@ -13,13 +13,15 @@ export interface SubSection {
   _rhsValue?: string;
 }
 
-
 export interface ConditionBlockMap {
   [nodeId: string]: ConditionNode;
 }
 
-interface ConditionNode {
+export interface ConditionNode {
   name:string
+  maxEntries: number;
+  waitTrigger: boolean;
+  positionOpen: boolean;
   blocks: {
     id: string;
     subSections: SubSection[];
@@ -27,17 +29,3 @@ interface ConditionNode {
   }[];
   blockRelations: BlockRelation[];
 }
-
-// export interface DataPointOption {
-//   applyIndicators: boolean;
-//   candleLocation: boolean;
-//   type: "candleData" | "dte";
-//   columnsAvailable: string[];
-//   allowedOperations: string[];
-// }
-
-// export interface DataPoint {
-//   id: string;
-//   elementName: string;
-//   options?: DataPointOption;
-// }
