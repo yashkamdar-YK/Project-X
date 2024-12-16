@@ -137,55 +137,74 @@ const handleStartNodeReconnection = (
   return edges;
 };
 
-export const handleOnConnection = (connection: Connection, nodes: Node[], edges: Edge[], setEdges: Function, saveState: Function) => {
+export const handleOnConnection = (
+  connection: Connection, 
+  nodes: Node[], 
+  edges: Edge[], 
+  setEdges: Function, 
+  saveState: Function
+) => {
   const sourceNode = nodes.find((node) => node.id === connection.source);
   const targetNode = nodes.find((node) => node.id === connection.target);
 
-  // For manual connection of Condition node to Start node only
-  if (
-    (sourceNode?.type === NodeTypes.START &&
-      targetNode?.type === NodeTypes.CONDITION) ||
-    (sourceNode?.type === NodeTypes.CONDITION &&
-      targetNode?.type === NodeTypes.START)
-  ) {
-    const updatedEdges = addEdge(
-      { ...connection, type: "smoothstep" },
-      edges
-    );
-    setEdges(updatedEdges);
-    saveState(nodes, updatedEdges);
-    return;
-  }
-
-  // For Condition to Condition connections
-  if (
-    sourceNode?.type === NodeTypes.CONDITION &&
-    targetNode?.type === NodeTypes.CONDITION &&
-    connection.sourceHandle?.endsWith("-bottom") &&
-    connection.targetHandle?.endsWith("-top")
-  ) {
-    const updatedEdges = addEdge(
-      { ...connection, type: "conditionEdge" },
-      edges
-    );
-    setEdges(updatedEdges);
-    saveState(nodes, updatedEdges);
-  }
   // For Condition to Action connections using right handle
-  else if (
+  if (
     sourceNode?.type === NodeTypes.CONDITION &&
     connection.sourceHandle?.endsWith("-right") &&
     targetNode?.type === NodeTypes.ACTION
   ) {
-    const updatedEdges = addEdge(
-      { ...connection, type: "actionEdge" },
-      edges
+    // Get all existing edges (not just action edges)
+    const nonActionEdges = edges.filter(
+      (edge) => 
+        edge.type !== "actionEdge" || 
+        edge.source !== sourceNode.id
     );
-    setEdges(updatedEdges);
-    saveState(nodes, updatedEdges);
+
+    const existingActionEdges = edges.filter(
+      (edge) => 
+        edge.type === "actionEdge" && 
+        edge.source === sourceNode.id
+    );
+
+    // Create new edge
+    const newEdge: Edge = {
+      id: `${sourceNode.id}-${targetNode.id}-${Date.now()}`,
+      source: connection.source!,
+      target: connection.target!,
+      sourceHandle: connection.sourceHandle,
+      targetHandle: connection.targetHandle,
+      type: "actionEdge",
+      data: { 
+        sourceCondition: sourceNode.id 
+      }
+    };
+
+    // Combine all action edges including the new one
+    const allActionEdges = [...existingActionEdges, newEdge];
+
+    // Sort action edges by target node Y position
+    const sortedActionEdges = allActionEdges.sort((a, b) => {
+      const nodeA = nodes.find(node => node.id === a.target);
+      const nodeB = nodes.find(node => node.id === b.target);
+      return (nodeA?.position.y || 0) - (nodeB?.position.y || 0);
+    }).map((edge, index) => ({
+      ...edge,
+      data: {
+        ...edge.data,
+        sequence: index + 1
+      }
+    }));
+
+    // Combine all edges back together
+    const finalEdges = [...nonActionEdges, ...sortedActionEdges];
+
+    setEdges(finalEdges);
+    saveState(nodes, finalEdges);
+    return true;
   }
-  // Reject other connections
+  // Handle other connection types here if needed
   else {
     console.warn("Invalid connection");
+    return false;
   }
-}
+};
