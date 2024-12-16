@@ -129,12 +129,14 @@ export function DataPointDialog({
           //@ts-ignore
           onSave={handleSave}
           onClose={handleClose}
+          isLoading={getCandleOptions.isPending}
         />
       ) : (
         <DaysToExpire
           initialData={editingDataPoint}
           //@ts-ignore
           onSave={handleSave}
+          isLoading={getDTEDataPointsOptions.isPending}
           onClose={handleClose}
         />
       );
@@ -173,12 +175,14 @@ export function DataPointDialog({
         //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
+        isLoading={getCandleOptions.isPending}
       />
     ) : (
       <DaysToExpire
         //@ts-ignore
         onSave={handleSave}
         onClose={handleClose}
+        isLoading={getDTEDataPointsOptions.isPending}
       />
     );
   };

@@ -10,6 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { toast } from "@/hooks/use-toast";
+import Spinner from "@/components/shared/spinner";
 
 // Constants
 const CANDLE_TYPES = ["candlestick", "heikenashi"] as const;
@@ -32,15 +33,17 @@ interface CandleDataFormProps {
   initialData?: DataPoint & TFormData;
   onSave: (data: Partial<DataPoint>) => void;
   onClose?: () => void;
+  isLoading: boolean;
 }
 
 export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   initialData,
   onSave,
-  onClose
+  onClose,
+  isLoading = false
 }) => {
-  const { symbolInfo, selectedSymbol , selectedTimeFrame} = useDataPointStore();
-  const {dataPoints} = useDataPointsStore();
+  const { symbolInfo, selectedSymbol, selectedTimeFrame } = useDataPointStore();
+  const { dataPoints } = useDataPointsStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
   // Unique name generation function
@@ -54,7 +57,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     if (formData.dataType === 'FUT' || formData.dataType === 'OPT') {
       parts.push(`${formData.expiryType}`);
     }
-    
+
     return parts.join('_').toLowerCase();
   };
 
@@ -65,8 +68,8 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     duration: initialData?.duration || "2",
     expiryType: initialData?.expiryType || "monthly",
     expiryOrder: initialData?.expiryOrder || "0",
-    elementName: initialData 
-      ? initialData.elementName 
+    elementName: initialData
+      ? initialData.elementName
       : "SPOT", // Generate unique name for new data point
     strikeSelection: initialData?.strikeSelection || {
       mode: "strike-at" as StrikeMode,
@@ -74,14 +77,14 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     }
   });
 
-   // Update form data method
-   const updateFormData = (field: string, value: any) => {
+  // Update form data method
+  const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
 
 
-   // Manually regenerate element name
+  // Manually regenerate element name
   const handleGenerateElementName = () => {
     const newName = generateUniqueElementName(formData);
     updateFormData("elementName", newName);
@@ -94,7 +97,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       const newName = generateUniqueElementName(formData);
       updateFormData("elementName", newName);
     }
-  }, [formData?.candleType , formData?.dataType, formData?.expiryType]);
+  }, [formData?.candleType, formData?.dataType, formData?.expiryType]);
 
   if (!selectedSymbol || !currentSymbolInfo) {
     return (
@@ -117,25 +120,25 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       }
       return dataPoint.elementName === formData.elementName;
     });
-    if(isDuplicate) return toast({
+    if (isDuplicate) return toast({
       title: "Duplicate Element Name",
       description: "Element name must be unique",
-      variant:"destructive"
+      variant: "destructive"
     });
     const formDataToSubmit = {
       elementName: formData.elementName,
       dataType: formData.dataType,
       candleType: formData.candleType,
       duration: formData.duration,
-      expiryType: 
+      expiryType:
         formData.dataType === "SPOT" ? undefined : formData.expiryType,
-      expiryOrder: 
+      expiryOrder:
         formData.dataType === "SPOT" ? undefined : formData.expiryOrder,
-      strikeSelection: 
+      strikeSelection:
         formData.dataType === "OPT" ? formData.strikeSelection : undefined,
       type: "candle-data"
     };
-  
+
     //@ts-ignore
     onSave(formDataToSubmit);
   };
@@ -153,7 +156,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <div className="space-y-2">
           <label className="text-sm font-medium">Time Frame:</label>
           <div className="rounded-lg bg-accent px-4 py-2 text-center text-muted-foreground">
-          {selectedTimeFrame}
+            {selectedTimeFrame}
           </div>
         </div>
       </div>
@@ -177,8 +180,8 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Candle Type:</label>
-          <Select 
-            value={formData.candleType} 
+          <Select
+            value={formData.candleType}
             onValueChange={(value) => updateFormData("candleType", value)}
           >
             <SelectTrigger className="text-base h-11">
@@ -196,8 +199,8 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Duration:</label>
-          <Select 
-            value={formData.duration} 
+          <Select
+            value={formData.duration}
             onValueChange={(value) => updateFormData("duration", value)}
           >
             <SelectTrigger className="text-base h-11">
@@ -238,7 +241,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                 </SelectContent>
               </Select>
 
-              <Select 
+              <Select
                 value={formData.expiryOrder}
                 onValueChange={(value) => updateFormData("expiryOrder", value)}
               >
@@ -349,7 +352,10 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             Cancel
           </Button>
         )}
-        <Button onClick={handleSubmit}>
+        <Button
+          disabled={isLoading}
+          onClick={handleSubmit}>
+          {isLoading && <Spinner className="w-5 h-5 mr-2" />}
           {initialData ? 'Update' : 'Add'}
         </Button>
       </div>
