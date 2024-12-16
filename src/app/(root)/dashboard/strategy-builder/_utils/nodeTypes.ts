@@ -164,7 +164,12 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
   const newNodeId = `node-${Date.now()}`;
   const position = getNodePosition(nodes, item.type, edges);
   //@ts-ignore
-  const label:string = item?.data?.label ? item.data.label : item.type === 'ACTION'
+  const label:string = item.isCopy
+  ? `${item.type === "ACTION" ? "Action" : "Condition"}_${
+      Object.keys(useActionStore.getState().actionNodes).length + 1
+    } COPY` // Add "COPY" text for copied nodes
+     
+    : item?.data?.label ? item.data.label : item.type === 'ACTION'
     ? `Action_${Object.keys(useActionStore.getState().actionNodes).length + 1}`
     : `Condition_${Object.keys(useConditionStore.getState().conditionBlocks).length + 1}`;
 

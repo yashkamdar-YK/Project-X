@@ -8,12 +8,14 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  Copy,
 } from "lucide-react";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
 import { useCanvasContext } from "../StrategyCanvas";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
+import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 
 export const StartNode = () => {
   return (
@@ -225,9 +227,31 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     setEdges(edges.filter((edge) => edge.source !== id && edge.target !== id));
   };
 
+  const handleCopyActionNode = (event: React.MouseEvent, nodeId: string)=>{
+    event.stopPropagation();
+    //@ts-ignore
+    const { newEdges, newNode } = handleAddNode(nodes, edges, {
+      type: NodeTypes.ACTION,
+    //@ts-ignore
+      isCopy: true, // Add a flag to indicate copying
+    });
+    setNodes([...nodes, newNode]);
+    setEdges(newEdges);
+  }
+
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
+
+      {/* Copy button */}
+      <button
+          // @ts-ignore
+          onClick={handleCopyActionNode}
+          className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
+        >
+          <Copy className="w-3.5 h-3.5" />
+        </button>
+
         {/* Delete button */}
         <button
           onClick={handleDelete}
