@@ -14,6 +14,8 @@ import { useNodeStore } from "@/lib/store/nodeStore";
 import { STRATEGY_TEMPLATES } from "../../constants/menu";
 import { NodeTypes } from "../../_utils/nodeTypes";
 import { Edge } from "@xyflow/react";
+import { useActionStore } from "@/lib/store/actionStore";
+import { useConditionStore } from "@/lib/store/conditionStore"
 
 type TemplateKey = keyof typeof STRATEGY_TEMPLATES;
 
@@ -86,6 +88,9 @@ export const TemplateSelector = () => {
   };
 
   const handleConfirm = () => {
+    useActionStore.getState().clearActionNodes();
+    useConditionStore.getState().clearConditionNodes();
+    useNodeStore.getState().clearNodesStore();
     if (selectedTemplate) {
       const template = STRATEGY_TEMPLATES[selectedTemplate];
       setNodes(template.nodes);

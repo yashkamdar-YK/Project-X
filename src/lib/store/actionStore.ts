@@ -24,6 +24,7 @@ interface ActionState {
   addAction: (nodeId: string, action: Action) => void;
   removeAction: (nodeId: string, actionFunc: string) => void;
   removeActionNode: (nodeId: string) => void;
+  clearActionNodes: () => void;
   addPosition: (nodeId: string) => void;
   removePosition: (nodeId: string, positionId: string) => void;
   updatePositionSetting: (
@@ -209,4 +210,6 @@ export const useActionStore = create<ActionState>((set) => ({
         },
       };
     }),
+
+    clearActionNodes: () => set({ actionNodes: {} }),
 }));

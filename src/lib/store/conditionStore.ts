@@ -13,6 +13,7 @@ interface ConditionStore {
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
   addSubSection: (nodeId: string, blockId: string) => void;
+  clearConditionNodes: () => void
   updateSubSection: (
     nodeId: string,
     blockId: string,
@@ -276,4 +277,6 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         },
       };
     }),
+
+    clearConditionNodes: () => set({ conditionBlocks: {} }),
 }));
