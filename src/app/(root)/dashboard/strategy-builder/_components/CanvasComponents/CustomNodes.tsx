@@ -59,6 +59,21 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
     }
   };
 
+  const handleCopyActionNode = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    //@ts-ignore
+    const { newEdges, newNode } = handleAddNode(nodes, edges, {
+      type: NodeTypes.CONDITION,
+      //@ts-ignore
+      isCopy: true, // Add a flag to indicate copying,
+      //@ts-ignore
+      label: data?.label,
+      id
+    });
+    setNodes([...nodes, newNode]);
+    setEdges(newEdges);
+  }
+
   /**
    * Handles the swapping of condition nodes when clicking up/down arrows
    * @param direction - The direction to swap ('up' or 'down')
@@ -144,7 +159,14 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   return (
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
+        <button
+          onClick={handleCopyActionNode}
+          className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
+        >
+          <Copy className="w-3.5 h-3.5" />
+        </button>
         <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 ">
+
 
           <div className="opacity-0 group-hover:opacity-100">
             <button
@@ -219,7 +241,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
 
 export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
-  const {actionNodes} = useActionStore();
+  const { actionNodes } = useActionStore();
   const currentActionNode = actionNodes[id];
 
   const handleDelete = (event: React.MouseEvent) => {
@@ -231,14 +253,15 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     }
   };
 
-  const handleCopyActionNode = (event: React.MouseEvent, nodeId: string)=>{
+  const handleCopyActionNode = (event: React.MouseEvent) => {
     event.stopPropagation();
     //@ts-ignore
     const { newEdges, newNode } = handleAddNode(nodes, edges, {
+      id,
       type: NodeTypes.ACTION,
-    //@ts-ignore
-    isCopy: true, // Add a flag to indicate copying,
-    //@ts-ignore
+      //@ts-ignore
+      isCopy: true, // Add a flag to indicate copying,
+      //@ts-ignore
       label: data?.label
     });
     setNodes([...nodes, newNode]);
@@ -249,9 +272,8 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     <div className="group cursor-pointer">
       <div className="relative bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
 
-      {/* Copy button */}
-      <button
-          // @ts-ignore
+        {/* Copy button */}
+        <button
           onClick={handleCopyActionNode}
           className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
         >

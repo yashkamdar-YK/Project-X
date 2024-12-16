@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { validateName } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ConditionNodeSheetProps {
   node: Node & {
@@ -31,16 +32,11 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     toggleAddBadge,
     addBlock,
     removeBlock,
-    updateName,
+    updateBlockSettings,
     updateBlockRelation,
   } = useConditionStore();
 
-  const [maxEntries, setMaxEntries] = React.useState("1");
-  const [waitTrigger, setWaitTrigger] = React.useState(false);
-  const [positionOpen, setPositionOpen] = React.useState(false);
-
   const currentNode = conditionBlocks[node.id];
-  
   if (!currentNode) return null;
 
   return (
@@ -59,6 +55,8 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </Button>
       </div>
 
+      <Badge>ID : {node.id}</Badge>
+
       <Card className="dark:bg-gray-900 border-l mt-4 border-gray-200 dark:border-gray-800">
         <CardContent className="space-y-8 mt-6">
           <div className="flex items-center justify-between">
@@ -66,11 +64,11 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
             <Input
               id="condition-name"
               value={currentNode.name}
-              onChange={(e) => updateName(node.id, validateName(e.target.value))}
+              onChange={(e) => updateBlockSettings(node.id, "name", validateName(e.target.value))}
               className="w-60"
             />
           </div>
-        
+
           <Tabs defaultValue="entry" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="entry">Entry</TabsTrigger>
@@ -86,8 +84,8 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               </Label>
               <Input
                 id="max-entries"
-                value={maxEntries}
-                onChange={(e) => setMaxEntries(e.target.value)}
+                value={currentNode.maxEntries}
+                onChange={(e) => updateBlockSettings(node.id, "maxEntries", e.target.value)}
                 className="w-20 text-right"
               />
             </div>
@@ -98,9 +96,9 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               </Label>
               <Switch
                 id="wait-trigger"
-                checked={waitTrigger}
+                checked={currentNode.waitTrigger}
                 className="data-[state=checked]:bg-blue-500"
-                onCheckedChange={setWaitTrigger}
+                onCheckedChange={(checked) => updateBlockSettings(node.id, "waitTrigger", checked)}
               />
             </div>
 
@@ -111,69 +109,71 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
               <div className="h-12">
                 <Switch
                   id="position-open"
-                  checked={positionOpen}
+                  checked={currentNode.positionOpen}
                   className="data-[state=checked]:bg-blue-500"
-                  onCheckedChange={setPositionOpen}
+                  onCheckedChange={(checked) =>
+                    updateBlockSettings(node.id, "positionOpen", checked)
+                  }
                 />
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-      
-          <div className="space-y-8 mt-8 -mx-4">
-            {currentNode.blocks.map((block, index) => (
-              <React.Fragment key={block.id}>
-                <div className="relative">
-                  <ConditionBlock
-                    block={block}
-                    nodeId={node.id}
-                    blockId={block.id}
-                    dataPoints={dataPoints}
-                    addSubSection={(nodeId) => addSubSection(nodeId, block.id)}
-                    updateSubSection={(nodeId, subSectionId, field, value) => 
-                      updateSubSection(nodeId, block.id, subSectionId, field, value)}
-                    removeSubSection={(nodeId, subSectionId) => 
-                      removeSubSection(nodeId, block.id, subSectionId)}
-                    toggleAddBadge={(nodeId, subSectionId) => 
-                      toggleAddBadge(nodeId, block.id, subSectionId)}
-                  />
-                  {currentNode.blocks.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute -right-4 -top-4 text-red-500 hover:text-red-600 hover:bg-red-900/20"
-                      onClick={() => removeBlock(node.id, block.id)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-                
-                {index < currentNode.blocks.length - 1 && (
-                  <div className="flex justify-center">
-                    <Button
-                      variant="secondary"
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-8"
-                      onClick={() => updateBlockRelation(node.id, index)}
-                    >
-                      {currentNode.blockRelations[index] || "AND"}
-                    </Button>
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-          
-          <div className="flex justify-center mt-8">
-            <Button
-              onClick={() => addBlock(node.id)}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Block
-            </Button>
-          </div>
+
+      <div className="space-y-8 mt-8 -mx-4">
+        {currentNode.blocks.map((block, index) => (
+          <React.Fragment key={block.id}>
+            <div className="relative">
+              <ConditionBlock
+                block={block}
+                nodeId={node.id}
+                blockId={block.id}
+                dataPoints={dataPoints}
+                addSubSection={(nodeId) => addSubSection(nodeId, block.id)}
+                updateSubSection={(nodeId, subSectionId, field, value) =>
+                  updateSubSection(nodeId, block.id, subSectionId, field, value)}
+                removeSubSection={(nodeId, subSectionId) =>
+                  removeSubSection(nodeId, block.id, subSectionId)}
+                toggleAddBadge={(nodeId, subSectionId) =>
+                  toggleAddBadge(nodeId, block.id, subSectionId)}
+              />
+              {currentNode.blocks.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute -right-4 -top-4 text-red-500 hover:text-red-600 hover:bg-red-900/20"
+                  onClick={() => removeBlock(node.id, block.id)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+
+            {index < currentNode.blocks.length - 1 && (
+              <div className="flex justify-center">
+                <Button
+                  variant="secondary"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-8"
+                  onClick={() => updateBlockRelation(node.id, index)}
+                >
+                  {currentNode.blockRelations[index] || "AND"}
+                </Button>
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="flex justify-center mt-8">
+        <Button
+          onClick={() => addBlock(node.id)}
+          className="bg-blue-500 hover:bg-blue-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Block
+        </Button>
+      </div>
     </div>
   );
 };

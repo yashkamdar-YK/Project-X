@@ -2,13 +2,15 @@ import {
   ConditionBlockMap,
   SubSection,
   BlockRelation,
+  ConditionNode,
 } from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
 import { create } from "zustand";
 
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
   createConditionBlock: (nodeId: string, name: string) => void;
-  updateName: (nodeId: string, name: string) => void;
+  copyConditionBlock: (nodeId: string, newNodeId:string, label:string) => void;
+  updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) => void;
   removeConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
@@ -42,6 +44,9 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         ...state.conditionBlocks,
         [nodeId]: {
           name,
+          maxEntries: 10,
+          waitTrigger: false,
+          positionOpen: false,
           blocks: [
             {
               id: `block-${Date.now()}`,
@@ -61,7 +66,26 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         },
       },
     })),
-  updateName: (nodeId: string, name: string) =>
+  copyConditionBlock: (nodeId, newNodeId, label) =>
+    set((state) => {
+      const currentNode = state.conditionBlocks[nodeId];
+      if (!currentNode) return state;
+
+      return {
+        conditionBlocks: {
+          ...state.conditionBlocks,
+          [newNodeId]: {
+            name: label,
+            maxEntries: currentNode.maxEntries,
+            waitTrigger: currentNode.waitTrigger,
+            positionOpen: currentNode.positionOpen,
+            blocks: currentNode.blocks,
+            blockRelations: currentNode.blockRelations,
+          },
+        },
+      };
+    }),
+  updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) =>
     set((state) => {
       const currentNode = state.conditionBlocks[nodeId];
       if (!currentNode) return state;
@@ -71,7 +95,7 @@ export const useConditionStore = create<ConditionStore>((set) => ({
           ...state.conditionBlocks,
           [nodeId]: {
             ...currentNode,
-            name,
+            [field]: value,
           },
         },
       };
@@ -155,18 +179,18 @@ export const useConditionStore = create<ConditionStore>((set) => ({
             blocks: currentNode.blocks.map((block) =>
               block.id === blockId
                 ? {
-                    ...block,
-                    subSections: [
-                      ...block.subSections,
-                      {
-                        id: block.subSections.length,
-                        addBadge: "AND",
-                        lhs: "",
-                        operator: "",
-                        rhs: "",
-                      },
-                    ],
-                  }
+                  ...block,
+                  subSections: [
+                    ...block.subSections,
+                    {
+                      id: block.subSections.length,
+                      addBadge: "AND",
+                      lhs: "",
+                      operator: "",
+                      rhs: "",
+                    },
+                  ],
+                }
                 : block
             ),
           },
@@ -187,13 +211,13 @@ export const useConditionStore = create<ConditionStore>((set) => ({
             blocks: currentNode.blocks.map((block) =>
               block.id === blockId
                 ? {
-                    ...block,
-                    subSections: block.subSections.map((subSection) =>
-                      subSection.id === subSectionId
-                        ? { ...subSection, [field]: value }
-                        : subSection
-                    ),
-                  }
+                  ...block,
+                  subSections: block.subSections.map((subSection) =>
+                    subSection.id === subSectionId
+                      ? { ...subSection, [field]: value }
+                      : subSection
+                  ),
+                }
                 : block
             ),
           },
@@ -214,11 +238,11 @@ export const useConditionStore = create<ConditionStore>((set) => ({
             blocks: currentNode.blocks.map((block) =>
               block.id === blockId
                 ? {
-                    ...block,
-                    subSections: block.subSections.filter(
-                      (subSection) => subSection.id !== subSectionId
-                    ),
-                  }
+                  ...block,
+                  subSections: block.subSections.filter(
+                    (subSection) => subSection.id !== subSectionId
+                  ),
+                }
                 : block
             ),
           },
@@ -239,17 +263,17 @@ export const useConditionStore = create<ConditionStore>((set) => ({
             blocks: currentNode.blocks.map((block) =>
               block.id === blockId
                 ? {
-                    ...block,
-                    subSections: block.subSections.map((subSection) =>
-                      subSection.id === subSectionId
-                        ? {
-                            ...subSection,
-                            addBadge:
-                              subSection.addBadge === "AND" ? "OR" : "AND",
-                          }
-                        : subSection
-                    ),
-                  }
+                  ...block,
+                  subSections: block.subSections.map((subSection) =>
+                    subSection.id === subSectionId
+                      ? {
+                        ...subSection,
+                        addBadge:
+                          subSection.addBadge === "AND" ? "OR" : "AND",
+                      }
+                      : subSection
+                  ),
+                }
                 : block
             ),
           },

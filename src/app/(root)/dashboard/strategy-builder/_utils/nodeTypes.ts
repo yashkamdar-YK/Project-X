@@ -197,10 +197,20 @@ const handleAddNode = (nodes: Node[], edges: Edge[], item: Node) => {
 
   //create in there store
   if (item.type === NodeTypes.ACTION) {
-    useActionStore.getState().createActionNode(newNodeId,label);
+    //@ts-ignore
+    if(item?.isCopy){
+      useActionStore.getState().copyActionNode(item.id, newNodeId, label);
+    }else{
+      useActionStore.getState().createActionNode(newNodeId,label);
+    }
   }
   if(item.type === NodeTypes.CONDITION){
-    useConditionStore.getState().createConditionBlock(newNodeId, label);
+    //@ts-ignore
+    if(item?.isCopy){
+      useConditionStore.getState().copyConditionBlock(item.id, newNodeId, label);
+    }else {
+      useConditionStore.getState().createConditionBlock(newNodeId, label);
+    }
   }
 
   return { newNode, newEdges };
