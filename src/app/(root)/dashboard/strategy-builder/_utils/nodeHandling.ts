@@ -1,5 +1,7 @@
 import { addEdge, Connection, Edge, Node } from "@xyflow/react";
 import { NodeTypes } from "./nodeTypes";
+import { useConditionStore } from "@/lib/store/conditionStore";
+import { useActionStore } from "@/lib/store/actionStore";
 
 export const handleNodeDeletion = (
   nodesToDelete: Node[],
@@ -11,6 +13,14 @@ export const handleNodeDeletion = (
   let updatedEdges = [...allEdges];
 
   nodesToDelete.forEach((nodeToDelete) => {
+    //delete from there respective stores
+    if(nodeToDelete.type === NodeTypes.CONDITION){
+      useConditionStore.getState().removeConditionBlock(nodeToDelete.id);
+    }
+    if(nodeToDelete.type === NodeTypes.ACTION){
+      useActionStore.getState().removeActionNode(nodeToDelete.id);
+    }
+
     // Find all edges connected to this node
     const connectedEdges = allEdges.filter(
       (edge) => edge.source === nodeToDelete.id || edge.target === nodeToDelete.id

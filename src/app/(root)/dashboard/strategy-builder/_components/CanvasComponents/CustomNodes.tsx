@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import CustomHandle from "./CustomHandle";
-import { useCanvasContext } from "../StrategyCanvas";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
 import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
+import { handleNodeDeletion } from "../../_utils/nodeHandling";
 
 export const StartNode = () => {
   return (
@@ -34,7 +34,6 @@ export const StartNode = () => {
 };
 
 export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
-  const { deleteNode } = useCanvasContext() || {};
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   const { conditionBlocks } = useConditionStore();
   const conditionNodes = React.useMemo(() => {
@@ -53,8 +52,10 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    if (deleteNode) {
-      deleteNode(id);
+    event.preventDefault();
+    const nodeToDelete = nodes.find((node) => node.id === id);
+    if (nodeToDelete) {
+      handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
     }
   };
 
@@ -223,8 +224,11 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    setNodes(nodes.filter((node) => node.id !== id));
-    setEdges(edges.filter((edge) => edge.source !== id && edge.target !== id));
+    event.preventDefault();
+    const nodeToDelete = nodes.find((node) => node.id === id);
+    if (nodeToDelete) {
+      handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
+    }
   };
 
   const handleCopyActionNode = (event: React.MouseEvent, nodeId: string)=>{

@@ -26,13 +26,7 @@ import ConditionEdge from "./CanvasComponents/ConditionEdge";
 import ActionEdge from "./CanvasComponents/ActionEdge";
 
 import { debounce } from "lodash";
-import { createContext, useContext } from "react";
 import { handleNodeDeletion, handleOnConnection } from "../_utils/nodeHandling";
-
-// Create a context for deletion
-const CanvasContext = createContext<{
-  deleteNode: (id: string) => void;
-} | null>(null);
 
 // Define node types mapping
 const nodeTypes = {
@@ -184,7 +178,7 @@ const StrategyCanvas = () => {
       setSelectedNodeId(node.id); // Set the selected node ID
       openSheet("node", node);
     },
-    [openSheet]    
+    [openSheet]
   );
 
   // Handle drag over
@@ -245,7 +239,10 @@ const StrategyCanvas = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Check for Delete key
       if (event.key === "Delete" && selectedNodeId) {
-        deleteNode(selectedNodeId); // Call delete function for the selected node
+        const nodeToDelete = nodes.find((node) => node.id === selectedNodeId);
+        if (nodeToDelete) {
+          handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
+        }
         setSelectedNodeId(null); // Reset selected node
       }
     };
@@ -256,50 +253,40 @@ const StrategyCanvas = () => {
     };
   }, [selectedNodeId]);
 
-  const deleteNode = (id: string) => {
-    const nodeToDelete = nodes.find((node) => node.id === id);
-    if (nodeToDelete) {
-      handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
-    }
-  };
-
   return (
     <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
       <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
         <div className="absolute inset-0 dark:text-black">
-          {/* Wrap deleteNode in React Provider */}
-          <CanvasContext.Provider value={{ deleteNode }}>
-            <ReactFlowProvider>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                panOnScroll={true}
-                selectionOnDrag={true}
-                minZoom={0.5}
-                maxZoom={2}
-                onNodesDelete={(nodesToDelete) =>
-                  handleNodeDeletion(
-                    nodesToDelete,
-                    nodes,
-                    edges,
-                    setNodes,
-                    setEdges
-                  )
-                }
-              >
-                <CustomControls onUndo={undo} onRedo={redo} />
-                <Background gap={12} size={1} />
-              </ReactFlow>
-            </ReactFlowProvider>
-          </CanvasContext.Provider>
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              panOnScroll={true}
+              selectionOnDrag={true}
+              minZoom={0.5}
+              maxZoom={2}
+              onNodesDelete={(nodesToDelete) =>
+                handleNodeDeletion(
+                  nodesToDelete,
+                  nodes,
+                  edges,
+                  setNodes,
+                  setEdges
+                )
+              }
+            >
+              <CustomControls onUndo={undo} onRedo={redo} />
+              <Background gap={12} size={1} />
+            </ReactFlow>
+          </ReactFlowProvider>
         </div>
       </div>
     </div>
@@ -307,6 +294,3 @@ const StrategyCanvas = () => {
 };
 
 export default StrategyCanvas;
-
-//Export handleNodeDeletion to use in CustomeNode.tsx
-export const useCanvasContext = () => useContext(CanvasContext);
