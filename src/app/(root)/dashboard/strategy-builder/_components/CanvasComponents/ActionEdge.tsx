@@ -19,6 +19,8 @@ const ActionEdge = ({
   style = {}
 }: ActionEdgeProps) => {
   const { edges, setEdges } = useNodeStore();
+
+  console.log("edges ",edges)
   
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,

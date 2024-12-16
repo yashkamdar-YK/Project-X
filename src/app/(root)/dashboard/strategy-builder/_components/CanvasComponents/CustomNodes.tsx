@@ -233,7 +233,9 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
     const { newEdges, newNode } = handleAddNode(nodes, edges, {
       type: NodeTypes.ACTION,
     //@ts-ignore
-      isCopy: true, // Add a flag to indicate copying
+    isCopy: true, // Add a flag to indicate copying,
+    //@ts-ignore
+      label: data?.label
     });
     setNodes([...nodes, newNode]);
     setEdges(newEdges);
