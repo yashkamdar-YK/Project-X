@@ -7,14 +7,14 @@ import OrderOperation from "./OrderOperation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
-import {useSettingStore} from "@/lib/store/settingStore"
+import { useSettingStore } from "@/lib/store/settingStore"
 
 const SettingSheet = () => {
   const { closeSheet, type } = useSheetStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
 
   const { strategyType, setStrategyType } = useSettingStore();
-  
+
   // Get the current symbol's info
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
   const [productType, setProductType] = useState<"Intraday" | "Delivery">(
@@ -23,14 +23,9 @@ const SettingSheet = () => {
   const [orderType, setOrderType] = useState<"Limit" | "Market">(
     (currentSymbolInfo?.executionSettings?.orderType[0] as "Limit" | "Market") || "Limit"
   );
-  
+
 
   const [squareOffTime, setSquareOffTime] = useState<string>('');
-
-  // Handle the change in square-off time
-  const handleSquareOffTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSquareOffTime(e.target.value);
-  };
 
 
   // Available options from API or defaults
@@ -44,7 +39,7 @@ const SettingSheet = () => {
   const labelClass = "text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2";
 
   return (
-    <div className="h-full md:w-[480px] w-full">
+    <div className="h-full md:w-[550px] w-full">
       <div className="h-full border-l border-gray-200 dark:border-gray-800 overflow-y-auto bg-gray-50 dark:bg-gray-900">
         <div className="p-6 space-y-6">
           {/* Header */}
@@ -100,10 +95,10 @@ const SettingSheet = () => {
               </span>
               <div className="flex justify-end mt-2">
                 <DaySelector
-                  // onStateChange={setTradeState}
-                  // showDaysInDaily={true}
-                  // disabled={!selectedSymbol}
-                  // isWeekly={currentSymbolInfo?.isWeekly}
+                // onStateChange={setTradeState}
+                // showDaysInDaily={true}
+                // disabled={!selectedSymbol}
+                // isWeekly={currentSymbolInfo?.isWeekly}
                 />
               </div>
             </div>
@@ -155,6 +150,24 @@ const SettingSheet = () => {
                 </Button>
               </div>
 
+
+              {/* Show square-off time input if Intraday is selected */}
+              {strategyType === "Intraday" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Square-Off Time
+                    </span>
+                    <input
+                      type="time"
+                      value={squareOffTime}
+                      onChange={(e) => setSquareOffTime(e.target.value)}
+                      className="h-9 px-4 bg-white border border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg transition-all duration-200"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Operations */}
               {orderType === "Limit" && (
                 <div className="space-y-4 pt-2">
@@ -174,23 +187,6 @@ const SettingSheet = () => {
               )}
             </div>
           </div>
-
-                {/* Show square-off time input if Intraday is selected */}
-      {strategyType === "Intraday" && (
-        <div className="space-y-4 px-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-             Time
-            </span>
-            <input
-            type="time"    
-              className="h-9 px-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg transition-all duration-200"
-            >
-            
-            </input>
-          </div>
-        </div>
-      )}
         </div>
       </div>
     </div>

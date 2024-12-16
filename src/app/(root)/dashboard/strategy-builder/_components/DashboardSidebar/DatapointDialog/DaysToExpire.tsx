@@ -7,17 +7,20 @@ import { useDataPointStore } from "@/lib/store/dataPointStore";
 import { WandSparkles } from "lucide-react";
 import { DataPoint } from './types';
 import { AlertCircle } from 'lucide-react';
+import Spinner from '@/components/shared/spinner';
 
 interface DaysToExpireProps {
   initialData?: DataPoint;
   onSave: (data: Partial<DataPoint>) => void;
   onClose?: () => void;
+  isLoading: boolean;
 }
 
 const DaysToExpire = ({
   initialData,
   onSave,
-  onClose
+  onClose,
+  isLoading = false
 }: DaysToExpireProps) => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
@@ -174,6 +177,7 @@ const DaysToExpire = ({
           </Button>
         )}
         <Button onClick={handleSubmit}>
+          {isLoading && <Spinner className="w-5 h-5 mr-2" />}
           {initialData ? 'Update' : 'Add'}
         </Button>
       </div>
