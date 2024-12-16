@@ -25,6 +25,7 @@ import { ActionItem } from "./_chunks/ActionItem";
 import { ConditionItem } from "./_chunks/ConditionItem";
 import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 import { SIDEBAR_SECTIONS } from "../../constants/menu";
+import { handleNodeDeletion } from "../../_utils/nodeHandling";
 
 const DashboardSidebar: React.FC = () => {
   const { nodes, setNodes, edges, setEdges } = useNodeStore();
@@ -152,15 +153,17 @@ const DashboardSidebar: React.FC = () => {
   };
  
   const handleRemoveActionNode = (nodeId: string) => {
-    removeActionNode(nodeId);
-    setNodes(nodes.filter(node => node.id !== nodeId));
-    setEdges(edges.filter(edge => edge.source !== nodeId && edge.target !== nodeId));
+    const nodeToDelete = nodes.find((node) => node.id === nodeId);
+    if (nodeToDelete) {
+      handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
+    }
   };
 
   const handleRemoveConditionNode = (nodeId: string) => {
-    removeConditionBlock(nodeId);
-    setNodes(nodes.filter(node => node.id !== nodeId));
-    setEdges(edges.filter(edge => edge.source !== nodeId && edge.target !== nodeId));
+    const nodeToDelete = nodes.find((node) => node.id === nodeId);
+    if (nodeToDelete) {
+      handleNodeDeletion([nodeToDelete], nodes, edges, setNodes, setEdges);
+    }
   };
 
   const validateDataPoint = (dataPoint: DataPoint): { isValid: boolean; error: string } => {
