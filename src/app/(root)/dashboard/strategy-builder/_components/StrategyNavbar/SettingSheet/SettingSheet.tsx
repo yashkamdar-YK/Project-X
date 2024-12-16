@@ -152,7 +152,7 @@ const SettingSheet = () => {
 
 
               {/* Show square-off time input if Intraday is selected */}
-              {strategyType === "Intraday" && (
+              {productType === "Intraday" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
