@@ -143,6 +143,20 @@ export const handleOnConnection = (
     connection.sourceHandle?.endsWith("-right") &&
     targetNode?.type === NodeTypes.ACTION
   ) {
+
+     const existingEdge = edges.find(
+      (edge) =>
+        edge.type === "actionEdge" &&
+        edge.source === connection.source &&
+        edge.target === connection.target
+    );
+
+    // if an edge already exists, stop creating a new one
+    if (existingEdge) {
+      console.log("Edge already exists.");
+      return false;
+    }
+
     // Get all existing edges (not just action edges)
     const nonActionEdges = edges.filter(
       (edge) => 
