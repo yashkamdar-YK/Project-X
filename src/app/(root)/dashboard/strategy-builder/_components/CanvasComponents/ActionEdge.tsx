@@ -1,11 +1,15 @@
-import React from 'react';
-import { getBezierPath, EdgeProps } from '@xyflow/react';
-import { Trash2, Unplug } from 'lucide-react';
-import { useNodeStore } from '@/lib/store/nodeStore';
+import React from "react";
+import { getBezierPath, EdgeProps } from "@xyflow/react";
+import { Trash2, Unplug } from "lucide-react";
+import { useNodeStore } from "@/lib/store/nodeStore";
 
 interface ActionEdgeProps extends EdgeProps {
   sourceHandle?: string;
   targetHandle?: string;
+  data?: {
+    sequence?: number;
+    sourceCondition?: string;
+  };
 }
 
 const ActionEdge = ({
@@ -16,12 +20,13 @@ const ActionEdge = ({
   targetY,
   sourcePosition,
   targetPosition,
-  style = {}
+  style = {},
+  data = {},
 }: ActionEdgeProps) => {
   const { edges, setEdges } = useNodeStore();
 
-  console.log("edges ",edges)
-  
+  console.log("edges ", edges);
+
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,
     sourceY,
@@ -33,7 +38,7 @@ const ActionEdge = ({
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    setEdges(edges.filter(edge => edge.id !== id));
+    setEdges(edges.filter((edge) => edge.id !== id));
   };
 
   return (
@@ -52,6 +57,12 @@ const ActionEdge = ({
         y={centerY - 12}
         className="overflow-visible"
       >
+        {data?.sequence && (
+          <button className="absolute left-8 items-center w-6 h-6 dark:bg-gray-800 bg-white rounded-full text-gray-500 dark:text-gray-400  text-xs">
+            {data.sequence}
+          </button>
+        )}
+
         <button
           onClick={handleDelete}
           className="flex items-center justify-center w-6 h-6 rounded-full bg-white hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-950 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 shadow-md transition-colors duration-200 border border-transparent hover:border-red-200 dark:hover:border-red-800"
