@@ -33,9 +33,9 @@ interface StrategyNavbarProps {
 }
 
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
-  const { openSheet } = useSheetStore();
+  const { openSheet,isOpen } = useSheetStore();
 
-  const { strategyType } = useSettingStore();
+  const { strategyType,setStrategyType } = useSettingStore();
 
   const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
   const [isCodeSheetOpen, setIsCodeSheetOpen] = React.useState(false);
@@ -46,6 +46,16 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Strategy saved!");
   };
+
+  const handleStrategyType = () => {
+    openSheet("settings")
+    if(isOpen) return;
+    if(strategyType === "Intraday") {
+      setStrategyType("Delivery")
+    } else {
+      setStrategyType("Intraday")
+    }
+  }
 
   const handleMobileMenuItemClick = (action: () => void) => {
     action();
@@ -69,7 +79,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
               {/* Intraday Button */}
               <Button
                 className="h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-blue-500/20"
-                onClick={()=> openSheet("settings")}
+                onClick={handleStrategyType}
               >
                 {strategyType} 
               </Button>

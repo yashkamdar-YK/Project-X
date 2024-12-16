@@ -12,8 +12,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { validateName } from "@/lib/utils";
+import { convertToMinutes, validateName } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { defaultOptionsService, UrlMapping } from "../../../../_actions";
+import { useApplyDataStore } from "@/lib/store/applyDataStore";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 interface ConditionNodeSheetProps {
   node: Node & {
@@ -24,6 +27,7 @@ interface ConditionNodeSheetProps {
 const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   const { closeSheet } = useSheetStore();
   const { dataPoints } = useDataPointsStore();
+  const { selectedTimeFrame } = useDataPointStore();
   const {
     conditionBlocks,
     addSubSection,
@@ -35,6 +39,31 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     updateBlockSettings,
     updateBlockRelation,
   } = useConditionStore();
+
+  const {setData, getData} = useApplyDataStore();
+  
+  useEffect(() => {
+    Object.keys(UrlMapping).map(async (key) => {
+      //@ts-ignore
+      const exist  = getData(key);
+      if (exist) return;
+      //@ts-ignore
+      const res = await defaultOptionsService.getApplyData(key);
+      //@ts-ignore
+      setData(key, res.data.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if(selectedTimeFrame){
+      defaultOptionsService.getCloseTime(convertToMinutes(selectedTimeFrame)).then((res) => {
+        setData("CloseTime", res.data.data);
+      });
+      defaultOptionsService.getTimeIntervalsData(convertToMinutes(selectedTimeFrame)).then((res) => {
+        setData("OpenTime", res.data.data);
+      });
+    }
+  },[selectedTimeFrame]);
 
   const currentNode = conditionBlocks[node.id];
   if (!currentNode) return null;

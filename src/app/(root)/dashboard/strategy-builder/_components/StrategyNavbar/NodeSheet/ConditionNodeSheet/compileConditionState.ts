@@ -1,13 +1,33 @@
+import { Edge } from "@xyflow/react";
 import { ConditionBlockMap } from "./types";
-
+import { useNodeStore } from "@/lib/store/nodeStore";
 
 const compileConditionState = (state: ConditionBlockMap) => {
-  const output: Record<string, any[]> = {};
+  const output: any[] = [];
+  const allEdges: Edge[] = useNodeStore.getState().edges;
 
   for (const [nodeId, nodeData] of Object.entries(state)) {
-    const compiledBlocks: any[] = [];
+    const compiledNode: any = {
+      node: nodeId,
+      type: nodeData.name.toLowerCase(),
+      maxentries: nodeData.maxEntries,
+      conditions: []
+    };
 
-    // Process each block
+    compiledNode.check_when_position_open = nodeData.positionOpen;
+    compiledNode.wait_trigger = nodeData.waitTrigger;
+
+    //actions
+    const actions:string[] = [];
+    allEdges.forEach(e => {
+      if (e.source === nodeId) {
+        actions.push(e.target);
+      }
+    })
+    compiledNode.actions = actions;
+
+    const compiledConditions: any[] = [];
+
     nodeData.blocks.forEach((block, blockIndex) => {
       const validSubSections = block.subSections.filter(
         sub => sub.lhs && sub.operator && sub.rhs
@@ -17,40 +37,37 @@ const compileConditionState = (state: ConditionBlockMap) => {
 
       const compiledBlock: any[] = [];
 
-      // Process subsections within a block
       validSubSections.forEach((subSection, subIndex) => {
-        // Create the condition array for this subsection
         const condition = [
-          `${subSection.lhs}${subSection.column ? `.${subSection.column}` : ''}${
-            subSection.selectedPeriod ? `.${subSection.selectedPeriod}` : ''
+          `${subSection.lhs}${subSection.column ? `.${subSection.column}` : ''}${subSection.selectedPeriod ? `.${subSection.selectedPeriod}` : ''
           }`,
           subSection.operator,
-          `${subSection.rhs}${subSection._rhsValue ? `.${subSection._rhsValue}` : ''}`
+          subSection.rhs.startsWith('$') ?
+            subSection.rhs.slice(1) :
+            isNaN(Number(subSection.rhs)) ?
+              subSection.rhs :
+              Number(subSection.rhs)
         ];
 
-        // Add the condition to the block
         compiledBlock.push(condition);
 
-        // Add the relation if there's a next subsection
         if (subIndex < validSubSections.length - 1) {
-          compiledBlock.push(validSubSections[subIndex].addBadge);
+          compiledBlock.push(validSubSections[subIndex].addBadge.toLowerCase());
         }
       });
 
       if (compiledBlock.length > 0) {
-        // Add the compiled block
-        compiledBlocks.push(compiledBlock);
+        compiledConditions.push(compiledBlock);
 
-        // Add block relation if there's a next block
         if (blockIndex < nodeData.blocks.length - 1 && nodeData.blockRelations[blockIndex]) {
-          compiledBlocks.push(nodeData.blockRelations[blockIndex]);
+          compiledConditions.push(nodeData.blockRelations[blockIndex].toLowerCase());
         }
       }
     });
 
-    // Only add non-empty nodes to the output
-    if (compiledBlocks.length > 0) {
-      output[nodeId] = compiledBlocks;
+    if (compiledConditions.length > 0) {
+      compiledNode.conditions = compiledConditions;
+      output.push(compiledNode);
     }
   }
 

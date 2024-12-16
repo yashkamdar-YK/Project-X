@@ -50,9 +50,9 @@ export interface StrikeSelection {
 export interface DataPointOption {
   applyIndicators: boolean;
   candleLocation: boolean;
-  type: "candleData" | "dte";
+  type: string // "candleData" | "dte" | "candleTime";
   columnsAvailable: string[];
-  canComparedwith: ['candleData' , 'values' ,'indicators']
+  canComparedwith: string[] //['candleData' , 'values' ,'indicators']
 }
 
 export interface DataPoint {
