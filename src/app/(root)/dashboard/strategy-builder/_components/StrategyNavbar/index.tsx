@@ -22,10 +22,11 @@ import {
 } from "@/components/ui/tooltip";
 import SaveStrategyDialog from "./SaveStrategyDialog";
 import StrategyCodeSheet from "./StrategyCodeSheet";
-import { useSheetStore } from "@/lib/store/SheetStore"; // Import the store
+import { useSheetStore } from "@/lib/store/SheetStore"; 
 import { TemplateSelector } from "../Templete/Templates";
 import SymbolSearch from "./SymbolSearch";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {useSettingStore} from "@/lib/store/settingStore"
 
 interface StrategyNavbarProps {
   className?: string;
@@ -33,6 +34,8 @@ interface StrategyNavbarProps {
 
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
   const { openSheet } = useSheetStore();
+
+  const { strategyType } = useSettingStore();
 
   const [isSaveDialogOpen, setIsSaveDialogOpen] = React.useState(false);
   const [isCodeSheetOpen, setIsCodeSheetOpen] = React.useState(false);
@@ -58,11 +61,18 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="relative">
-                <SymbolSearch
-                />
+                <SymbolSearch />
               </div>
 
               <TimeSelector />
+
+              {/* Intraday Button */}
+              <Button
+                className="h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-blue-500/20"
+                onClick={()=> openSheet("settings")}
+              >
+                {strategyType} 
+              </Button>
 
               {/* Setting */}
               <TooltipProvider>
@@ -147,7 +157,6 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* Setting */}
                   <Button
-                    
                     variant="ghost"
                     className="justify-start border-2 "
                     onClick={() =>

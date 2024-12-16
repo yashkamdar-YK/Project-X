@@ -9,6 +9,7 @@ interface NodeState {
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
   addNode: (node: Node) => void;
+  clearNodesStore: () => void
 }
 
 export const useNodeStore = create<NodeState>((set) => ({
@@ -23,5 +24,5 @@ export const useNodeStore = create<NodeState>((set) => ({
     nodes: [...state.nodes, newNode],
   })),
   
- 
+  clearNodesStore : () => set({  nodes: [], edges: [] }),
 }));

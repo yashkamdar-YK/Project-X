@@ -15,7 +15,7 @@ interface DaySelectorProps {
 
 const DaySelector: React.FC<{}> = ({ 
 }) => {
-  const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("days");
+  const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("daily");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [selectedExp, setSelectedExp] = useState<string[]>([]);
   const [currentExpPage, setCurrentExpPage] = useState(0);
@@ -37,11 +37,11 @@ const DaySelector: React.FC<{}> = ({
 
   const handleStateChange = () => {
     const newState =
-      selectorState === "days"
-        ? "daily"
-        : selectorState === "daily"
+      selectorState === "daily"
+        ? "days"
+        : selectorState === "days"
         ? "exp"
-        : "days";
+        : "daily";
     setSelectorState(newState);
     setCurrentExpPage(0);
   };
