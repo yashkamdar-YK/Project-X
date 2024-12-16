@@ -10,3 +10,16 @@ export function validateName(input: string): string {
   formattedInput = formattedInput.replace(/[^a-zA-Z0-9_]/g, "");
   return formattedInput;
 }
+
+export function convertToMinutes(timeStr: string): number {
+  const value = parseInt(timeStr);
+  const unit = timeStr.slice(-1).toLowerCase();
+  
+  if (unit === 'h') {
+      return value * 60;
+  } else if (unit === 'm') {
+      return value;
+  } else {
+      throw new Error('Invalid time format. Use m for minutes or h for hours');
+  }
+}

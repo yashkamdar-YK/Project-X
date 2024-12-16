@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from 'lucide-react';
 import { SubSection } from "./types";
 import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
-import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS } from './_const';
+import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS, VALID_DAYS } from './_const';
 import { useIndicatorStore } from '@/lib/store/IndicatorStore';
+import { useApplyDataStore } from '@/lib/store/applyDataStore';
+import { useMutation } from '@tanstack/react-query';
+import { useDataPointStore } from '@/lib/store/dataPointStore';
+import { defaultOptionsService } from '../../../../_actions';
+import { convertToMinutes } from '@/lib/utils';
+import Spinner from '@/components/shared/spinner';
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -36,17 +42,33 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   addSubSection,
   isLastSubSection,
 }) => {
-  const {indicators} = useIndicatorStore();
+  const { indicators } = useIndicatorStore();
+  const { getData } = useApplyDataStore();
+  const { selectedTimeFrame } = useDataPointStore();
+
   const lhsOptions = [...dataPoints.map((dataPoint) => dataPoint.elementName),
-    ...indicators.map((indicator) => indicator.elementName),
-    ...DEFAULT_OPTIONS];
+  ...indicators.map((indicator) => indicator.elementName),
+  ...DEFAULT_OPTIONS];
   const selectedDatapoint = dataPoints.find((dataPoint) => dataPoint.elementName === subSection.lhs);
+  const selectedIndicator = indicators.find((indicator) => indicator.elementName === subSection.lhs);
   const columns = selectedDatapoint?.options?.columnsAvailable || [];
   const hasCandleLocation = selectedDatapoint?.options?.candleLocation || false;
-  
+
   //@ts-ignore
-  const allowedOperations = ALLOWED_OPERATIONS[selectedDatapoint?.options?.type] || [];
-  
+  const allowedOperations = ALLOWED_OPERATIONS[selectedDatapoint?.options?.type]?.length > 0
+    //@ts-ignore
+    ? ALLOWED_OPERATIONS[selectedDatapoint?.options?.type]
+    //@ts-ignore
+    : ALLOWED_OPERATIONS[selectedIndicator?.options?.type]?.length > 0
+      //@ts-ignore
+      ? ALLOWED_OPERATIONS[selectedIndicator?.options?.type]
+      //@ts-ignore
+      : ALLOWED_OPERATIONS[getData(subSection.lhs)?.type]?.length > 0
+        //@ts-ignore
+        ? ALLOWED_OPERATIONS[getData(subSection.lhs)?.type]
+        //@ts-ignore
+        : ALLOWED_OPERATIONS[subSection?.lhs];
+
   const _canCompareWith = selectedDatapoint?.options?.canComparedwith?.map(v => v.toLocaleLowerCase()) || [];
 
   const canCompareWith = [
@@ -57,6 +79,23 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     ...(_canCompareWith.includes("values") ? ["value"] : []),
     ...DEFAULT_OPTIONS
   ];
+
+  useEffect(() => {
+    if (subSection.lhs === "day_of_week") {
+      updateSubSection(nodeId, subSection.id, "rhs", "Monday");
+    }
+  }, [subSection.lhs]);
+  useEffect(() => {
+    if (subSection.lhs === "candle_time") {
+      //@ts-ignore
+      updateSubSection(nodeId, subSection.id, "rhs", `${getData("OpenTime")[0]}`);
+    }
+    if (subSection.lhs === "candle_close_time") {
+      //@ts-ignore
+      updateSubSection(nodeId, subSection.id, "rhs", `${getData("CloseTime")[1]}`);
+    }
+      //@ts-ignore
+  }, [subSection.lhs, selectedTimeFrame, getData("OpenTime")?.[0], getData("CloseTime")?.[0]]);
 
   return (
     <div className="mb-6 last:mb-0 pb-6 border-b border-gray-700 last:border-b-0">
@@ -135,7 +174,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             <SelectValue placeholder="Select operator" />
           </SelectTrigger>
           <SelectContent>
-            {allowedOperations?.map((option:string) => (
+            {allowedOperations?.map((option: string) => (
               <SelectItem key={option} value={option}>{option}</SelectItem>
             ))}
           </SelectContent>
@@ -152,9 +191,24 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 <SelectValue placeholder="Select variable" />
               </SelectTrigger>
               <SelectContent>
-                {canCompareWith.map((option) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
+                {
+                  subSection.lhs === "candle_close_time"
+                    //@ts-ignore
+                    ? getData("CloseTime")?.map((option) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    )) :
+                    subSection.lhs === "candle_time"
+                      //@ts-ignore
+                      ? getData("OpenTime")?.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))
+                      : subSection.lhs == "day_of_week"
+                        ? VALID_DAYS.map((option) => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))
+                        : canCompareWith.map((option) => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
               </SelectContent>
             </Select>
 

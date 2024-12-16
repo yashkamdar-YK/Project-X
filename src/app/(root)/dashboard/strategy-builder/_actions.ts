@@ -77,3 +77,34 @@ export const symbolService = {
     }
   }
 };
+
+export type TUrlMapping = {
+  candle_time: string;
+  candle_close_time: string;
+  day_week: string;
+  day_mtm: string;
+  mtm_from_first_open_pos: string;
+  open_mtm: string;
+  OpenTime?: null | string;
+  CloseTime?: null | string;
+}
+export const UrlMapping:TUrlMapping = {
+  candle_time:  `/v1/builder/applydata/candle_time`,
+  "candle_close_time" :'/v1/builder/applydata/candle_close_time',
+  "day_week":"/v1/builder/applydata/day_week",
+  "day_mtm":"/v1/builder/applydata/day_mtm",
+  "mtm_from_first_open_pos":"/v1/builder/applydata/mtm_from_first_open_pos",
+  "open_mtm":"/v1/builder/applydata/open_mtm",
+}
+export const defaultOptionsService = {
+  getTimeIntervalsData : async (interval:number) => {
+    return await get<ApiResponse<string[]>>(`/v1/builder/applydata/TIME?timevalue=${interval}`);
+  },
+  getCloseTime: async (interval:number) => {
+    return await get<ApiResponse<string[]>>(`/v1/builder/applydata/closeTime?timevalue=${interval}`);
+  },
+  getApplyData : async (type: keyof TUrlMapping) => {
+    //@ts-ignore
+    return await get<ApiResponse<DataPointOption>>(UrlMapping[type]);
+  }
+}

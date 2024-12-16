@@ -10,7 +10,7 @@ export const ALLOWED_OPERATIONS = {
     "cross_above",
     "cross_below",
   ],
-  indicator: [
+  indicators: [
     "is_above",
     "is_below",
     "greater_than",
@@ -45,9 +45,7 @@ export const ALLOWED_OPERATIONS = {
   ],
 };
 
-const TIME = ["09:30", "10:00", "10:30", "11:00", "11:30"];
-
-const VALID_DAYS = [
+export const VALID_DAYS = [
   "Monday",
   "Tuesday",
   "Wednesday",
@@ -56,4 +54,4 @@ const VALID_DAYS = [
   "Saturday",
 ];
 
-export const DEFAULT_OPTIONS = ["day_mtm", "mtm_from_first_open_pos", "open_mtm", "candle_time","candle_close_time","day_of_week", "time_Values"]
+export const DEFAULT_OPTIONS = ["day_mtm", "mtm_from_first_open_pos", "open_mtm", "candle_time","candle_close_time","day_of_week"]

@@ -75,14 +75,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
     updatePositionSetting(node.id, positionId, field, value);
   };
 
-  const handleSubmit = () => {
-    const currentNode = useActionStore.getState().actionNodes[node.id];
-    if (!currentNode) return;
-  
-    const payload = transformToActionPayload(currentNode.actions, currentNode.positions);
-    console.log('Action Payload:', JSON.stringify(payload, null, 2));
-  };
-
   return (
     <div className="p-6 max-h-[90vh] overflow-y-auto bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -212,15 +204,6 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Submit Button */}
-        <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            Submit Action
-          </Button>
-        </div>
       </div>
     </div>
   );
