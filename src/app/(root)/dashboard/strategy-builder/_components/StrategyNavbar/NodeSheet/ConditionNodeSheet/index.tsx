@@ -40,12 +40,12 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
     updateBlockRelation,
   } = useConditionStore();
 
-  const {setData, getData} = useApplyDataStore();
-  
+  const { setData, getData } = useApplyDataStore();
+
   useEffect(() => {
     Object.keys(UrlMapping).map(async (key) => {
       //@ts-ignore
-      const exist  = getData(key);
+      const exist = getData(key);
       if (exist) return;
       //@ts-ignore
       const res = await defaultOptionsService.getApplyData(key);
@@ -55,7 +55,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   }, []);
 
   useEffect(() => {
-    if(selectedTimeFrame){
+    if (selectedTimeFrame) {
       defaultOptionsService.getCloseTime(convertToMinutes(selectedTimeFrame)).then((res) => {
         setData("CloseTime", res.data.data);
       });
@@ -63,7 +63,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         setData("OpenTime", res.data.data);
       });
     }
-  },[selectedTimeFrame]);
+  }, [selectedTimeFrame]);
 
   const currentNode = conditionBlocks[node.id];
   if (!currentNode) return null;
@@ -71,9 +71,8 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   return (
     <div className="dark:bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold dark:text-gray-100">
-          Condition Builder
-        </h2>
+        <Badge>ID : {node.id}</Badge>
+
         <Button
           variant="ghost"
           size="icon"
@@ -84,76 +83,77 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </Button>
       </div>
 
-      <Badge className="bg-blue-500">ID : {node.id}</Badge>
 
       <Card className="dark:bg-gray-900 border-l mt-4 border-gray-200 dark:border-gray-800">
         <CardContent className="space-y-8 mt-6">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="condition-name">Condition Name:</Label>
+          <div className="flex items-center justify-center">
             <Input
               id="condition-name"
               value={currentNode.name}
               onChange={(e) => updateBlockSettings(node.id, "name", validateName(e.target.value))}
-              className="w-60"
+              className="w-60 text-center border-none focus:ring-1 !text-lg"
             />
           </div>
 
-          <Tabs defaultValue="entry" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger 
+          <Tabs defaultValue={currentNode.type} className="w-full">
+            <TabsList className="grid w-full grid-cols-3"  >
+              <TabsTrigger
                 value="entry"
-                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                onClick={() => updateBlockSettings(node.id, "type", "entry")}
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
               >Entry</TabsTrigger>
               <TabsTrigger
-                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                 value="exit">Exit</TabsTrigger>
+                onClick={() => updateBlockSettings(node.id, "type", "exit")}
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                value="exit">Exit</TabsTrigger>
               <TabsTrigger
-                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                 value="adjustment">Adjustment</TabsTrigger>
+                onClick={() => updateBlockSettings(node.id, "type", "adjustment")}
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                value="adjustment">Adjustment</TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="max-entries">
-                Max Entries using this condition:
-              </Label>
-              <Input
-                id="max-entries"
-                value={currentNode.maxEntries}
-                onChange={(e) => updateBlockSettings(node.id, "maxEntries", e.target.value)}
-                className="w-20 text-right"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="wait-trigger">
-                Check if any Wait Trade Trigger is open:
-              </Label>
-              <Switch
-                id="wait-trigger"
-                checked={currentNode.waitTrigger}
-                className="data-[state=checked]:bg-blue-500"
-                onCheckedChange={(checked) => updateBlockSettings(node.id, "waitTrigger", checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label htmlFor="position-open">
-                Check if any Position is Open:
-              </Label>
-              <div className="h-12">
-                <Switch
-                  id="position-open"
-                  checked={currentNode.positionOpen}
-                  className="data-[state=checked]:bg-blue-500"
-                  onCheckedChange={(checked) =>
-                    updateBlockSettings(node.id, "positionOpen", checked)
-                  }
+          {currentNode.type !== "exit" &&
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="max-entries">
+                  Max Entries using this condition:
+                </Label>
+                <Input
+                  id="max-entries"
+                  value={currentNode.maxEntries}
+                  onChange={(e) => updateBlockSettings(node.id, "maxEntries", e.target.value)}
+                  className="w-20 text-right"
                 />
               </div>
-            </div>
-          </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="wait-trigger">
+                  Check if any Wait Trade Trigger is open:
+                </Label>
+                <Switch
+                  id="wait-trigger"
+                  checked={currentNode.waitTrigger}
+                  className="data-[state=checked]:bg-blue-500"
+                  onCheckedChange={(checked) => updateBlockSettings(node.id, "waitTrigger", checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="position-open">
+                  Check if any Position is Open:
+                </Label>
+                <div className="h-12">
+                  <Switch
+                    id="position-open"
+                    checked={currentNode.positionOpen}
+                    className="data-[state=checked]:bg-blue-500"
+                    onCheckedChange={(checked) =>
+                      updateBlockSettings(node.id, "positionOpen", checked)
+                    }
+                  />
+                </div>
+              </div>
+            </div>}
         </CardContent>
       </Card>
 
