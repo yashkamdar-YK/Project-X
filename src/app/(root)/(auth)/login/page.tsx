@@ -1,12 +1,32 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { GoogleLoginButton } from '../_components/GoogleLoginButton'
 import { ArrowLeft } from 'lucide-react'
 import { NeonGradientCard } from '@/components/ui/neon-gradient-card'
+import { useRouter } from 'next/navigation'
+import { getCookie } from 'cookies-next';
 
 export default function LoginPage() {
+
+  const router = useRouter()
+  
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const authToken = getCookie('token');
+
+      if (authToken) {
+        try {
+          router.push('/dashboard');         
+        } catch (error) {
+          console.error('Failed to verify token:', error);
+        }
+      }
+    };
+    checkLoginStatus();
+  }, [router]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-6">
       <Link 
