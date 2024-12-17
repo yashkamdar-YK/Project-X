@@ -1,43 +1,53 @@
-import React, { useState } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Clock, IndianRupee } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { useSettingStore } from "@/lib/store/settingStore";
 
 interface OrderOperationProps {
   type?: "entry" | "exit";
   disabled?: boolean;
 }
 
-const OrderOperation: React.FC<OrderOperationProps> = ({ 
+const OrderOperation: React.FC<OrderOperationProps> = ({
   type = "entry",
-  disabled = false 
+  disabled = false
 }) => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
+  const {
+    entryOperation,
+    setEntryOperation,
+    exitOperation,
+    setExitOperation
+  } = useSettingStore();
+
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
-  
-  const [timeLimit, setTimeLimit] = useState("10");
-  const [priceBuffer, setPriceBuffer] = useState("0");
-  const [shouldExecute, setShouldExecute] = useState(true);
+
+  // Select the appropriate operation based on type
+  const operation = type === "entry" ? entryOperation : exitOperation;
+  const setOperation = type === "entry" ? setEntryOperation : setExitOperation;
 
   const handleNumberInput = (
     e: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<string>>
+    field: 'timeLimit' | 'priceBuffer'
   ) => {
     const value = e.target.value;
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      if (setter === setPriceBuffer && currentSymbolInfo?.tickSize) {
+      if (field === 'priceBuffer' && currentSymbolInfo?.tickSize) {
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
           const roundedValue = Math.round(numValue / currentSymbolInfo.tickSize) * currentSymbolInfo.tickSize;
-          setter(roundedValue.toFixed(String(currentSymbolInfo.tickSize).split('.')[1]?.length || 0));
+          setOperation({
+            [field]: roundedValue.toFixed(String(currentSymbolInfo.tickSize).split('.')[1]?.length || 0)
+          });
         } else {
-          setter(value);
+          setOperation({ [field]: value });
         }
       } else {
-        setter(value);
+        setOperation({ [field]: value });
       }
     }
   };
@@ -58,8 +68,8 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
             <Input
               type="text"
               inputMode="numeric"
-              value={timeLimit}
-              onChange={(e) => handleNumberInput(e, setTimeLimit)}
+              value={operation.timeLimit}
+              onChange={(e) => handleNumberInput(e, 'timeLimit')}
               className="h-10 pl-4 pr-12 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter time"
               disabled={disabled}
@@ -80,8 +90,8 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
             <Input
               type="text"
               inputMode="decimal"
-              value={priceBuffer}
-              onChange={(e) => handleNumberInput(e, setPriceBuffer)}
+              value={operation.priceBuffer}
+              onChange={(e) => handleNumberInput(e, 'priceBuffer')}
               className="h-10 pl-4 pr-12 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter price"
               disabled={disabled}
@@ -97,8 +107,8 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
           </Label>
           <div className="flex justify-end h-12">
             <Switch
-              checked={shouldExecute}
-              onCheckedChange={setShouldExecute}
+              checked={operation.shouldExecute}
+              onCheckedChange={(checked) => setOperation({ shouldExecute: checked })}
               className="data-[state=checked]:bg-blue-500"
               disabled={disabled}
             />

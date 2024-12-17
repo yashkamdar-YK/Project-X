@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import DaySelector from "./DaySelector";
 import { useSheetStore } from "@/lib/store/SheetStore";
@@ -7,26 +7,20 @@ import OrderOperation from "./OrderOperation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
-import { useSettingStore } from "@/lib/store/settingStore"
+import { useSettingStore } from "@/lib/store/settingStore";
 
 const SettingSheet = () => {
   const { closeSheet, type } = useSheetStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
-
-  const { strategyType, setStrategyType } = useSettingStore();
+  const {
+    strategyType, setStrategyType,
+    productType, setProductType,
+    orderType, setOrderType,
+    squareOffTime, setSquareOffTime
+  } = useSettingStore();
 
   // Get the current symbol's info
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
-  const [productType, setProductType] = useState<"Intraday" | "Delivery">(
-    (currentSymbolInfo?.executionSettings?.productType[0] as "Intraday" | "Delivery") || "Intraday"
-  );
-  const [orderType, setOrderType] = useState<"Limit" | "Market">(
-    (currentSymbolInfo?.executionSettings?.orderType[0] as "Limit" | "Market") || "Limit"
-  );
-
-
-  const [squareOffTime, setSquareOffTime] = useState<string>('');
-
 
   // Available options from API or defaults
   const availableProductTypes = currentSymbolInfo?.executionSettings?.productType || ["Intraday", "Delivery"];
@@ -94,12 +88,7 @@ const SettingSheet = () => {
                 Trade On
               </span>
               <div className="flex justify-end mt-2">
-                <DaySelector
-                // onStateChange={setTradeState}
-                // showDaysInDaily={true}
-                // disabled={!selectedSymbol}
-                // isWeekly={currentSymbolInfo?.isWeekly}
-                />
+                <DaySelector />
               </div>
             </div>
           </div>
@@ -149,7 +138,6 @@ const SettingSheet = () => {
                   {orderType}
                 </Button>
               </div>
-
 
               {/* Show square-off time input if Intraday is selected */}
               {strategyType === "Intraday" && (

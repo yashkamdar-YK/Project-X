@@ -20,6 +20,7 @@ export function convertToMinutes(timeStr: string): number {
   } else if (unit === 'm') {
       return value;
   } else {
-      throw new Error('Invalid time format. Use m for minutes or h for hours');
+      // throw new Error('Invalid time format. Use m for minutes or h for hours');
+      return 0
   }
 }

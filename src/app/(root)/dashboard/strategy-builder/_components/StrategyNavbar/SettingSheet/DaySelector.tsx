@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -9,16 +9,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { useSettingStore } from "@/lib/store/settingStore";
 
-interface DaySelectorProps {
-}
-
-const DaySelector: React.FC<{}> = ({ 
-}) => {
-  const [selectorState, setSelectorState] = useState<"days" | "daily" | "exp">("daily");
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [selectedExp, setSelectedExp] = useState<string[]>([]);
-  const [currentExpPage, setCurrentExpPage] = useState(0);
+const DaySelector: React.FC = () => {
+  const {
+    selectorState, setSelectorState,
+    selectedDays, setSelectedDays,
+    selectedExp, setSelectedExp
+  } = useSettingStore();
+  
+  const [currentExpPage, setCurrentExpPage] = React.useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -47,22 +47,20 @@ const DaySelector: React.FC<{}> = ({
   };
 
   const handleDaySelect = (day: string) => {
-    setSelectedDays(prev =>
-      prev.includes(day) 
-        ? prev.filter(d => d !== day) 
-        : [...prev, day]
-    );
-  };
-  
-  //Add handleExpSelect for selecting multiple Exp Dates
-  const handleExpSelect = (day: string) => {
-    setSelectedExp(prev =>
-      prev.includes(day)
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
+    setSelectedDays(
+      selectedDays.includes(day)
+        ? selectedDays.filter(d => d !== day)
+        : [...selectedDays, day]
     );
   };
 
+  const handleExpSelect = (day: string) => {
+    setSelectedExp(
+      selectedExp.includes(day)
+        ? selectedExp.filter(d => d !== day)
+        : [...selectedExp, day]
+    );
+  };
 
   const scrollToPage = (page: number) => {
     const container = scrollContainerRef.current;
