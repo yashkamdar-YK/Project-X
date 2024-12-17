@@ -10,6 +10,7 @@ import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { convertToMinutes } from "@/lib/utils";
 
 interface SuperTrendFormProps {
   initialData?: SuperTrendIndicator;
@@ -104,7 +105,7 @@ const SuperTrendForm: React.FC<SuperTrendFormProps> = ({ initialData, onClose })
       type: 'supertrend',
       elementName: formData.elementName,
       onData: formData.onData,
-      timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
+      timeFrame: convertToMinutes(selectedTimeFrame || ""),
       settings: {
         length: formData.settings.length,
         multiplier: formData.settings.multiplier as string

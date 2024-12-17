@@ -21,6 +21,7 @@ import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { convertToMinutes } from "@/lib/utils";
 
 interface EMAFormProps {
   initialData?: MovingAverageIndicator;
@@ -137,7 +138,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
       type: "ema",
       elementName: formData.elementName,
       onData: formData?.onData,
-      timeFrame: 15, // This should come from your time frame selector
+      timeFrame: convertToMinutes(selectedTimeFrame || ""),
       settings: {
         length: formData.settings.length,
         source: formData.settings.source as "high" | "low" | "close",

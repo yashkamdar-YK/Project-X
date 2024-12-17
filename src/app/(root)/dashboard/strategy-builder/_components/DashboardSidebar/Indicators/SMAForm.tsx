@@ -10,6 +10,7 @@ import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { convertToMinutes } from "@/lib/utils";
 
 interface SMAFormProps {
   initialData?: MovingAverageIndicator;
@@ -34,7 +35,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
     onData: initialData?.onData || "",
     settings: {
       length: initialData?.settings.length || "9",
-      source: initialData?.settings.source || "high",
+      source: initialData?.settings.source || "",
       offset: initialData?.settings.offset || "0",
     }
   });
@@ -114,7 +115,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
       type: 'sma',
       elementName: formData.elementName,
       onData: formData.onData,
-      timeFrame: selectedTimeFrame ? parseInt(selectedTimeFrame) : 15,
+      timeFrame: convertToMinutes(selectedTimeFrame || ""),
       settings: {
         length: formData.settings.length,
         source: formData.settings.source as 'high' | 'low' | 'close',

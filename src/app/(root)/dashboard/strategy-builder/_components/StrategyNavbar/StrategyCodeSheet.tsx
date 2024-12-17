@@ -15,6 +15,10 @@ import { useActionStore } from '@/lib/store/actionStore';
 import { useConditionStore } from '@/lib/store/conditionStore';
 import compileConditionState from './NodeSheet/ConditionNodeSheet/compileConditionState';
 import { transformToActionPayload } from './NodeSheet/ActionNodeSheet/transformToActionPayload ';
+import compileIndicatorsToPayload from '../DashboardSidebar/Indicators/compileIndicatorsToPayload';
+import { transformSettingsToPayload } from './SettingSheet/transformSettingsToPayload';
+import { useDataPointStore } from '@/lib/store/dataPointStore';
+import { convertToMinutes } from '@/lib/utils';
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
@@ -61,6 +65,7 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = React.useState('python');
   const {dataPoints} = useDataPointsStore();
+  const {selectedSymbol,selectedTimeFrame} = useDataPointStore();
   const {indicators} = useIndicatorStore();
   const {conditionBlocks} = useConditionStore();
   const _conditionBlocks = compileConditionState(conditionBlocks);
@@ -88,8 +93,14 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
     return data;
   };
 
-  const DEMO_CODE =  "--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
-    "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
+  // const DEMO_CODE =  "--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
+  //   "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
+  const DEMO_CODE = `
+  --------ACTIONS------\n ${JSON.stringify(_actionNodes(), null, 2)}
+  \n--------CONDITIONS------\n ${JSON.stringify(_conditionBlocks, null, 2)}
+  \n--------INDICATORS------\n ${JSON.stringify(compileIndicatorsToPayload(indicators), null, 2)}
+  \n--------SETTINGS------\n ${JSON.stringify(transformSettingsToPayload(selectedSymbol || "",convertToMinutes(selectedTimeFrame || "")), null, 2)}
+  `
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>

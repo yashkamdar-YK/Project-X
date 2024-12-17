@@ -5,7 +5,7 @@ export const useIndicatorStore = create<IndicatorStore>((set) => ({
   indicators: [],
   selectedIndicator: null,
 
-  addIndicator: (indicator) => 
+  addIndicator: (indicator) =>
     set((state) => ({
       indicators: [...state.indicators, indicator]
     })),
@@ -20,7 +20,7 @@ export const useIndicatorStore = create<IndicatorStore>((set) => ({
     set({ selectedIndicator: id }),
 
   updateIndicator: (id, updatedData) =>
-                //@ts-ignore
+    //@ts-ignore
     set((state) => ({
       indicators: state.indicators.map((ind) =>
         ind.id === id ? { ...ind, ...updatedData } : ind
