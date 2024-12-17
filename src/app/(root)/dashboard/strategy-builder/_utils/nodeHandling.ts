@@ -11,18 +11,68 @@ export const handleNodeDeletion = (
   setEdges: Function
 ) => {
   let updatedEdges = [...allEdges];
+  let updatedNodes = [...allNodes];
 
   nodesToDelete.forEach((nodeToDelete) => {
+
     //delete from there respective stores
-    if(nodeToDelete.type === NodeTypes.CONDITION){
-      useConditionStore.getState().removeConditionBlock(nodeToDelete.id);
-    }
-    if(nodeToDelete.type === NodeTypes.ACTION){
+    if (nodeToDelete.type === NodeTypes.ACTION) {
       useActionStore.getState().removeActionNode(nodeToDelete.id);
+
+      // find all action edges for this node
+      const actionEdges = updatedEdges.filter(
+        edge => 
+          edge.type === 'actionEdge' && 
+          edge.target === nodeToDelete.id
+      );
+
+      // Find the source condition node(s) for these edges
+      const sourceConditionNodes = new Set(
+        actionEdges.map(edge => edge.source)
+      );
+      
+      sourceConditionNodes.forEach(sourceConditionId => {
+        const conditionActionEdges = updatedEdges.filter(
+          edge => 
+            edge.type === 'actionEdge' && 
+            edge.source === sourceConditionId
+        );
+
+        if (conditionActionEdges.length > 0) {
+          const sortedRemainingEdges = conditionActionEdges
+            .filter(edge => edge.target !== nodeToDelete.id)
+            .sort((a, b) => {
+              const nodeA = updatedNodes.find(node => node.id === a.target);
+              const nodeB = updatedNodes.find(node => node.id === b.target);
+              return (nodeA?.position.y || 0) - (nodeB?.position.y || 0);
+            })
+            .map((edge, index) => ({
+              ...edge,
+              data: {
+                ...edge.data,
+                sequence: index + 1 
+              }
+            }));
+
+          // replace old action edges with renumbered edges
+          updatedEdges = updatedEdges.filter(
+            edge => 
+              !(
+                edge.type === 'actionEdge' && 
+                edge.source === sourceConditionId
+              )
+          ).concat(sortedRemainingEdges);
+        }
+      });
     }
 
-    // Find all edges connected to this node
-    const connectedEdges = allEdges.filter(
+    // clear Condition node store
+    if(nodeToDelete.type === NodeTypes.CONDITION){
+      useConditionStore.getState().removeConditionBlock(nodeToDelete.id);
+    } 
+
+     // Find all edges connected to this node
+     const connectedEdges = allEdges.filter(
       (edge) => edge.source === nodeToDelete.id || edge.target === nodeToDelete.id
     );
 
@@ -78,8 +128,13 @@ export const handleNodeDeletion = (
     updatedEdges = updatedEdges.filter(
       (edge) => edge.source !== nodeToDelete.id && edge.target !== nodeToDelete.id
     );
-  });
 
+    // Remove the node from nodes
+    updatedNodes = updatedNodes.filter(
+      (node) => node.id !== nodeToDelete.id
+    );
+  });
+   
   // Remove nodes from the state
   const remainingNodes = allNodes.filter(
     (node) => !nodesToDelete.some((n) => n.id === node.id)
@@ -96,7 +151,6 @@ export const handleNodeDeletion = (
   setEdges(finalEdges);
 };
 
-// Add this helper function to handle reconnecting Start node
 const handleStartNodeReconnection = (
   nodes: Node[],
   edges: Edge[],
@@ -167,7 +221,7 @@ export const handleOnConnection = (
       return false;
     }
 
-    // Get all existing edges (not just action edges)
+  // Get all non-action edges
     const nonActionEdges = edges.filter(
       (edge) => 
         edge.type !== "actionEdge" || 
