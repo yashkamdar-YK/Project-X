@@ -35,7 +35,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
 }) => {
   return (
     <div className="relative">
-      <div className="border border-gray-800 rounded-lg p-2 bg-gray-900">
+      <div className="border dark:border-gray-800 rounded-lg p-2 dark:bg-gray-900">
         {block.subSections.map((subSection, index) => (
           <ConditionSubSection
             key={subSection.id}

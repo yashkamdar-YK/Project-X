@@ -69,22 +69,22 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   if (!currentNode) return null;
 
   return (
-    <div className="bg-gray-900 rounded-lg">
+    <div className="dark:bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-100">
+        <h2 className="text-2xl font-semibold dark:text-gray-100">
           Condition Builder
         </h2>
         <Button
           variant="ghost"
           size="icon"
           onClick={closeSheet}
-          className="rounded-full hover:bg-gray-800"
+          className="rounded-full hover:gb-gray-200 dark:hover:bg-gray-800"
         >
           <X className="w-5 h-5" />
         </Button>
       </div>
 
-      <Badge>ID : {node.id}</Badge>
+      <Badge className="bg-blue-500">ID : {node.id}</Badge>
 
       <Card className="dark:bg-gray-900 border-l mt-4 border-gray-200 dark:border-gray-800">
         <CardContent className="space-y-8 mt-6">
@@ -100,9 +100,16 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
           <Tabs defaultValue="entry" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="entry">Entry</TabsTrigger>
-              <TabsTrigger value="exit">Exit</TabsTrigger>
-              <TabsTrigger value="adjustment">Adjustment</TabsTrigger>
+              <TabsTrigger 
+                value="entry"
+                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              >Entry</TabsTrigger>
+              <TabsTrigger
+                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                 value="exit">Exit</TabsTrigger>
+              <TabsTrigger
+                 className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                 value="adjustment">Adjustment</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -150,7 +157,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </CardContent>
       </Card>
 
-      <div className="space-y-8 mt-8 -mx-4">
+      <div className="space-y-8  mt-8 -mx-4">
         {currentNode.blocks.map((block, index) => (
           <React.Fragment key={block.id}>
             <div className="relative">
