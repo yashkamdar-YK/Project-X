@@ -15,6 +15,7 @@ import { useActionStore } from '@/lib/store/actionStore';
 import { useConditionStore } from '@/lib/store/conditionStore';
 import compileConditionState from './NodeSheet/ConditionNodeSheet/compileConditionState';
 import { transformToActionPayload } from './NodeSheet/ActionNodeSheet/transformToActionPayload ';
+import compileIndicatorsToPayload from '../DashboardSidebar/Indicators/compileIndicatorsToPayload';
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
@@ -88,8 +89,13 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
     return data;
   };
 
-  const DEMO_CODE =  "--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
-    "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
+  // const DEMO_CODE =  "--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
+  //   "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
+  const DEMO_CODE = `
+  --------ACTIONS------\n ${JSON.stringify(_actionNodes(), null, 2)}
+  \n--------CONDITIONS------\n ${JSON.stringify(_conditionBlocks, null, 2)}
+  \n--------INDICATORS------\n ${JSON.stringify(compileIndicatorsToPayload(indicators), null, 2)}
+  `
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
