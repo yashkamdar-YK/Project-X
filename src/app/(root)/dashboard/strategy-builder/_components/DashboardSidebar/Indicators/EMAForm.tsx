@@ -131,7 +131,6 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const indicatorData: MovingAverageIndicator = {
       id: initialData?.id || `ema-${Date.now()}`,
       type: "ema",
@@ -165,7 +164,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData}>
+      <IndicatorFormWrapper onClose={onClose}  isEdit={!!initialData} isLoading={false}>
         <div className="grid gap-4">
           {/* Rest of your form JSX remains the same */}
           <div className="grid grid-cols-2 gap-4">
@@ -283,3 +282,5 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
 };
 
 export default EMAForm;
+
+

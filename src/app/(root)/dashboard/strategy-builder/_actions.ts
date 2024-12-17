@@ -26,7 +26,7 @@ export const symbolService = {
       if (response.data.status && !response.data.error) {
         return response.data.data;
       } else {
-        throw new Error(response.data.message || 'Failed to fetch symbol info');
+        throw Error(response.data.message || 'Failed to fetch symbol info');
       }
     } catch (error) {
       throw error;

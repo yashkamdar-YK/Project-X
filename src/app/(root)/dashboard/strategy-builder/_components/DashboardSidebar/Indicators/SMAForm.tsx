@@ -143,7 +143,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData}>
+      <IndicatorFormWrapper onClose={onClose} isEdit={!!initialData} isLoading={false}>
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

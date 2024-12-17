@@ -10,6 +10,7 @@ import SMAForm from "./SMAForm";
 import SuperTrendForm from "./SuperTrendForm";
 import { Indicator } from "./types";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import Spinner from "@/components/shared/spinner";
 
 interface IndicatorDialogProps {
   open: boolean;
@@ -20,7 +21,7 @@ interface IndicatorDialogProps {
 const IndicatorDialog: React.FC<IndicatorDialogProps> = ({ 
   open, 
   onOpenChange,
-  editingIndicator 
+  editingIndicator,
 }) => {
   const [selectedIndicator, setSelectedIndicator] = useState<typeof INDICATOR_OPTIONS[number] | null>(
     editingIndicator ? INDICATOR_OPTIONS.find(opt => opt.option === editingIndicator.type) || null : null
@@ -111,16 +112,19 @@ export interface IndicatorFormWrapperProps {
   children: React.ReactNode;
   onClose: () => void;
   isEdit: boolean;
+  isLoading: boolean;
 }
 
-export const IndicatorFormWrapper: React.FC<IndicatorFormWrapperProps> = ({ children, onClose , isEdit}) => (
+export const IndicatorFormWrapper: React.FC<IndicatorFormWrapperProps> = ({ children, onClose , isEdit, isLoading}) => (
   <div className="space-y-4">
     {children}
     <div className="flex justify-end space-x-2 mt-4">
       <Button variant="outline" onClick={onClose}>
         Cancel
       </Button>
-      <Button type="submit">
+      <Button type="submit"
+       disabled={isLoading}>
+        {isLoading && <Spinner className="w-5 h-5 mr-2" />}     
         {isEdit ? "Save" : "Add"}
       </Button>
     </div>
