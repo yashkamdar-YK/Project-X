@@ -38,17 +38,17 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
   const currentNode = actionNodes[node.id] || { nodeName: '', actions: [], positions: [] };
 
   const availableActions = [
-    { 
+    {
       label: "Square off all positions",
       func: "squareoff_all" as const,
       icon: Trash2
     },
-    { 
+    {
       label: "Stop wait trade triggers",
       func: "stop_WaitTrade_triggers" as const,
       icon: AlertCircle
     },
-    { 
+    {
       label: "Add new position",
       func: "addLeg" as const,
       icon: LayoutGrid
@@ -80,8 +80,11 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-2xl font-semibold flex items-center text-gray-900 dark:text-gray-100">
             Action Settings
+            <Badge className="ml-2" >
+              ID : {node.id}
+            </Badge>
           </h2>
           <Button
             variant="ghost"
@@ -93,14 +96,10 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
           </Button>
         </div>
 
-        <Badge>
-          ID : {node.id}
-        </Badge>
-        
         {/* Action Name Input */}
         <div className="space-y-2">
-          <Label 
-            htmlFor="action-name" 
+          <Label
+            htmlFor="action-name"
             className="text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Action Name
@@ -120,7 +119,7 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
             {currentNode.actions.map((action) => {
               const actionConfig = availableActions.find(a => a.func === action.func);
               if (!actionConfig) return null;
-              
+
               return (
                 <div
                   key={action.func}
@@ -177,7 +176,7 @@ const ActionNodeSheet: React.FC<ActionNodeSheetProps> = ({ node }) => {
               Add New Action
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
+          <DropdownMenuContent
             className="w-56 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
           >
             {availableActions.map(({ label, func, icon: Icon }) => (
