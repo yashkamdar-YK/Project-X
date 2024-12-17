@@ -251,11 +251,7 @@ export const handleOnConnection = (
     const allActionEdges = [...existingActionEdges, newEdge];
 
     // Sort action edges by target node Y position
-    const sortedActionEdges = allActionEdges.sort((a, b) => {
-      const nodeA = nodes.find(node => node.id === a.target);
-      const nodeB = nodes.find(node => node.id === b.target);
-      return (nodeA?.position.y || 0) - (nodeB?.position.y || 0);
-    }).map((edge, index) => ({
+    const sortedActionEdges = allActionEdges.map((edge, index) => ({
       ...edge,
       data: {
         ...edge.data,
@@ -275,4 +271,46 @@ export const handleOnConnection = (
     console.warn("Invalid connection");
     return false;
   }
+};
+
+export const resequenceActionEdges = (
+  edges: Edge[],
+  nodes: Node[],
+  sourceConditionId?: string
+) => {
+  // If sourceConditionId is provided, only resequence edges for that condition
+  // Otherwise, resequence all action edges
+  const edgesToResequence = edges.filter(
+    edge => 
+      edge.type === 'actionEdge' && 
+      (!sourceConditionId || edge.source === sourceConditionId)
+  );
+
+  // Group edges by their source condition
+  const edgesByCondition = edgesToResequence.reduce((acc, edge) => {
+    const source = edge.source;
+    if (!acc[source]) {
+      acc[source] = [];
+    }
+    acc[source].push(edge);
+    return acc;
+  }, {} as Record<string, Edge[]>);
+
+  // Resequence each group
+  const resequencedEdges = Object.entries(edgesByCondition).flatMap(([source, conditionEdges]) => {
+    return conditionEdges
+      .map((edge, index) => ({
+        ...edge,
+        data: {
+          ...edge.data,
+          sequence: index + 1,
+          sourceCondition: source
+        }
+      }));
+  });
+
+  // Return all edges with resequenced action edges
+  return edges
+    .filter(edge => !edgesToResequence.some(e => e.id === edge.id))
+    .concat(resequencedEdges);
 };
