@@ -20,7 +20,7 @@ export const INITIAL_NODES: Node[] = [
     data: { label: "Start" },
   },
   {
-    id: "initial-entry",
+    id: "ct1",
     position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
     type: NodeTypes.CONDITION,
     data: {
@@ -33,9 +33,9 @@ export const INITIAL_EDGES: Edge[] = [
   {
     id: "start-entry",
     source: "start",
-    target: "initial-entry",
+    target: "ct1",
     sourceHandle: "start-bottom",
-    targetHandle: "initial-entry-top",
+    targetHandle: "ct1-top",
     type: "conditionEdge",
   },
 ];

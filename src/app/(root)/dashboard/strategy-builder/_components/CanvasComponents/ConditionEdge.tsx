@@ -2,7 +2,7 @@ import React from 'react';
 import { getBezierPath, EdgeProps, Edge } from '@xyflow/react';
 import { Plus } from 'lucide-react';
 import { useNodeStore } from '@/lib/store/nodeStore';
-import { NodeTypes } from '../../_utils/nodeTypes';
+import { getNodeId, NodeTypes } from '../../_utils/nodeTypes';
 
 interface ConditionEdgeProps extends EdgeProps {
   sourceHandle?: string;
@@ -35,7 +35,7 @@ const ConditionEdge = ({
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
   const handleAddNode = () => {
-    const newNodeId = `node-${Date.now()}`;
+    const newNodeId = getNodeId({ type: NodeTypes.CONDITION });
     const sourceNode = nodes.find(node => node.id === source);
     
     const newNode = {
