@@ -85,17 +85,18 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
       updateSubSection(nodeId, subSection.id, "rhs", "Monday");
     }
   }, [subSection.lhs]);
-  useEffect(() => {
-    if (subSection.lhs === "candle_time") {
-      //@ts-ignore
-      updateSubSection(nodeId, subSection.id, "rhs", `${getData("OpenTime")[0]}`);
-    }
-    if (subSection.lhs === "candle_close_time") {
-      //@ts-ignore
-      updateSubSection(nodeId, subSection.id, "rhs", `${getData("CloseTime")[1]}`);
-    }
-      //@ts-ignore
-  }, [subSection.lhs, selectedTimeFrame, getData("OpenTime")?.[0], getData("CloseTime")?.[0]]);
+
+  // useEffect(() => {
+  //   if (subSection.lhs === "candle_time") {
+  //     //@ts-ignore
+  //     updateSubSection(nodeId, subSection.id, "rhs", `${getData("OpenTime")[0]}`);
+  //   }
+  //   if (subSection.lhs === "candle_close_time") {
+  //     //@ts-ignore
+  //     updateSubSection(nodeId, subSection.id, "rhs", `${getData("CloseTime")[1]}`);
+  //   }
+  //     //@ts-ignore
+  // }, [selectedTimeFrame]);
 
   return (
     <div className="mb-6 last:mb-0 pb-6 border-b border-gray-700 last:border-b-0">

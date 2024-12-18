@@ -45,7 +45,7 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         ...state.conditionBlocks,
         [nodeId]: {
           name,
-          maxEntries: 10,
+          maxEntries: 0,
           waitTrigger: false,
           positionOpen: false,
           type:"entry",

@@ -120,8 +120,24 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                 </Label>
                 <Input
                   id="max-entries"
-                  value={currentNode.maxEntries}
-                  onChange={(e) => updateBlockSettings(node.id, "maxEntries", e.target.value)}
+                  value={currentNode.maxEntries == 0 ? "infinite" : currentNode.maxEntries}
+                  onChange={e => {
+                    const inputValue = e.target.value;
+
+                    // If input is "infinite", set value to 0
+                    if (inputValue.toLowerCase() === "infinite") {
+                      updateBlockSettings(node.id, "maxEntries", 0);
+                      return;
+                    }
+
+                    // Remove any non-digit characters
+                    const numericValue = inputValue.replace(/[^\d]/g, '');
+
+                    // Convert to number or 0 if empty
+                    const finalValue = numericValue === '' ? 0 : parseInt(numericValue, 10);
+
+                    updateBlockSettings(node.id, "maxEntries", finalValue);
+                  }}
                   className="w-20 text-right"
                 />
               </div>

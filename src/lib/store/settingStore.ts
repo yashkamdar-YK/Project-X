@@ -53,7 +53,7 @@ export const useSettingStore = create<SettingState>((set) => ({
   setProductType: (type) => set({ productType: type }),
 
   // Order Type
-  orderType: "Limit",
+  orderType: "Market",
   setOrderType: (type) => set({ orderType: type }),
 
   // Square Off Time
