@@ -2,12 +2,12 @@ import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X, Plus } from 'lucide-react';
+import { X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
-import { ConditionBlock } from './ConditionBlock';
+import { ConditionBlock } from "./ConditionBlock";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -56,12 +56,16 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
   useEffect(() => {
     if (selectedTimeFrame) {
-      defaultOptionsService.getCloseTime(convertToMinutes(selectedTimeFrame)).then((res) => {
-        setData("CloseTime", res.data.data);
-      });
-      defaultOptionsService.getTimeIntervalsData(convertToMinutes(selectedTimeFrame)).then((res) => {
-        setData("OpenTime", res.data.data);
-      });
+      defaultOptionsService
+        .getCloseTime(convertToMinutes(selectedTimeFrame))
+        .then((res) => {
+          setData("CloseTime", res.data.data);
+        });
+      defaultOptionsService
+        .getTimeIntervalsData(convertToMinutes(selectedTimeFrame))
+        .then((res) => {
+          setData("OpenTime", res.data.data);
+        });
     }
   }, [selectedTimeFrame]);
 
@@ -83,95 +87,111 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </Button>
       </div>
 
+      <div className="flex items-center justify-center">
+        <Input
+          id="condition-name"
+          value={currentNode.name}
+          onChange={(e) =>
+            updateBlockSettings(node.id, "name", validateName(e.target.value))
+          }
+          className="w-60 text-center border-none focus:ring-1 !text-lg"
+        />
+      </div>
 
-      <Card className="dark:bg-gray-900 border-l mt-4 border-gray-200 dark:border-gray-800">
-        <CardContent className="space-y-8 mt-6">
-          <div className="flex items-center justify-center">
+      <Tabs
+        defaultValue={currentNode.type}
+        className="w-full my-4 px-4 md:px-6"
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger
+            value="entry"
+            onClick={() => updateBlockSettings(node.id, "type", "entry")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+          >
+            Entry
+          </TabsTrigger>
+          <TabsTrigger
+            onClick={() => updateBlockSettings(node.id, "type", "exit")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            value="exit"
+          >
+            Exit
+          </TabsTrigger>
+          <TabsTrigger
+            onClick={() => updateBlockSettings(node.id, "type", "adjustment")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            value="adjustment"
+          >
+            Adjustment
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      {currentNode.type !== "exit" && (
+        <div className="space-y-4 px-4 md:px-6">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="max-entries">
+              Max Entries using this condition:
+            </Label>
             <Input
-              id="condition-name"
-              value={currentNode.name}
-              onChange={(e) => updateBlockSettings(node.id, "name", validateName(e.target.value))}
-              className="w-60 text-center border-none focus:ring-1 !text-lg"
+              id="max-entries"
+              value={
+                currentNode.maxEntries == 0
+                  ? "infinite"
+                  : currentNode.maxEntries
+              }
+              onChange={(e) => {
+                const inputValue = e.target.value;
+
+                // If input is "infinite", set value to 0
+                if (inputValue.toLowerCase() === "infinite") {
+                  updateBlockSettings(node.id, "maxEntries", 0);
+                  return;
+                }
+
+                // Remove any non-digit characters
+                const numericValue = inputValue.replace(/[^\d]/g, "");
+
+                // Convert to number or 0 if empty
+                const finalValue =
+                  numericValue === "" ? 0 : parseInt(numericValue, 10);
+
+                updateBlockSettings(node.id, "maxEntries", finalValue);
+              }}
+              className="w-20 text-right"
             />
           </div>
 
-          <Tabs defaultValue={currentNode.type} className="w-full">
-            <TabsList className="grid w-full grid-cols-3"  >
-              <TabsTrigger
-                value="entry"
-                onClick={() => updateBlockSettings(node.id, "type", "entry")}
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-              >Entry</TabsTrigger>
-              <TabsTrigger
-                onClick={() => updateBlockSettings(node.id, "type", "exit")}
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                value="exit">Exit</TabsTrigger>
-              <TabsTrigger
-                onClick={() => updateBlockSettings(node.id, "type", "adjustment")}
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                value="adjustment">Adjustment</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {currentNode.type !== "exit" &&
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="max-entries">
-                  Max Entries using this condition:
-                </Label>
-                <Input
-                  id="max-entries"
-                  value={currentNode.maxEntries == 0 ? "infinite" : currentNode.maxEntries}
-                  onChange={e => {
-                    const inputValue = e.target.value;
+          <div className="flex items-center justify-between">
+            <Label htmlFor="wait-trigger">
+              Check if any Wait Trade Trigger is open:
+            </Label>
+            <Switch
+              id="wait-trigger"
+              checked={currentNode.waitTrigger}
+              className="data-[state=checked]:bg-blue-500"
+              onCheckedChange={(checked) =>
+                updateBlockSettings(node.id, "waitTrigger", checked)
+              }
+            />
+          </div>
 
-                    // If input is "infinite", set value to 0
-                    if (inputValue.toLowerCase() === "infinite") {
-                      updateBlockSettings(node.id, "maxEntries", 0);
-                      return;
-                    }
-
-                    // Remove any non-digit characters
-                    const numericValue = inputValue.replace(/[^\d]/g, '');
-
-                    // Convert to number or 0 if empty
-                    const finalValue = numericValue === '' ? 0 : parseInt(numericValue, 10);
-
-                    updateBlockSettings(node.id, "maxEntries", finalValue);
-                  }}
-                  className="w-20 text-right"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="wait-trigger">
-                  Check if any Wait Trade Trigger is open:
-                </Label>
-                <Switch
-                  id="wait-trigger"
-                  checked={currentNode.waitTrigger}
-                  className="data-[state=checked]:bg-blue-500"
-                  onCheckedChange={(checked) => updateBlockSettings(node.id, "waitTrigger", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="position-open">
-                  Check if any Position is Open:
-                </Label>
-                <div className="h-12">
-                  <Switch
-                    id="position-open"
-                    checked={currentNode.positionOpen}
-                    className="data-[state=checked]:bg-blue-500"
-                    onCheckedChange={(checked) =>
-                      updateBlockSettings(node.id, "positionOpen", checked)
-                    }
-                  />
-                </div>
-              </div>
-            </div>}
-        </CardContent>
-      </Card>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="position-open">
+              Check if any Position is Open:
+            </Label>
+            <div className="h-12">
+              <Switch
+                id="position-open"
+                checked={currentNode.positionOpen}
+                className="data-[state=checked]:bg-blue-500"
+                onCheckedChange={(checked) =>
+                  updateBlockSettings(node.id, "positionOpen", checked)
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-8  mt-8 -mx-4">
         {currentNode.blocks.map((block, index) => (
@@ -184,11 +204,14 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                 dataPoints={dataPoints}
                 addSubSection={(nodeId) => addSubSection(nodeId, block.id)}
                 updateSubSection={(nodeId, subSectionId, field, value) =>
-                  updateSubSection(nodeId, block.id, subSectionId, field, value)}
+                  updateSubSection(nodeId, block.id, subSectionId, field, value)
+                }
                 removeSubSection={(nodeId, subSectionId) =>
-                  removeSubSection(nodeId, block.id, subSectionId)}
+                  removeSubSection(nodeId, block.id, subSectionId)
+                }
                 toggleAddBadge={(nodeId, subSectionId) =>
-                  toggleAddBadge(nodeId, block.id, subSectionId)}
+                  toggleAddBadge(nodeId, block.id, subSectionId)
+                }
               />
               {currentNode.blocks.length > 1 && (
                 <Button

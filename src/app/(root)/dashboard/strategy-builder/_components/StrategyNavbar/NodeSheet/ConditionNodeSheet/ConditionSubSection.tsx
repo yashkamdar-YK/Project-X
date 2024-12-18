@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,138 +46,95 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
 }) => {
   const { indicators } = useIndicatorStore();
   const { getData } = useApplyDataStore();
-  const { selectedTimeFrame } = useDataPointStore();
 
   const lhsOptions = [
-    ...dataPoints.map((dataPoint) => dataPoint.elementName),
-    ...indicators.map((indicator) => indicator.elementName),
+    ...dataPoints.map((dp) => dp.elementName),
+    ...indicators.map((ind) => ind.elementName),
     ...DEFAULT_OPTIONS,
   ];
-
-  // const selectedDatapoint = dataPoints.find((dataPoint) => dataPoint.elementName === subSection.lhs);
-  // const selectedIndicator = indicators.find((indicator) => indicator.elementName === subSection.lhs);
-
-  const selectedLHS = () => {
-    return (
-      dataPoints.find(
-        (dataPoint) => dataPoint.elementName === subSection.lhs
-      ) ||
-      indicators.find(
-        (indicator) => indicator.elementName === subSection.lhs
-      ) ||
-      subSection.lhs
-    );
-  };
+  const selectedLHS =
+    dataPoints.find((dp) => dp.elementName === subSection.lhs) ||
+    indicators.find((ind) => ind.elementName === subSection.lhs) ||
+    subSection.lhs;
 
   //@ts-ignore
-  const columns = selectedLHS()?.options?.columnsAvailable || [];
+  const columns = selectedLHS?.options?.columnsAvailable || [];
   //@ts-ignore
-  const hasCandleLocation = selectedLHS()?.options?.candleLocation || false;
+  const hasCandleLocation = selectedLHS?.options?.candleLocation || false;
 
-  const getOperatorType = () => {
+  const operatorType =
     //@ts-ignore
-    if (selectedLHS()?.options?.type) {
-      //@ts-ignore
-      return selectedLHS().options.type;
-    }
+    selectedLHS?.options?.type ||
     //@ts-ignore
-    if (getData(subSection.lhs)?.type) {
-      //@ts-ignore
-      return getData(subSection.lhs).type;
-    }
-    return subSection.lhs;
-  };
-
-  const operatorType = getOperatorType();
+    getData(subSection.lhs)?.type ||
+    subSection.lhs;
   //@ts-ignore
   const allowedOperations = ALLOWED_OPERATIONS[operatorType] || [];
 
-  //@ts-ignore
-  const _canCompareWith = selectedLHS()?.options
-    ? //@ts-ignore
-      selectedLHS()?.options?.canComparedwith?.map((v) => v.toLocaleLowerCase())
-    : //@ts-ignore
-      getData(subSection.lhs)?.canComparedwith?.map((v) =>
-        v.toLocaleLowerCase()
-      );
+  const canCompareWith =
+    //@ts-ignore
+    selectedLHS?.options?.canComparedwith?.map((v) => v.toLowerCase()) ||
+    //@ts-ignore
+    getData(subSection.lhs)?.canComparedwith?.map((v) => v.toLowerCase());
 
   const getRHSOptions = useCallback(() => {
-    //@ts-ignore
-    const _DEFAULT_OPTIONS = [];
-    DEFAULT_OPTIONS.forEach((v) => {
+    const defaultOpts = DEFAULT_OPTIONS.filter((opt) => {
       //@ts-ignore
-      const options = getData(v);
+      const options = getData(opt);
       //@ts-ignore
       const type = options?.type;
-      if (type && _canCompareWith?.includes(type.toLocaleLowerCase())) {
-        _DEFAULT_OPTIONS.push(v);
-      }
+      return type && canCompareWith?.includes(type.toLowerCase());
     });
-    const data = [
+
+    const options = [
       ...dataPoints
-        ?.filter((v) =>
-          _canCompareWith?.includes(v.options?.type.toLocaleLowerCase())
+        .filter((dp) =>
+          canCompareWith?.includes(dp.options?.type.toLowerCase())
         )
-        .map((v) => v.elementName),
-      //@ts-ignore
+        .map((dp) => dp.elementName),
       ...indicators
-        ?.filter((v) =>
-          _canCompareWith?.includes(v.options?.type.toLocaleLowerCase())
+        .filter((ind) =>
+          canCompareWith?.includes(ind.options?.type.toLowerCase())
         )
-        .map((v) => v.elementName),
-      ...(_canCompareWith?.includes("values") ? ["value"] : []),
-      //@ts-ignore
-      ..._DEFAULT_OPTIONS,
+        .map((ind) => ind.elementName),
+      ...(canCompareWith?.includes("values") ? ["value"] : []),
+      ...defaultOpts,
     ];
 
-    if (
-      subSection.operator === "cross_above" ||
+    return subSection.operator === "cross_above" ||
       subSection.operator === "cross_below"
-    ) {
-      return data.filter((v) => v !== subSection.lhs);
-    }
+      ? options.filter((opt) => opt !== subSection.lhs)
+      : options;
+  }, [canCompareWith, subSection.lhs, subSection.operator]);
 
-    return data;
-  }, [_canCompareWith]);
-
-  // useEffect(() => {
-  //   if (subSection.lhs === "day_of_week") {
-  //     updateSubSection(nodeId, subSection.id, "rhs", "Monday");
-  //   }
-  // }, [subSection.lhs]);
-
-  const renderOperatorLabel = (operator: any) => {
-    if (typeof operator?.label === "function") {
-      return operator?.label();
-    }
-    return operator?.label;
-  };
+  const selectClass = "text-xs py-1 px-2 h-8";
+  const buttonClass = "text-xs px-2 h-7";
 
   return (
-    <div className="mb-6 last:mb-0 pb-6 border-b border-gray-700 last:border-b-0">
-      <div className="flex items-center gap-4 overflow-x-auto">
-        {/* Left side group */}
-        <div className="flex-1 flex items-center">
-          <div className="flex -space-x-[1px]">
+    <div className="mb-4 pb-4 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+      <div className="flex items-center gap-2">
+      <div className="flex flex-1 items-center  gap-2 justify-between">
+        <div className=" flex items-center">
+          <div className="flex -space-x-px">
             <Select
               value={subSection.lhs}
-              onValueChange={(value) =>
-                updateSubSection(nodeId, subSection.id, "lhs", value)
+              onValueChange={(v) =>
+                updateSubSection(nodeId, subSection.id, "lhs", v)
               }
             >
               <SelectTrigger
-                className={`w-fit border-r-0 ${
+                className={`${selectClass} max-w-32 w-fit border-r-0 ${
                   !columns.length && !hasCandleLocation
                     ? "rounded-r-md"
                     : "rounded-r-none"
                 }`}
               >
-                <SelectValue placeholder="Select variable" />
+                <SelectValue placeholder="Variable" />
               </SelectTrigger>
               <SelectContent>
-                {lhsOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
+                {lhsOptions.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -186,22 +143,22 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             {columns.length > 0 && (
               <Select
                 value={subSection.column}
-                onValueChange={(value) =>
-                  updateSubSection(nodeId, subSection.id, "column", value)
+                onValueChange={(v) =>
+                  updateSubSection(nodeId, subSection.id, "column", v)
                 }
               >
                 <SelectTrigger
-                  className={`w-fit rounded-none border-x-0 ${
+                  className={`${selectClass} max-w-28 w-fit rounded-none border-x-0 ${
                     !hasCandleLocation ? "rounded-r-md" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select column" />
+                  <SelectValue placeholder="Column" />
                 </SelectTrigger>
                 <SelectContent>
                   {/* @ts-ignore */}
-                  {columns.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
+                  {columns.map((col) => (
+                    <SelectItem key={col} value={col}>
+                      {col}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,127 +166,99 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             )}
 
             {hasCandleLocation && (
-              <div className="flex -space-x-[1px]">
-                <Select
-                  value={subSection.selectedPeriod}
-                  onValueChange={(value) =>
-                    updateSubSection(
-                      nodeId,
-                      subSection.id,
-                      "selectedPeriod",
-                      value
-                    )
-                  }
+              <Select
+                value={subSection.selectedPeriod}
+                onValueChange={(v) =>
+                  updateSubSection(nodeId, subSection.id, "selectedPeriod", v)
+                }
+              >
+                <SelectTrigger
+                  className={`${selectClass} max-w-28 w-fit border-x-0 ${
+                    subSection.selectedPeriod !== "prev-n"
+                      ? "rounded-r-md"
+                      : "rounded-none"
+                  }`}
                 >
-                  <SelectTrigger
-                    className={`w-fit border-x-0 ${
-                      subSection.selectedPeriod !== "prev-n"
-                        ? "rounded-r-md"
-                        : "rounded-none"
-                    }`}
-                  >
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="current">Current</SelectItem>
-                    <SelectItem value="prev">Previous</SelectItem>
-                    <SelectItem value="prev-n">Previous (n)</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <SelectValue placeholder="Period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Current</SelectItem>
+                  <SelectItem value="prev">Previous</SelectItem>
+                  <SelectItem value="prev-n">Previous (n)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
-                {subSection.selectedPeriod === "prev-n" && (
-                  <Input
-                    type="number"
-                    value={subSection.nValue}
-                    onChange={(e) =>
-                      updateSubSection(
-                        nodeId,
-                        subSection.id,
-                        "nValue",
-                        e.target.value
-                      )
-                    }
-                    placeholder="n (1-20)"
-                    className="w-20 rounded-l-none"
-                    min="1"
-                    max="20"
-                  />
-                )}
-              </div>
+            {subSection.selectedPeriod === "prev-n" && (
+              <Input
+                type="number"
+                value={subSection.nValue}
+                onChange={(e) =>
+                  updateSubSection(
+                    nodeId,
+                    subSection.id,
+                    "nValue",
+                    e.target.value
+                  )
+                }
+                className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                min="1"
+                max="20"
+              />
             )}
           </div>
         </div>
 
-        {/* Operator */}
+
         <Select
           value={subSection.operator}
-          onValueChange={(value) =>
-            updateSubSection(nodeId, subSection.id, "operator", value)
+          onValueChange={(v) =>
+            updateSubSection(nodeId, subSection.id, "operator", v)
           }
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Select operator">
-              {subSection.operator &&
-                renderOperatorLabel(
-                  allowedOperations.find(
-                    //@ts-ignore
-                    (op) => op.value === subSection.operator
-                  )
-                )}
-            </SelectValue>
+          >
+          <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
+            <SelectValue placeholder="Operator" />
           </SelectTrigger>
           <SelectContent>
             {/* @ts-ignore */}
-            {allowedOperations.map((operation) => (
-              <SelectItem key={operation.value} value={operation.value}>
-                {renderOperatorLabel(operation)}
+            {allowedOperations.map((op) => (
+              <SelectItem key={op.value} value={op.value}>
+                {typeof op.label === "function" ? op.label() : op.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Right side group */}
-        <div className="flex-1 flex items-center">
-          <div className="flex -space-x-[1px]">
+        <div className="flex items-center">
+          <div className="flex -space-x-px">
             <Select
               value={subSection.rhs}
-              onValueChange={(value) =>
-                updateSubSection(nodeId, subSection.id, "rhs", value)
+              onValueChange={(v) =>
+                updateSubSection(nodeId, subSection.id, "rhs", v)
               }
             >
               <SelectTrigger
-                className={`w-fit ${
+                className={`${selectClass} max-w-32 w-fit ${
                   subSection.rhs === "value" ? "rounded-r-none border-r-0" : ""
                 }`}
               >
-                <SelectValue placeholder="Select variable" />
+                <SelectValue placeholder="Compare with" />
               </SelectTrigger>
               <SelectContent>
-                {subSection.lhs === "candle_close_time"
-                  ? //@ts-ignore
-                    getData("CloseTime")?.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))
+                {(subSection.lhs === "candle_close_time"
+                  ? getData("CloseTime")
                   : subSection.lhs === "candle_time"
-                  ? //@ts-ignore
-                    getData("OpenTime")?.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))
+                  ? getData("OpenTime")
                   : subSection.lhs === "day_of_week"
-                  ? VALID_DAYS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))
-                  : getRHSOptions().map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
+                  ? VALID_DAYS
+                  : getRHSOptions()
+                )
+                  //@ts-ignore
+                  ?.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
@@ -346,22 +275,21 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                       e.target.value
                     )
                   }
-                  placeholder="Enter value"
-                  className="w-[120px] rounded-l-none"
+                  className="w-24 rounded-l-none text-xs px-2 h-8"
+                  placeholder="Value"
                 />
               )}
           </div>
         </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 ml-2">
+</div>
+        <div className="flex items-center gap-1">
           {isLastSubSection ? (
             <Button
               size="sm"
               onClick={() => addSubSection(nodeId)}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className={`${buttonClass} bg-blue-500 hover:bg-blue-600 text-white`}
             >
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="w-3 h-3 mr-1" />
               Add
             </Button>
           ) : (
@@ -370,7 +298,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 size="sm"
                 variant="secondary"
                 onClick={() => toggleAddBadge(nodeId, subSection.id)}
-                className="bg-gray-700 hover:bg-gray-600 min-w-[80px]"
+                className={`${buttonClass} bg-gray-700 hover:bg-gray-600 min-w-[60px]`}
               >
                 {subSection.addBadge}
               </Button>
@@ -378,9 +306,9 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 size="sm"
                 variant="ghost"
                 onClick={() => removeSubSection(nodeId, subSection.id)}
-                className="text-red-500 hover:text-red-600 hover:bg-red-900/20"
+                className={`${buttonClass} text-red-500 hover:text-red-600 hover:bg-red-900/20`}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3 h-3" />
               </Button>
             </>
           )}
