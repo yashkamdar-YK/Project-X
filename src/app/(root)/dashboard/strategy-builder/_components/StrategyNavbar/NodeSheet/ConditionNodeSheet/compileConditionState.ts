@@ -5,7 +5,7 @@ import { useNodeStore } from "@/lib/store/nodeStore";
 const compileConditionState = (state: ConditionBlockMap) => {
   const output: any[] = [];
   const allEdges: Edge[] = useNodeStore.getState().edges;
-
+  
   for (const [nodeId, nodeData] of Object.entries(state)) {
     const compiledNode: any = {
       node: nodeId,
@@ -20,7 +20,8 @@ const compileConditionState = (state: ConditionBlockMap) => {
     //actions
     const actions:string[] = [];
     allEdges.forEach(e => {
-      if (e.source === nodeId) {
+      //source should start with ct and target should start with ac
+      if(e.source.startsWith('ct') && e.target.startsWith('ac') && e.source === nodeId){
         actions.push(e.target);
       }
     })

@@ -2,6 +2,7 @@ import React from "react";
 import { getBezierPath, EdgeProps } from "@xyflow/react";
 import { Trash2, Unplug } from "lucide-react";
 import { useNodeStore } from "@/lib/store/nodeStore";
+import { resequenceActionEdges } from "../../_utils/nodeHandling";
 
 interface ActionEdgeProps extends EdgeProps {
   sourceHandle?: string;
@@ -22,10 +23,9 @@ const ActionEdge = ({
   targetPosition,
   style = {},
   data = {},
+  source
 }: ActionEdgeProps) => {
-  const { edges, setEdges } = useNodeStore();
-
-  console.log("edges ", edges);
+  const { edges, setEdges,nodes } = useNodeStore();
 
   const [edgePath, centerX, centerY] = getBezierPath({
     sourceX,
@@ -38,7 +38,14 @@ const ActionEdge = ({
 
   const handleDelete = (event: React.MouseEvent) => {
     event.stopPropagation();
-    setEdges(edges.filter((edge) => edge.id !== id));
+    
+    // Remove the edge
+    const updatedEdges = edges.filter((edge) => edge.id !== id);
+    
+    // Resequence the remaining edges for this condition
+    const finalEdges = resequenceActionEdges(updatedEdges, nodes, source);
+    
+    setEdges(finalEdges);
   };
 
   return (

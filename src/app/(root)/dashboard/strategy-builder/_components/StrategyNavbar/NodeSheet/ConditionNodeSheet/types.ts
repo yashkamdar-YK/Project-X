@@ -22,6 +22,7 @@ export interface ConditionNode {
   maxEntries: number;
   waitTrigger: boolean;
   positionOpen: boolean;
+  type: "entry" | "exit" | "adjustment";
   blocks: {
     id: string;
     subSections: SubSection[];

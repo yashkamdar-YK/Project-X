@@ -136,7 +136,7 @@ export const useActionStore = create<ActionState>((set) => ({
         id: `position-${Date.now()}`,
         type: "Add Position",
         settings: {
-          legID: currentNode.positions.length + 1,
+          legID: generateLegID(currentNode.positions),
           transactionType: "buy",
           segment: "OPT",
           optionType: "CE",
@@ -231,3 +231,18 @@ export const useActionStore = create<ActionState>((set) => ({
 
     clearActionNodes: () => set({ actionNodes: {} }),
 }));
+
+const generateLegID = (positions: Position[]) => {
+  if (!positions || positions.length === 0) {
+    return 1;
+  }
+  const legIDs = positions.map((position) => position.settings.legID);
+  // Filter out any undefined or invalid values
+  const validLegIDs = legIDs.filter(id => typeof id === 'number' && Number.isFinite(id));
+  
+  if (validLegIDs.length === 0) {
+    return 1; // Return 1 if no valid legIDs found
+  }
+  
+  return Math.max(...validLegIDs) + 1;
+};

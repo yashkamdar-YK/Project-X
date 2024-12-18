@@ -45,9 +45,10 @@ export const useConditionStore = create<ConditionStore>((set) => ({
         ...state.conditionBlocks,
         [nodeId]: {
           name,
-          maxEntries: 10,
+          maxEntries: 0,
           waitTrigger: false,
           positionOpen: false,
+          type:"entry",
           blocks: [
             {
               id: `block-${Date.now()}`,
@@ -80,6 +81,7 @@ export const useConditionStore = create<ConditionStore>((set) => ({
             maxEntries: currentNode.maxEntries,
             waitTrigger: currentNode.waitTrigger,
             positionOpen: currentNode.positionOpen,
+            type: currentNode.type,
             blocks: currentNode.blocks,
             blockRelations: currentNode.blockRelations,
           },
