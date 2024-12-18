@@ -65,6 +65,9 @@ export const transformConditionToPayload = (
         }
         if (section.selectedPeriod) {
           lhs += `.${section.selectedPeriod}`;
+          if (section.selectedPeriod === 'prev-n' && section.nValue) {
+            lhs += `.${section.nValue}`;
+          }
         }
 
         // Construct the RHS part
@@ -72,10 +75,20 @@ export const transformConditionToPayload = (
         if (section.rhs === "value" && section._rhsValue) {
           const numValue = parseFloat(section._rhsValue);
           rhs = isNaN(numValue) ? section._rhsValue : numValue;
+        } else {
+          // Add RHS modifiers if they exist
+          if (section.rhs_column) {
+            rhs += `.${section.rhs_column}`;
+          }
+          if (section.rhs_selectedPeriod) {
+            rhs += `.${section.rhs_selectedPeriod}`;
+            if (section.rhs_selectedPeriod === 'prev-n' && section.rhs_nValue) {
+              rhs += `.${section.rhs_nValue}`;
+            }
+          }
         }
 
         // Get mapped operator
-        // const operator = operatorMap[section.operator] || section.operator;
         const operator = section.operator;
 
         blockConditions.push([lhs, operator, rhs]);
@@ -98,7 +111,7 @@ export const transformConditionToPayload = (
   return payload;
 };
 
-// Helper function to validate a condition block
+// Helper functions remain unchanged
 export const validateConditionBlock = (
   nodeId: string,
   block: ConditionBlockMap[string]
@@ -121,7 +134,6 @@ export const validateConditionBlock = (
   );
 };
 
-// Helper function to transform a single condition node
 export const transformSingleCondition = (
   nodeId: string,
   block: ConditionBlockMap[string]

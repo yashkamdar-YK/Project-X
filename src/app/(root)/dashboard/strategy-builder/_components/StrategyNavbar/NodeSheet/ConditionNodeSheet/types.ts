@@ -11,6 +11,9 @@ export interface SubSection {
   operator: string;
   rhs: string;
   _rhsValue?: string;
+  rhs_column?: string;
+  rhs_selectedPeriod?: string;
+  rhs_nValue?: string;
 }
 
 export interface ConditionBlockMap {
