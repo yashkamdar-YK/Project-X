@@ -62,7 +62,7 @@ export const transformSettingsToPayload = (
 
   // Transform operations by converting string values to numbers
   const transformOperation = (operation: typeof entryOperation) => {
-    if (orderType === 'Limit') {
+    if (orderType === 'Limit' && operation.shouldExecute) {
       return {
         timeLimit: parseInt(operation.timeLimit) || 0,
         shouldExecute: operation.shouldExecute,
@@ -75,7 +75,7 @@ export const transformSettingsToPayload = (
 
   // Format time to include seconds
   const formatTime = (time: string): string => {
-    return time ? `${time}:00` : "15:30:00"; // Default to market closing time if not set
+    return time ? `${time}` : "15:30:00"; // Default to market closing time if not set
   };
 
   return {

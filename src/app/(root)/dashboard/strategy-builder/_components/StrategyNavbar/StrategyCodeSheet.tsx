@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Sheet,
   SheetContent,
@@ -7,18 +7,19 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTheme } from '@/components/providers/theme-provider';
-import { Highlight, themes } from 'prism-react-renderer';
-import { useDataPointsStore } from '@/lib/store/dataPointsStore';
-import { useIndicatorStore } from '@/lib/store/IndicatorStore';
-import { useActionStore } from '@/lib/store/actionStore';
-import { useConditionStore } from '@/lib/store/conditionStore';
-import compileConditionState from './NodeSheet/ConditionNodeSheet/compileConditionState';
-import { transformToActionPayload } from './NodeSheet/ActionNodeSheet/transformToActionPayload ';
-import compileIndicatorsToPayload from '../DashboardSidebar/Indicators/compileIndicatorsToPayload';
-import { transformSettingsToPayload } from './SettingSheet/transformSettingsToPayload';
-import { useDataPointStore } from '@/lib/store/dataPointStore';
-import { convertToMinutes } from '@/lib/utils';
+import { useTheme } from "@/components/providers/theme-provider";
+import { Highlight, themes } from "prism-react-renderer";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { useActionStore } from "@/lib/store/actionStore";
+import { useConditionStore } from "@/lib/store/conditionStore";
+import {transformConditionToPayload} from "./NodeSheet/ConditionNodeSheet/transformConditionToPayload";
+import { transformToActionPayload } from "./NodeSheet/ActionNodeSheet/transformToActionPayload";
+import { transformSettingsToPayload } from "./SettingSheet/transformSettingsToPayload";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { convertToMinutes } from "@/lib/utils";
+import { transformDataPointsToPayload } from "../DashboardSidebar/DatapointDialog/transformDataPointsToPayload";
+import { transformIndicatorsToPayload } from "../DashboardSidebar/Indicators/transformIndicatorsToPayload";
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
@@ -63,48 +64,45 @@ def backtest_strategy(data: pd.DataFrame) -> dict:
 
 const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = React.useState('python');
-  const {dataPoints} = useDataPointsStore();
-  const {selectedSymbol,selectedTimeFrame} = useDataPointStore();
-  const {indicators} = useIndicatorStore();
-  const {conditionBlocks} = useConditionStore();
-  const _conditionBlocks = compileConditionState(conditionBlocks);
+  const [activeTab, setActiveTab] = React.useState("python");
+  const { dataPoints } = useDataPointsStore();
+  const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
+  const { indicators } = useIndicatorStore();
+  const { conditionBlocks } = useConditionStore();
 
-  const {
-    actionNodes
-  } = useActionStore();
-  const _actionNodes = () => {
-    let data: { [key: string]: any } = {};
-    
-    Object.keys(actionNodes).forEach(nodeId => {
-      const node = actionNodes[nodeId];
-      if (node.actions && node.positions) {
-        // Transform both actions and positions for each node
-        const transformedPayload = transformToActionPayload(node.actions, node.positions);
-        
-        // Store the transformed payload under the nodeId
-        data[nodeId] = {
-          nodeName: node.nodeName,
-          payload: transformedPayload
-        };
-      }
-    });
-    
-    return data;
-  };
-
-  // const DEMO_CODE =  "--------ACTIONS------\n" + JSON.stringify(_actionNodes(), null, 2) +
-  //   "\n--------CONDITIONS------\n" + JSON.stringify(_conditionBlocks, null, 2) 
+  const { actionNodes } = useActionStore();
+  
   const DEMO_CODE = `
-  --------ACTIONS------\n ${JSON.stringify(_actionNodes(), null, 2)}
-  \n--------CONDITIONS------\n ${JSON.stringify(_conditionBlocks, null, 2)}
-  \n--------INDICATORS------\n ${JSON.stringify(compileIndicatorsToPayload(indicators), null, 2)}
-  \n--------SETTINGS------\n ${JSON.stringify(transformSettingsToPayload(selectedSymbol || "",convertToMinutes(selectedTimeFrame || "")), null, 2)}
-  `
+  --------ACTIONS------\n ${
+    JSON.stringify(transformToActionPayload(actionNodes), null, 2)
+  }
+  \n--------CONDITIONS------\n ${JSON.stringify(transformConditionToPayload(conditionBlocks), null, 2)}
+  \n--------DATAPOINTS-------\n ${
+    transformDataPointsToPayload(dataPoints)?.map((v) =>
+      JSON.stringify(v, null, 2)
+    )
+  }
+  \n--------INDICATORS------\n ${
+    transformIndicatorsToPayload(indicators)?.map((v) =>
+      JSON.stringify(v, null, 2)
+    )
+  }
+  \n--------SETTINGS------\n ${JSON.stringify(
+    transformSettingsToPayload(
+      selectedSymbol || "",
+      convertToMinutes(selectedTimeFrame || "")
+    ),
+    null,
+    2
+  )}
+  `;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-2xl overflow-y-auto"
+      >
         <SheetHeader className="mb-4">
           <SheetTitle>Strategy Code</SheetTitle>
         </SheetHeader>
@@ -117,14 +115,27 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
           <TabsContent value="python" className="mt-0">
             <div className="relative rounded-md overflow-hidden">
               <Highlight
-                theme={theme === 'dark' ? themes.dracula : themes.github}
+                theme={theme === "dark" ? themes.dracula : themes.github}
                 code={DEMO_CODE}
                 language="python"
               >
-                {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                  <pre className={`${className} p-4 overflow-x-auto`} style={style}>
+                {({
+                  className,
+                  style,
+                  tokens,
+                  getLineProps,
+                  getTokenProps,
+                }) => (
+                  <pre
+                    className={`${className} p-4 overflow-x-auto`}
+                    style={style}
+                  >
                     {tokens.map((line, i) => (
-                      <div key={i} {...getLineProps({ line })} className="table-row">
+                      <div
+                        key={i}
+                        {...getLineProps({ line })}
+                        className="table-row"
+                      >
                         <span className="table-cell text-right pr-4 select-none opacity-50 text-sm">
                           {i + 1}
                         </span>
