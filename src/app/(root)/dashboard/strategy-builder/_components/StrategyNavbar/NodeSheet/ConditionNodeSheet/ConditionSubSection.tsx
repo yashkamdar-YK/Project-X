@@ -57,10 +57,19 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     indicators.find((ind) => ind.elementName === subSection.lhs) ||
     subSection.lhs;
 
+  const selectedRHS =
+    dataPoints.find((dp) => dp.elementName === subSection.rhs) ||
+    indicators.find((ind) => ind.elementName === subSection.rhs) ||
+    subSection.rhs;
+
   //@ts-ignore
   const columns = selectedLHS?.options?.columnsAvailable || [];
   //@ts-ignore
+  const RHSColumns = selectedRHS?.options?.columnsAvailable || [];
+  //@ts-ignore
   const hasCandleLocation = selectedLHS?.options?.candleLocation || false;
+  //@ts-ignore
+  const hasRHSCandleLocation = selectedRHS?.options?.candleLocation || false;
 
   const operatorType =
     //@ts-ignore
@@ -113,175 +122,241 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   return (
     <div className="mb-4 pb-4 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
       <div className="flex items-center gap-2">
-      <div className="flex flex-1 items-center  gap-2 justify-between">
-        <div className=" flex items-center">
-          <div className="flex -space-x-px">
-            <Select
-              value={subSection.lhs}
-              onValueChange={(v) =>
-                updateSubSection(nodeId, subSection.id, "lhs", v)
-              }
-            >
-              <SelectTrigger
-                className={`${selectClass} max-w-32 w-fit border-r-0 ${
-                  !columns.length && !hasCandleLocation
-                    ? "rounded-r-md"
-                    : "rounded-r-none"
-                }`}
-              >
-                <SelectValue placeholder="Variable" />
-              </SelectTrigger>
-              <SelectContent>
-                {lhsOptions.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {columns.length > 0 && (
+        <div className="flex flex-1 items-center  gap-2 justify-between">
+          <div className=" flex items-center">
+            <div className="flex -space-x-px">
               <Select
-                value={subSection.column}
+                value={subSection.lhs}
                 onValueChange={(v) =>
-                  updateSubSection(nodeId, subSection.id, "column", v)
+                  updateSubSection(nodeId, subSection.id, "lhs", v)
                 }
               >
                 <SelectTrigger
-                  className={`${selectClass} max-w-28 w-fit rounded-none border-x-0 ${
-                    !hasCandleLocation ? "rounded-r-md" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Column" />
-                </SelectTrigger>
-                <SelectContent>
-                  {/* @ts-ignore */}
-                  {columns.map((col) => (
-                    <SelectItem key={col} value={col}>
-                      {col}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            {hasCandleLocation && (
-              <Select
-                value={subSection.selectedPeriod}
-                onValueChange={(v) =>
-                  updateSubSection(nodeId, subSection.id, "selectedPeriod", v)
-                }
-              >
-                <SelectTrigger
-                  className={`${selectClass} max-w-28 w-fit border-x-0 ${
-                    subSection.selectedPeriod !== "prev-n"
+                  className={`${selectClass} max-w-32 w-fit border-r-0 ${
+                    !columns.length && !hasCandleLocation
                       ? "rounded-r-md"
-                      : "rounded-none"
+                      : "rounded-r-none"
                   }`}
                 >
-                  <SelectValue placeholder="Period" />
+                  <SelectValue placeholder="Variable" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="current">Current</SelectItem>
-                  <SelectItem value="prev">Previous</SelectItem>
-                  <SelectItem value="prev-n">Previous (n)</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-
-            {subSection.selectedPeriod === "prev-n" && (
-              <Input
-                type="number"
-                value={subSection.nValue}
-                onChange={(e) =>
-                  updateSubSection(
-                    nodeId,
-                    subSection.id,
-                    "nValue",
-                    e.target.value
-                  )
-                }
-                className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
-                min="1"
-                max="20"
-              />
-            )}
-          </div>
-        </div>
-
-
-        <Select
-          value={subSection.operator}
-          onValueChange={(v) =>
-            updateSubSection(nodeId, subSection.id, "operator", v)
-          }
-          >
-          <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
-            <SelectValue placeholder="Operator" />
-          </SelectTrigger>
-          <SelectContent>
-            {/* @ts-ignore */}
-            {allowedOperations.map((op) => (
-              <SelectItem key={op.value} value={op.value}>
-                {typeof op.label === "function" ? op.label() : op.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center">
-          <div className="flex -space-x-px">
-            <Select
-              value={subSection.rhs}
-              onValueChange={(v) =>
-                updateSubSection(nodeId, subSection.id, "rhs", v)
-              }
-            >
-              <SelectTrigger
-                className={`${selectClass} max-w-32 w-fit ${
-                  subSection.rhs === "value" ? "rounded-r-none border-r-0" : ""
-                }`}
-              >
-                <SelectValue placeholder="Compare with" />
-              </SelectTrigger>
-              <SelectContent>
-                {(subSection.lhs === "candle_close_time"
-                  ? getData("CloseTime")
-                  : subSection.lhs === "candle_time"
-                  ? getData("OpenTime")
-                  : subSection.lhs === "day_of_week"
-                  ? VALID_DAYS
-                  : getRHSOptions()
-                )
-                  //@ts-ignore
-                  ?.map((opt) => (
+                  {lhsOptions.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {opt}
                     </SelectItem>
                   ))}
-              </SelectContent>
-            </Select>
+                </SelectContent>
+              </Select>
 
-            {subSection.rhs === "value" &&
-              getRHSOptions()?.includes("value") && (
+              {columns.length > 0 && (
+                <Select
+                  value={subSection.column}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "column", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0 ${
+                      !hasCandleLocation ? "rounded-r-md" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* @ts-ignore */}
+                    {columns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {hasCandleLocation && (
+                <Select
+                  value={subSection.selectedPeriod}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "selectedPeriod", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
+                      subSection.selectedPeriod !== "prev-n"
+                        ? "rounded-r-md"
+                        : "rounded-none"
+                    }`}
+                  >
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current</SelectItem>
+                    <SelectItem value="prev">Previous</SelectItem>
+                    <SelectItem value="prev-n">Previous (n)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+
+              {hasCandleLocation && subSection.selectedPeriod === "prev-n" && (
                 <Input
-                  type="text"
-                  value={subSection._rhsValue}
+                  type="number"
+                  value={subSection.nValue}
                   onChange={(e) =>
                     updateSubSection(
                       nodeId,
                       subSection.id,
-                      "_rhsValue",
+                      "nValue",
                       e.target.value
                     )
                   }
-                  className="w-24 rounded-l-none text-xs px-2 h-8"
-                  placeholder="Value"
+                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                  min="1"
+                  max="20"
                 />
               )}
+            </div>
+          </div>
+
+          <Select
+            value={subSection.operator}
+            onValueChange={(v) =>
+              updateSubSection(nodeId, subSection.id, "operator", v)
+            }
+          >
+            <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
+              <SelectValue placeholder="Operator" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* @ts-ignore */}
+              {allowedOperations.map((op) => (
+                <SelectItem key={op.value} value={op.value}>
+                  {typeof op.label === "function" ? op.label() : op.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="flex items-center">
+            <div className="flex -space-x-px">
+              <Select
+                value={subSection.rhs}
+                onValueChange={(v) =>
+                  updateSubSection(nodeId, subSection.id, "rhs", v)
+                }
+              >
+                <SelectTrigger
+                  className={`${selectClass} max-w-32 w-fit ${
+                    subSection.rhs === "value"
+                      ? "rounded-r-none border-r-0"
+                      : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Compare with" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(subSection.lhs === "candle_close_time"
+                    ? getData("CloseTime")
+                    : subSection.lhs === "candle_time"
+                    ? getData("OpenTime")
+                    : subSection.lhs === "day_of_week"
+                    ? VALID_DAYS
+                    : getRHSOptions()
+                  )
+                    //@ts-ignore
+                    ?.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              {RHSColumns.length > 0 && (
+                <Select
+                  value={subSection.rhs_column}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "rhs_column", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0`}
+                  >
+                    <SelectValue placeholder="Column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* @ts-ignore */}
+                    {RHSColumns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {hasRHSCandleLocation && (
+                <Select
+                  value={subSection.rhs_selectedPeriod}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
+                      subSection.rhs_selectedPeriod !== "prev-n"
+                        ? "rounded-r-md"
+                        : "rounded-none"
+                    }`}
+                  >
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current</SelectItem>
+                    <SelectItem value="prev">Previous</SelectItem>
+                    <SelectItem value="prev-n">Previous (n)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+
+              {subSection.rhs_selectedPeriod === "prev-n" && hasRHSCandleLocation && (
+                <Input
+                  type="number"
+                  value={subSection.rhs_nValue}
+                  onChange={(e) =>
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "rhs_nValue",
+                      e.target.value
+                    )
+                  }
+                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                  min="1"
+                  max="20"
+                />
+              )}
+
+              {subSection.rhs === "value" &&
+                getRHSOptions()?.includes("value") && (
+                  <Input
+                    type="text"
+                    value={subSection._rhsValue}
+                    onChange={(e) =>
+                      updateSubSection(
+                        nodeId,
+                        subSection.id,
+                        "_rhsValue",
+                        e.target.value
+                      )
+                    }
+                    className="w-24 rounded-l-none text-xs px-2 h-8"
+                    placeholder="Value"
+                  />
+                )}
+            </div>
           </div>
         </div>
-</div>
         <div className="flex items-center gap-1">
           {isLastSubSection ? (
             <Button
