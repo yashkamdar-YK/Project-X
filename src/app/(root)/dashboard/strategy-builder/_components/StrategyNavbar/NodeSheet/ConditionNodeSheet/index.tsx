@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X, Plus } from "lucide-react";
+import { X, Plus, WandSparkles, Pencil, Settings, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -87,112 +87,77 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </Button>
       </div>
 
-      <div className="flex items-center justify-center">
-        <Input
-          id="condition-name"
-          value={currentNode.name}
-          onChange={(e) =>
-            updateBlockSettings(node.id, "name", validateName(e.target.value))
-          }
-          className="w-60 text-center border-none focus:ring-1 !text-lg"
-        />
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="relative w-70 max-w-md">
+          <input
+            id="condition-name"
+            value={currentNode.name}
+            onChange={(e) =>
+              updateBlockSettings(node.id, "name", validateName(e.target.value))
+            }
+            type="text"
+            className="w-full px-4 py-2 text-2xl font-normal text-center bg-transparent focus:border-2  rounded-lg focus:outline-none focus:border-gray-400 pr-8"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+          >
+            <Pencil className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
-      <Tabs
-        defaultValue={currentNode.type}
-        className=" my-4 px-4 md:px-6"
-      >
-        <TabsList className="grid  grid-cols-3">
-          <TabsTrigger
-            value="entry"
-            onClick={() => updateBlockSettings(node.id, "type", "entry")}
-            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-          >
-            Entry
-          </TabsTrigger>
-          <TabsTrigger
-            onClick={() => updateBlockSettings(node.id, "type", "exit")}
-            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-            value="exit"
-          >
-            Exit
-          </TabsTrigger>
-          <TabsTrigger
-            onClick={() => updateBlockSettings(node.id, "type", "adjustment")}
-            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-            value="adjustment"
-          >
-            Adjustment
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
       {currentNode.type !== "exit" && (
-        <div className="space-y-4 px-4 md:px-6">
+        <div className="space-y-4 text-lg text-gray-700 dark:text-gray-300  mt-6 px-4 md:px-6">
           <div className="flex items-center justify-between">
-            <Label htmlFor="max-entries">
-              Max Entries using this condition:
-            </Label>
-            <Input
-              id="max-entries"
-              value={
-                currentNode.maxEntries == 0
-                  ? "infinite"
-                  : currentNode.maxEntries
-              }
-              onChange={(e) => {
-                const inputValue = e.target.value;
-
-                // If input is "infinite", set value to 0
-                if (inputValue.toLowerCase() === "infinite") {
-                  updateBlockSettings(node.id, "maxEntries", 0);
-                  return;
-                }
-
-                // Remove any non-digit characters
-                const numericValue = inputValue.replace(/[^\d]/g, "");
-
-                // Convert to number or 0 if empty
-                const finalValue =
-                  numericValue === "" ? 0 : parseInt(numericValue, 10);
-
-                updateBlockSettings(node.id, "maxEntries", finalValue);
-              }}
-              className="w-20 text-right"
-            />
+            <h1>Condition Type:</h1>
+            <div className="flex">
+            <Button 
+              variant="ghost"
+              className="px-4 py-1 text-base rounded-lg text-white border-2 border-gray-600">
+                ENTRY
+            </Button>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-8 w-8" />
+                </Button>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="wait-trigger">
-              Check if any Wait Trade Trigger is open:
-            </Label>
-            <Switch
-              id="wait-trigger"
-              checked={currentNode.waitTrigger}
-              className="data-[state=checked]:bg-blue-500"
-              onCheckedChange={(checked) =>
-                updateBlockSettings(node.id, "waitTrigger", checked)
-              }
-            />
-          </div>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <span>Max Entries:</span>
+              <div className="flex items-center gap-2 bg-gray-600 rounded-lg">
+                <Button variant="ghost" size="icon">
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="w-8 text-center">1</span>
+                <Button variant="ghost" size="icon">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="position-open">
-              Check if any Position is Open:
-            </Label>
-            <div className="h-12">
-              <Switch
-                id="position-open"
-                checked={currentNode.positionOpen}
-                className="data-[state=checked]:bg-blue-500"
-                onCheckedChange={(checked) =>
-                  updateBlockSettings(node.id, "positionOpen", checked)
-                }
-              />
+            <div className="flex items-center justify-between">
+              <span>Check if any position is open:</span>
+              <div className="flex items-center gap-2">
+                <Button className="bg-green-700 hover:bg-green-600">YES</Button>
+                <Button variant="destructive">NO</Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span>Check if any order trigger is pending:</span>
+              <div className="flex items-center gap-2">
+                <Button className="bg-green-700 hover:bg-green-600">YES</Button>
+                <Button variant="destructive">NO</Button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Condition Block */}
       <div className="space-y-8 mt-8 ">
         {currentNode.blocks.map((block, index) => (
           <React.Fragment key={block.id}>
