@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import PositionCard from "./PositionCard";
 import { Position, PositionSettings } from './types';
 import { useActionStore } from "@/lib/store/actionStore";
-import { transformToActionPayload } from "./transformToActionPayload ";
+import { transformToActionPayload } from "./transformToActionPayload";
 import { validateName } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
