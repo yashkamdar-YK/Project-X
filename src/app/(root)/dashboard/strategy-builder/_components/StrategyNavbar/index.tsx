@@ -51,7 +51,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({ className = "" }) => {
     openSheet("settings")
     if(isOpen) return;
     if(strategyType === "Intraday") {
-      setStrategyType("Delivery")
+      setStrategyType("Positional")
     } else {
       setStrategyType("Intraday")
     }
