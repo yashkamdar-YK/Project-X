@@ -42,6 +42,34 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
   const { setData, getData } = useApplyDataStore();
 
+  const [conditionType, setConditionType] = useState<
+    "Entry" | "Exit" | "Adjust"
+  >("Entry");
+  const [maxEntries, setMaxEntries] = useState<number>(0);
+  const [openPosition, setOpenPosition] = useState<"YES" | "NO" | null>(null);
+  const [isOrdePending, setIsOrdePending] = useState<"YES" | "NO" | null>(null);
+  const [isVisible, setIsVisible] = useState<boolean>(true);
+
+  const handleIncrement = () => {
+    if (maxEntries < 1000) {
+      setMaxEntries((prevCount) => prevCount + 1);
+    }
+  };
+
+  const handleDecrement = () => {
+    if (maxEntries > 0) {
+      setMaxEntries((prevCount) => prevCount - 1);
+    }
+  };
+
+  const handleOpenPosition = (value: "YES" | "NO") => {
+    setOpenPosition(value);
+  };
+
+  const handleIsOrderPending = (value: "YES" | "NO") => {
+    setIsOrdePending(value);
+  };
+
   useEffect(() => {
     Object.keys(UrlMapping).map(async (key) => {
       //@ts-ignore
@@ -109,51 +137,111 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
       </div>
 
       {currentNode.type !== "exit" && (
-        <div className="space-y-4 text-lg text-gray-700 dark:text-gray-300  mt-6 px-4 md:px-6">
+        <div className="space-y-4 text-base text-gray-700 dark:text-gray-300 mt-6 px-4 md:px-6">
           <div className="flex items-center justify-between">
             <h1>Condition Type:</h1>
             <div className="flex">
-            <Button 
-              variant="ghost"
-              className="px-4 py-1 text-base rounded-lg text-white border-2 border-gray-600">
-                ENTRY
-            </Button>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-8 w-8" />
-                </Button>
+              <Button
+                onClick={() => {
+                  setConditionType((prevState) => {
+                    if (prevState === "Entry") return "Exit";
+                    if (prevState === "Exit") return "Adjust";
+                    return "Entry";
+                  });
+                }}
+                variant="ghost"
+                className="px-4 py-1 text-xs rounded-lg border-2 border-gray-600"
+              >
+                {conditionType}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`hover:bg-transparent ${
+                  isVisible ? "text-blue-500" : "text-gray-700"
+                }`} 
+                onClick={() => setIsVisible((prev) => !prev)}
+              >
+                <Settings className="h-8 w-8" />
+              </Button>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <span>Max Entries:</span>
-              <div className="flex items-center gap-2 bg-gray-600 rounded-lg">
-                <Button variant="ghost" size="icon">
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center">1</span>
-                <Button variant="ghost" size="icon">
-                  <Plus className="h-4 w-4" />
-                </Button>
+          
+          {isVisible && ( 
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <span>Max Entries:</span>
+                <div className="flex items-center gap-1 border rounded-lg">
+                  <Button
+                    variant="ghost"
+                    className="hover:bg-transparent"
+                    size="icon"
+                    onClick={handleDecrement}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-8 text-center">{maxEntries}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-transparent"
+                    onClick={handleIncrement}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <span>Check if any position is open:</span>
-              <div className="flex items-center gap-2">
-                <Button className="bg-green-700 hover:bg-green-600">YES</Button>
-                <Button variant="destructive">NO</Button>
+              <div className="flex items-center justify-between">
+                <span>Check if any position is open:</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => handleOpenPosition("YES")}
+                    variant="ghost"
+                    className={`border hover:bg-transparent text-xs ${
+                      openPosition === "YES" ? "bg-green-500 text-white" : ""
+                    }`}
+                  >
+                    YES
+                  </Button>
+                  <Button
+                    onClick={() => handleOpenPosition("NO")}
+                    variant="ghost"
+                    className={`border hover:bg-transparent text-xs ${
+                      openPosition === "NO" ? "bg-red-500 text-white" : ""
+                    }`}
+                  >
+                    NO
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <span>Check if any order trigger is pending:</span>
-              <div className="flex items-center gap-2">
-                <Button className="bg-green-700 hover:bg-green-600">YES</Button>
-                <Button variant="destructive">NO</Button>
+              <div className="flex items-center justify-between">
+                <span>Check if any order trigger is pending:</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => handleIsOrderPending("YES")}
+                    variant="ghost"
+                    className={`border hover:bg-transparent text-xs ${
+                      isOrdePending === "YES" ? "bg-green-500 text-white" : ""
+                    }`}
+                  >
+                    YES
+                  </Button>
+                  <Button
+                    onClick={() => handleIsOrderPending("NO")}
+                    variant="ghost"
+                    className={`border hover:bg-transparent text-xs ${
+                      isOrdePending === "NO" ? "bg-red-500 text-white" : ""
+                    }`}
+                  >
+                    NO
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
