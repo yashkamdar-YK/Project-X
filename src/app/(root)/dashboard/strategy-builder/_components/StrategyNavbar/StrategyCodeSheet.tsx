@@ -72,22 +72,21 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
 
   const { actionNodes } = useActionStore();
   
-  const DEMO_CODE = `
-  --------ACTIONS------\n ${
+  const DEMO_CODE = `----------------ACTIONS----------------\n ${
     JSON.stringify(transformToActionPayload(actionNodes), null, 2)
   }
-  \n--------CONDITIONS------\n ${JSON.stringify(transformConditionToPayload(conditionBlocks), null, 2)}
-  \n--------DATAPOINTS-------\n ${
+  \n----------------CONDITIONS----------------\n ${JSON.stringify(transformConditionToPayload(conditionBlocks), null, 2)}
+  \n----------------DATAPOINTS----------------\n ${
     transformDataPointsToPayload(dataPoints)?.map((v) =>
       JSON.stringify(v, null, 2)
     )
   }
-  \n--------INDICATORS------\n ${
+  \n----------------INDICATORS----------------\n ${
     transformIndicatorsToPayload(indicators)?.map((v) =>
       JSON.stringify(v, null, 2)
     )
   }
-  \n--------SETTINGS------\n ${JSON.stringify(
+  \n----------------SETTINGS----------------\n ${JSON.stringify(
     transformSettingsToPayload(
       selectedSymbol || "",
       convertToMinutes(selectedTimeFrame || "")

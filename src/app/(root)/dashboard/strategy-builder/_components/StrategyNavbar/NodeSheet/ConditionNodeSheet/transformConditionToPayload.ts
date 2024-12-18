@@ -41,6 +41,7 @@ export const transformConditionToPayload = (
     const nodePayload = {
       node: nodeId,
       type: nodeData.type,
+      description: nodeData.name,
       maxentries: nodeData.maxEntries,
       conditions: [] as Array<Array<[string, string, string | number]>>,
       check_when_position_open: nodeData.type === "exit" ? false : nodeData.positionOpen,
