@@ -113,7 +113,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   return (
     <div className="mb-4 pb-4 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
       <div className="flex items-center gap-2">
-      <div className="flex flex-1 items-center  gap-2 justify-between">
+       <div className="flex flex-1 items-center gap-2 justify-between">
         <div className=" flex items-center">
           <div className="flex -space-x-px">
             <Select
@@ -281,7 +281,9 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               )}
           </div>
         </div>
-</div>
+      </div>
+
+      {/* ADD Button  */}
         <div className="flex items-center gap-1">
           {isLastSubSection ? (
             <Button
@@ -292,7 +294,8 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               <Plus className="w-3 h-3 mr-1" />
               Add
             </Button>
-          ) : (
+          ) :
+           (
             <>
               <Button
                 size="sm"

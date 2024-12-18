@@ -73,7 +73,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   if (!currentNode) return null;
 
   return (
-    <div className="dark:bg-gray-900 rounded-lg">
+    <div className="dark:bg-gray-900 justify-center rounded-lg overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
         <Badge>ID : {node.id}</Badge>
 
@@ -100,9 +100,9 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
       <Tabs
         defaultValue={currentNode.type}
-        className="w-full my-4 px-4 md:px-6"
+        className=" my-4 px-4 md:px-6"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid  grid-cols-3">
           <TabsTrigger
             value="entry"
             onClick={() => updateBlockSettings(node.id, "type", "entry")}
@@ -193,7 +193,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </div>
       )}
 
-      <div className="space-y-8  mt-8 -mx-4">
+      <div className="space-y-8 mt-8 ">
         {currentNode.blocks.map((block, index) => (
           <React.Fragment key={block.id}>
             <div className="relative">
@@ -240,7 +240,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         ))}
       </div>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-center mt-8 pb-4">
         <Button
           onClick={() => addBlock(node.id)}
           className="bg-blue-500 hover:bg-blue-600 text-white"

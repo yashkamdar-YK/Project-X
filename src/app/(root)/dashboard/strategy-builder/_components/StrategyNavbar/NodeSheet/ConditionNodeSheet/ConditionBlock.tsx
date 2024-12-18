@@ -1,7 +1,7 @@
-import React from 'react';
-import { ConditionSubSection } from './ConditionSubSection';
-import { SubSection } from './types';
-import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
+import React from "react";
+import { ConditionSubSection } from "./ConditionSubSection";
+import { SubSection } from "./types";
+import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
 
 interface ConditionBlockProps {
   block: {
@@ -14,9 +14,9 @@ interface ConditionBlockProps {
   dataPoints: DataPoint[];
   addSubSection: (nodeId: string) => void;
   updateSubSection: (
-    nodeId: string, 
-    subSectionId: number, 
-    field: keyof SubSection, 
+    nodeId: string,
+    subSectionId: number,
+    field: keyof SubSection,
     value: string
   ) => void;
   removeSubSection: (nodeId: string, subSectionId: number) => void;
@@ -34,8 +34,8 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   toggleAddBadge,
 }) => {
   return (
-    <div className="relative">
-      <div className="border dark:border-gray-800 rounded-lg p-2 dark:bg-gray-900">
+    <div className=" relative">
+      <div className="border dark:border-gray-800 rounded-lg p-2 dark:bg-gray-900 ">
         {block.subSections.map((subSection, index) => (
           <ConditionSubSection
             key={subSection.id}
