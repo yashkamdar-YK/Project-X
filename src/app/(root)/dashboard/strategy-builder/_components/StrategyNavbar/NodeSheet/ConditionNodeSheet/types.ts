@@ -7,13 +7,13 @@ export interface SubSection {
   lhs: string;
   column?: string;
   selectedPeriod?: string;
-  nValue?: string;
+  nValue?: number;
   operator: string;
   rhs: string;
   _rhsValue?: string;
   rhs_column?: string;
   rhs_selectedPeriod?: string;
-  rhs_nValue?: string;
+  rhs_nValue?: number;
 }
 
 export interface ConditionBlockMap {

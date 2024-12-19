@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
@@ -8,14 +8,18 @@ import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
 import { ConditionBlock } from "./ConditionBlock";
 import { Input } from "@/components/ui/input";
-import { validateName } from "@/lib/utils";
+import { convertToMinutes, validateName } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { AndOrToggle } from "./ConditionSubSection";
+import { useApplyDataStore } from "@/lib/store/applyDataStore";
+import { defaultOptionsService, UrlMapping } from "../../../../_actions";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
 
 const ConditionNodeSheet = ({ node }: { node: Node }) => {
   const { closeSheet } = useSheetStore();
   const { dataPoints } = useDataPointsStore();
   const [showSettings, setShowSettings] = useState(true);
+  const {selectedTimeFrame } = useDataPointStore()
   const {
     conditionBlocks,
     addSubSection,
@@ -35,6 +39,35 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
     const newType = currentNode.type === "entry" ? "exit" : "entry";
     updateBlockSettings(node.id, "type", newType);
   };
+
+  const { setData, getData } = useApplyDataStore();
+
+  useEffect(() => {
+    Object.keys(UrlMapping).map(async (key) => {
+      //@ts-ignore
+      const exist = getData(key);
+      if (exist) return;
+      //@ts-ignore
+      const res = await defaultOptionsService.getApplyData(key);
+      //@ts-ignore
+      setData(key, res.data.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedTimeFrame) {
+      defaultOptionsService
+        .getCloseTime(convertToMinutes(selectedTimeFrame))
+        .then((res) => {
+          setData("CloseTime", res.data.data);
+        });
+      defaultOptionsService
+        .getTimeIntervalsData(convertToMinutes(selectedTimeFrame))
+        .then((res) => {
+          setData("OpenTime", res.data.data);
+        });
+    }
+  }, [selectedTimeFrame]);
 
   return (
     <div>

@@ -14,13 +14,6 @@ import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
 import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS, VALID_DAYS } from "./_const";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useApplyDataStore } from "@/lib/store/applyDataStore";
-import { useDataPointStore } from "@/lib/store/dataPointStore";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -183,9 +176,17 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               {hasCandleLocation && (
                 <Select
                   value={subSection.selectedPeriod}
-                  onValueChange={(v) =>
-                    updateSubSection(nodeId, subSection.id, "selectedPeriod", v)
-                  }
+                  onValueChange={(v) => {
+                    if (v === "prev-n") {
+                      updateSubSection(nodeId, subSection.id, "nValue", "1");
+                    }
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "selectedPeriod",
+                      v
+                    );
+                  }}
                 >
                   <SelectTrigger
                     className={`${selectClass} max-w-28 w-fit border-x-0 ${
@@ -204,23 +205,58 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 </Select>
               )}
 
-              {hasCandleLocation && subSection.selectedPeriod === "prev-n" && (
-                <Input
-                  type="number"
-                  value={subSection.nValue}
-                  onChange={(e) =>
-                    updateSubSection(
-                      nodeId,
-                      subSection.id,
-                      "nValue",
-                      e.target.value
-                    )
-                  }
-                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
-                  min="1"
-                  max="20"
-                />
-              )}
+              {
+                //@ts-ignore
+                subSection.selectedPeriod === "prev-n" && hasCandleLocation ? (
+                  <div className="flex items-center border rounded-lg overflow-hidden">
+                    <Button
+                      onClick={() => {
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "nValue",
+                          subSection.nValue ? subSection.nValue - 1 : 1
+                        );
+                      }}
+                      size={"sm"}
+                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 rounded-r-none dark:text-[#94a3b8]"
+                    >
+                      -
+                    </Button>
+                    <Input
+                      type="number"
+                      value={subSection.nValue}
+                      onChange={(e) =>
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "nValue",
+                          e.target.value
+                        )
+                      }
+                      className="w-12 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
+                      min="1"
+                      max="20"
+                    />
+                    <Button
+                      size={"sm"}
+                      onClick={() => {
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "nValue",
+                          subSection.nValue ? subSection.nValue  + 1 : 1
+                        );
+                      }}
+                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                    >
+                      +
+                    </Button>
+                  </div>
+                ) : (
+                  <></>
+                )
+              }
             </div>
           </div>
 
@@ -230,8 +266,26 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               updateSubSection(nodeId, subSection.id, "operator", v)
             }
           >
-            <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
-              <SelectValue placeholder="Operator" />
+            <SelectTrigger className={`${selectClass} w-fit`}>
+              <SelectValue placeholder="Operator">
+                {`${subSection.operator} ${
+                  //@ts-ignore
+                  typeof allowedOperations?.find(
+                    //@ts-ignore
+                    (op) => op.value === subSection.operator
+                  )?.label === "function"
+                    ? //@ts-ignore
+                      allowedOperations
+                        //@ts-ignore
+                        ?.find((op) => op.value === subSection.operator)
+                        ?.label()
+                    : //@ts-ignore
+                      allowedOperations?.find(
+                        //@ts-ignore
+                        (op) => op.value === subSection.operator
+                      )?.label
+                }`}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {/* @ts-ignore */}
@@ -304,14 +358,22 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
               {hasRHSCandleLocation && (
                 <Select
                   value={subSection.rhs_selectedPeriod}
-                  onValueChange={(v) =>
+                  onValueChange={(v) => {
+                    if (v === "prev-n") {
+                      updateSubSection(
+                        nodeId,
+                        subSection.id,
+                        "rhs_nValue",
+                        "1"
+                      );
+                    }
                     updateSubSection(
                       nodeId,
                       subSection.id,
                       "rhs_selectedPeriod",
                       v
-                    )
-                  }
+                    );
+                  }}
                 >
                   <SelectTrigger
                     className={`${selectClass} max-w-28 w-fit border-x-0 ${
@@ -332,23 +394,54 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
 
               {subSection.rhs_selectedPeriod === "prev-n" &&
                 hasRHSCandleLocation && (
-                  <Input
-                    type="number"
-                    value={subSection.rhs_nValue}
-                    onChange={(e) =>
-                      updateSubSection(
-                        nodeId,
-                        subSection.id,
-                        "rhs_nValue",
-                        e.target.value
-                      )
-                    }
-                    className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
-                    min="1"
-                    max="20"
-                  />
+                  <div className="flex items-center border rounded-lg overflow-hidden">
+                    <Button
+                      onClick={() => {
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "rhs_nValue",
+                          subSection.rhs_nValue ? subSection.rhs_nValue - 1 : 1
+                        );
+                      }}
+                      size={"sm"}
+                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 rounded-r-none dark:text-[#94a3b8]"
+                    >
+                      -
+                    </Button>
+                    <Input
+                      type="number"
+                      value={subSection.rhs_nValue}
+                      onChange={(e) =>
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "rhs_nValue",
+                          e.target.value
+                        )
+                      }
+                      className="w-12 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
+                      min="1"
+                      max="20"
+                    />
+                    <Button
+                      size={"sm"}
+                      onClick={() => {
+                        updateSubSection(
+                          nodeId,
+                          subSection.id,
+                          "rhs_nValue",
+                          subSection.rhs_nValue
+                            ? subSection.rhs_nValue + 1
+                            : 1
+                        );
+                      }}
+                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                    >
+                      +
+                    </Button>
+                  </div>
                 )}
-
               {subSection.rhs === "value" &&
                 getRHSOptions()?.includes("value") && (
                   <Input
@@ -371,14 +464,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
         </div>
         <div className="flex items-center gap-1">
           {isLastSubSection ? (
-            <Button
-              size="sm"
-              onClick={() => addSubSection(nodeId)}
-              className={`${buttonClass} bg-blue-500 hover:bg-blue-600 text-white`}
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Add
-            </Button>
+            <></>
           ) : (
             <>
               <div className="absolute inset-x-0 -bottom-14 flex justify-center">

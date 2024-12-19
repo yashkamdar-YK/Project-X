@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ConditionSubSection } from "./ConditionSubSection";
 import { ConditionNode, SubSection } from "./types";
 import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ChevronDown, Trash, Trash2, X } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ConditionBlockProps {
@@ -45,13 +45,35 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   currentNode,
   removeBlock,
 }) => {
+  const [expanded, setExpanded] = useState<string | undefined>(undefined);
+
+  const handleExpand = (value: string) => {
+    setExpanded(value === expanded ? undefined : value);
+  };
+
   return (
     <div className="relative border dark:border-gray-800 rounded-lg px-4">
-      <Accordion type="single" collapsible>
+      <Accordion 
+        type="single" 
+        collapsible 
+        value={expanded}
+        onValueChange={handleExpand}
+      >
         <AccordionItem value={blockId} className="border-b-0">
-          <AccordionTrigger className="flex justify-between items-center">
-            <span>Group <span className="text-xs" >({blockId})</span></span>
-            <div className="flex gap-2 items-center">
+          <AccordionTrigger 
+            className="flex justify-between items-center py-4 w-full"
+            onClick={(e) => {
+              // Prevent click event if trash button is clicked
+              if ((e.target as HTMLElement).closest('button')) {
+                e.stopPropagation();
+                return;
+              }
+            }}
+          >
+            <span className="text-sm font-medium">
+              Group <span className="text-xs text-gray-500">({blockId})</span>
+            </span>
+            <div className="flex items-center gap-2">
               {currentNode.blocks.length > 1 && (
                 <Button
                   variant="ghost"
@@ -62,11 +84,16 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
                   <Trash2 size={14} />
                 </Button>
               )}
-              <ChevronDown size={18} />
+              <ChevronDown 
+                size={18} 
+                className={`transition-transform duration-200 ${
+                  expanded === blockId ? 'rotate-180' : ''
+                }`}
+              />
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="grid gap-y-6">
+            <div className="grid gap-y-6 py-4">
               {block.subSections.map((subSection, index) => (
                 <ConditionSubSection
                   key={subSection.id}
@@ -81,10 +108,23 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
                   isLastSubSection={index === block.subSections.length - 1}
                 />
               ))}
+
             </div>
+            <div className="flex -mt-4 justify-center">
+              <Button
+                size="sm"
+                onClick={() => addSubSection(nodeId)}
+                className="bg-blue-500 hover:bg-blue-600 w-fit mx-auto text-white"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Add
+              </Button>
+              </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
     </div>
   );
 };
+
+export default ConditionBlock;
