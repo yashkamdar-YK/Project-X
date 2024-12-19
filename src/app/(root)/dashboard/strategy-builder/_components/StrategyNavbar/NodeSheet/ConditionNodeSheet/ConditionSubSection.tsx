@@ -8,13 +8,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { SubSection } from "./types";
 import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
 import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS, VALID_DAYS } from "./_const";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useApplyDataStore } from "@/lib/store/applyDataStore";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -120,9 +126,9 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   const buttonClass = "text-xs px-2 h-7";
 
   return (
-    <div className="mb-4 pb-4 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-1 items-center  gap-2 justify-between">
+    <div className="py-2 border m-2 my-4 rounded-lg relative">
+      <div className="flex items-center flex-col gap-2">
+        <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
           <div className=" flex items-center">
             <div className="flex -space-x-px">
               <Select
@@ -299,7 +305,12 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 <Select
                   value={subSection.rhs_selectedPeriod}
                   onValueChange={(v) =>
-                    updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", v)
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "rhs_selectedPeriod",
+                      v
+                    )
                   }
                 >
                   <SelectTrigger
@@ -319,23 +330,24 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 </Select>
               )}
 
-              {subSection.rhs_selectedPeriod === "prev-n" && hasRHSCandleLocation && (
-                <Input
-                  type="number"
-                  value={subSection.rhs_nValue}
-                  onChange={(e) =>
-                    updateSubSection(
-                      nodeId,
-                      subSection.id,
-                      "rhs_nValue",
-                      e.target.value
-                    )
-                  }
-                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
-                  min="1"
-                  max="20"
-                />
-              )}
+              {subSection.rhs_selectedPeriod === "prev-n" &&
+                hasRHSCandleLocation && (
+                  <Input
+                    type="number"
+                    value={subSection.rhs_nValue}
+                    onChange={(e) =>
+                      updateSubSection(
+                        nodeId,
+                        subSection.id,
+                        "rhs_nValue",
+                        e.target.value
+                      )
+                    }
+                    className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                    min="1"
+                    max="20"
+                  />
+                )}
 
               {subSection.rhs === "value" &&
                 getRHSOptions()?.includes("value") && (
@@ -369,19 +381,17 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             </Button>
           ) : (
             <>
+              <div className="absolute inset-x-0 -bottom-14 flex justify-center">
+                <AndOrToggle
+                  value={subSection.addBadge}
+                  onChange={() => toggleAddBadge(nodeId, subSection.id)}
+                />
+              </div>
               <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => toggleAddBadge(nodeId, subSection.id)}
-                className={`${buttonClass} bg-gray-700 hover:bg-gray-600 min-w-[60px]`}
-              >
-                {subSection.addBadge}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
+                size="icon"
+                variant="link"
                 onClick={() => removeSubSection(nodeId, subSection.id)}
-                className={`${buttonClass} text-red-500 hover:text-red-600 hover:bg-red-900/20`}
+                className={`${buttonClass} absolute -right-4 top-[45%]  text-red-500 hover:text-red-600 hover:bg-red-900/20`}
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
@@ -389,6 +399,48 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+export const AndOrToggle = ({
+  value,
+  onChange,
+}: {
+  value: "AND" | "OR";
+  onChange: () => void;
+}) => {
+  return (
+    <div className="relative flex flex-col items-center">
+      {/* Top vertical line */}
+      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600" />
+
+      <div
+        onClick={onChange}
+        className="flex rounded-md overflow-hidden cursor-pointer border border-gray-300 dark:border-gray-600"
+      >
+        <div
+          className={`px-3 py-1 text-sm font-medium transition-colors ${
+            value === "AND"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+          }`}
+        >
+          AND
+        </div>
+        <div
+          className={`px-3 py-1 text-sm font-medium transition-colors ${
+            value === "OR"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+          }`}
+        >
+          OR
+        </div>
+      </div>
+
+      {/* Bottom vertical line */}
+      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600" />
     </div>
   );
 };
