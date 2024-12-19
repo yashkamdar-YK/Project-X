@@ -8,6 +8,7 @@ import { create } from "zustand";
 
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
+  setConditionBlocks: (conditionBlocks: ConditionBlockMap) => void;
   createConditionBlock: (nodeId: string, name: string) => void;
   copyConditionBlock: (nodeId: string, newNodeId:string, label:string) => void;
   updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) => void;
@@ -38,6 +39,7 @@ interface ConditionStore {
 
 export const useConditionStore = create<ConditionStore>((set) => ({
   conditionBlocks: {},
+  setConditionBlocks: (conditionBlocks) => set({ conditionBlocks: { ...conditionBlocks } }),
 
   createConditionBlock: (nodeId: string, name: string) =>
     set((state) => ({

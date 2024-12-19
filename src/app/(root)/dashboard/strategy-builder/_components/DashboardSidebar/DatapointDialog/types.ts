@@ -70,6 +70,7 @@ export interface DataPoint {
 
 export interface DataPointsStore {
   dataPoints: DataPoint[];
+  setDataPoints: (dataPoints: DataPoint[]) => void;
   addDataPoint: (dataPoint: DataPoint) => void;
   removeDataPoint: (id: string) => void;
   updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;

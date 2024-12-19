@@ -53,14 +53,14 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
 
   return (
     <div className="relative border dark:border-gray-800 rounded-lg px-4">
-      <Accordion 
-        type="single" 
-        collapsible 
+      <Accordion
+        type="single"
+        collapsible
         value={expanded}
         onValueChange={handleExpand}
       >
         <AccordionItem value={blockId} className="border-b-0">
-          <AccordionTrigger 
+          <AccordionTrigger
             className="flex justify-between items-center py-4 w-full"
             onClick={(e) => {
               // Prevent click event if trash button is clicked
@@ -70,7 +70,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
               }
             }}
           >
-            <span className="text-sm font-medium">
+            <span className="text-base font-medium">
               Group <span className="text-xs text-gray-500">({blockId})</span>
             </span>
             <div className="flex items-center gap-2">
@@ -84,11 +84,10 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
                   <Trash2 size={14} />
                 </Button>
               )}
-              <ChevronDown 
-                size={18} 
-                className={`transition-transform duration-200 ${
-                  expanded === blockId ? 'rotate-180' : ''
-                }`}
+              <ChevronDown
+                size={18}
+                className={`transition-transform duration-200 ${expanded === blockId ? 'rotate-180' : ''
+                  }`}
               />
             </div>
           </AccordionTrigger>
@@ -120,7 +119,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
                 <Plus className="w-3 h-3 mr-1" />
                 Add
               </Button>
-              </div>
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>

@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, Minus, Plus, Trash2 } from "lucide-react";
 import { SubSection } from "./types";
 import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
 import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS, VALID_DAYS } from "./_const";
@@ -115,377 +115,369 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
       : options;
   }, [canCompareWith, subSection.lhs, subSection.operator]);
 
-  const selectClass = "text-xs py-1 px-2 h-8";
-  const buttonClass = "text-xs px-2 h-7";
+  const selectClass = "text-sm py-1 px-2 h-8";
 
   return (
-    <div className="py-2 border mb-8 last:mb-3 rounded-lg relative">
-      <div className="flex items-center flex-col gap-2">
-        <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
-          <div className=" flex items-center">
-            <div className="flex -space-x-px">
-              <Select
-                value={subSection.lhs}
-                onValueChange={(v) =>
-                  updateSubSection(nodeId, subSection.id, "lhs", v)
-                }
-              >
-                <SelectTrigger
-                  className={`${selectClass} max-w-32 w-fit border-r-0 ${
-                    !columns.length && !hasCandleLocation
-                      ? "rounded-r-md"
-                      : "rounded-r-none"
-                  }`}
-                >
-                  <SelectValue placeholder="Variable" />
-                </SelectTrigger>
-                <SelectContent>
-                  {lhsOptions.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {columns.length > 0 && (
-                <Select
-                  value={subSection.column}
-                  onValueChange={(v) =>
-                    updateSubSection(nodeId, subSection.id, "column", v)
-                  }
-                >
-                  <SelectTrigger
-                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0 ${
-                      !hasCandleLocation ? "rounded-r-md" : ""
-                    }`}
-                  >
-                    <SelectValue placeholder="Column" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* @ts-ignore */}
-                    {columns.map((col) => (
-                      <SelectItem key={col} value={col}>
-                        {col}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {hasCandleLocation && (
-                <Select
-                  value={subSection.selectedPeriod}
-                  onValueChange={(v) => {
-                    if (v === "prev-n") {
-                      updateSubSection(nodeId, subSection.id, "nValue", "1");
-                    }
-                    updateSubSection(
-                      nodeId,
-                      subSection.id,
-                      "selectedPeriod",
-                      v
-                    );
-                  }}
-                >
-                  <SelectTrigger
-                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
-                      subSection.selectedPeriod !== "prev-n"
-                        ? "rounded-r-md"
-                        : "rounded-none"
-                    }`}
-                  >
-                    <SelectValue placeholder="Period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="current">Current</SelectItem>
-                    <SelectItem value="prev">Previous</SelectItem>
-                    <SelectItem value="prev-n">Previous (n)</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              {
-                //@ts-ignore
-                subSection.selectedPeriod === "prev-n" && hasCandleLocation ? (
-                  <div className="flex items-center border rounded-lg overflow-hidden">
-                    <Button
-                      onClick={() => {
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "nValue",
-                          //@ts-ignore
-                          subSection.nValue ? subSection.nValue - 1 : 1
-                        );
-                      }}
-                      size={"sm"}
-                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 rounded-r-none dark:text-[#94a3b8]"
-                    >
-                      -
-                    </Button>
-                    <Input
-                      type="number"
-                      value={subSection.nValue}
-                      onChange={(e) =>
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "nValue",
-                          e.target.value
-                        )
-                      }
-                      className="w-12 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
-                      min="1"
-                      max="20"
-                    />
-                    <Button
-                      size={"sm"}
-                      onClick={() => {
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "nValue",
-                          //@ts-ignore
-                          subSection.nValue ? subSection.nValue + 1 : 1
-                        );
-                      }}
-                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                    >
-                      +
-                    </Button>
-                  </div>
-                ) : (
-                  <></>
-                )
-              }
-            </div>
-          </div>
-
+    <div className="py-3 border-y mb-8 last:mb-3 relative">
+      <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
+        <div className="flex justify-evenly gap-2">
           <Select
-            value={subSection.operator}
+            value={subSection.lhs}
             onValueChange={(v) =>
-              updateSubSection(nodeId, subSection.id, "operator", v)
+              updateSubSection(nodeId, subSection.id, "lhs", v)
             }
           >
-            <SelectTrigger className={`${selectClass} w-fit`}>
-              <SelectValue placeholder="Operator">
-                {`${subSection.operator}  (${
-                  //@ts-ignore
-                  typeof allowedOperations?.find(
-                    //@ts-ignore
-                    (op) => op.value === subSection.operator
-                  )?.label === "function"
-                    ? //@ts-ignore
-                      allowedOperations
-                        //@ts-ignore
-                        ?.find((op) => op.value === subSection.operator)
-                        ?.label()
-                    : //@ts-ignore
-                      allowedOperations?.find(
-                        //@ts-ignore
-                        (op) => op.value === subSection.operator
-                      )?.label
-                })`}
-              </SelectValue>
+            <SelectTrigger
+              className={`${selectClass} max-w-32 w-fit`}
+            >
+              <SelectValue placeholder="Variable" />
             </SelectTrigger>
             <SelectContent>
-              {/* @ts-ignore */}
-              {allowedOperations.map((op) => (
-                <SelectItem key={op.value} value={op.value}>
-                  {typeof op.label === "function" ? op.label() : op.label}
+              {lhsOptions.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <div className="flex items-center">
-            <div className="flex -space-x-px">
+          {columns.length > 0 && (
+            <Select
+              value={subSection.column}
+              onValueChange={(v) =>
+                updateSubSection(nodeId, subSection.id, "column", v)
+              }
+            >
+              <SelectTrigger
+                className={`${selectClass} max-w-28 w-fit`}
+              >
+                <SelectValue placeholder="Column" />
+              </SelectTrigger>
+              <SelectContent>
+                {/* @ts-ignore */}
+                {columns.map((col) => (
+                  <SelectItem key={col} value={col}>
+                    {col}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {hasCandleLocation && (
+            <Select
+              value={subSection.selectedPeriod}
+              onValueChange={(v) => {
+                if (v === "prev-n") {
+                  updateSubSection(nodeId, subSection.id, "nValue", "1");
+                }
+                updateSubSection(
+                  nodeId,
+                  subSection.id,
+                  "selectedPeriod",
+                  v
+                );
+              }}
+            >
+              <SelectTrigger
+                className={`${selectClass} max-w-28 w-fit`}
+              >
+                <SelectValue placeholder="Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="current">Current</SelectItem>
+                <SelectItem value="prev">Previous</SelectItem>
+                <SelectItem value="prev-n">Previous (n)</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
+          {subSection.selectedPeriod === "prev-n" && hasCandleLocation && (
+            <div className="flex items-center border rounded-lg overflow-hidden">
+              <Button
+                onClick={() => {
+                  const currentValue = Number(subSection.nValue) || 1;
+                  if (currentValue > 1) {
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "nValue",
+                      String(currentValue - 1)
+                    );
+                  }
+                }}
+                size="sm"
+                className="bg-gray-100 hover:bg-gray-200 h-7 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 rounded-r-none dark:text-slate-400"
+                disabled={Number(subSection.nValue) <= 1}
+              >
+                <Minus className="w-3 h-3" />
+              </Button>
+              <Input
+                type="number"
+                value={subSection.nValue || 1}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (!isNaN(value) && value >= 1 && value <= 20) {
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "nValue",
+                      String(value)
+                    );
+                  }
+                }}
+                readOnly
+                className="!text-center !text-xs h-6 px-0 w-8 ml-2 text-gray-800 dark:text-white border-none focus:ring-0"
+                min={1}
+                max={20}
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  const currentValue = Number(subSection.nValue) || 1;
+                  if (currentValue < 20) {
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "nValue",
+                      String(currentValue + 1)
+                    );
+                  }
+                }}
+                className="bg-gray-100 hover:bg-gray-200 h-7 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-l-none text-gray-600 dark:text-slate-400"
+                disabled={Number(subSection.nValue) >= 20}
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <Select
+          value={subSection.operator}
+          onValueChange={(v) =>
+            updateSubSection(nodeId, subSection.id, "operator", v)
+          }
+        >
+          <SelectTrigger className={`${selectClass} w-fit`}>
+            <SelectValue placeholder="Operator">
+              {(() => {
+                const selectedOperation = allowedOperations?.find(
+                  //@ts-ignore
+                  (op) => op.value === subSection.operator
+                );
+                if (!selectedOperation) return subSection.operator;
+
+                if (typeof selectedOperation.label === "function") {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span>{subSection.operator}</span>
+                      {selectedOperation.label()}
+                    </div>
+                  );
+                }
+
+                return `${subSection.operator} (${selectedOperation.label})`;
+              })()}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {/* @ts-ignore */}
+            {allowedOperations.map((op) => (
+              <SelectItem key={op.value} value={op.value}>
+                {typeof op.label === "function" ? op.label() : op.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="flex items-center">
+          <div className="flex justify-evenly gap-2">
+            <Select
+              value={subSection.rhs}
+              onValueChange={(v) =>
+                updateSubSection(nodeId, subSection.id, "rhs", v)
+              }
+            >
+              <SelectTrigger
+                className={`${selectClass} max-w-32 w-fit`}
+              >
+                <SelectValue placeholder="Compare with" />
+              </SelectTrigger>
+              <SelectContent>
+                {(subSection.lhs === "candle_close_time"
+                  ? getData("CloseTime")
+                  : subSection.lhs === "candle_time"
+                    ? getData("OpenTime")
+                    : subSection.lhs === "day_of_week"
+                      ? VALID_DAYS
+                      : getRHSOptions()
+                )
+                  //@ts-ignore
+                  ?.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+
+            {RHSColumns.length > 0 && (
               <Select
-                value={subSection.rhs}
+                value={subSection.rhs_column}
                 onValueChange={(v) =>
-                  updateSubSection(nodeId, subSection.id, "rhs", v)
+                  updateSubSection(nodeId, subSection.id, "rhs_column", v)
                 }
               >
                 <SelectTrigger
-                  className={`${selectClass} max-w-32 w-fit ${
-                    subSection.rhs === "value"
-                      ? "rounded-r-none border-r-0"
-                      : ""
-                  }`}
+                  className={`${selectClass} max-w-28 w-fit`}
                 >
-                  <SelectValue placeholder="Compare with" />
+                  <SelectValue placeholder="Column" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(subSection.lhs === "candle_close_time"
-                    ? getData("CloseTime")
-                    : subSection.lhs === "candle_time"
-                    ? getData("OpenTime")
-                    : subSection.lhs === "day_of_week"
-                    ? VALID_DAYS
-                    : getRHSOptions()
-                  )
-                    //@ts-ignore
-                    ?.map((opt) => (
-                      <SelectItem key={opt} value={opt}>
-                        {opt}
-                      </SelectItem>
-                    ))}
+                  {/* @ts-ignore */}
+                  {RHSColumns.map((col) => (
+                    <SelectItem key={col} value={col}>
+                      {col}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            )}
 
-              {RHSColumns.length > 0 && (
-                <Select
-                  value={subSection.rhs_column}
-                  onValueChange={(v) =>
-                    updateSubSection(nodeId, subSection.id, "rhs_column", v)
+            {hasRHSCandleLocation && (
+              <Select
+                value={subSection.rhs_selectedPeriod}
+                onValueChange={(v) => {
+                  if (v === "prev-n") {
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "rhs_nValue",
+                      "1"
+                    );
                   }
+                  updateSubSection(
+                    nodeId,
+                    subSection.id,
+                    "rhs_selectedPeriod",
+                    v
+                  );
+                }}
+              >
+                <SelectTrigger
+                  className={`${selectClass} max-w-28 w-fit`}
                 >
-                  <SelectTrigger
-                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0`}
-                  >
-                    <SelectValue placeholder="Column" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* @ts-ignore */}
-                    {RHSColumns.map((col) => (
-                      <SelectItem key={col} value={col}>
-                        {col}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+                  <SelectValue placeholder="Period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Current</SelectItem>
+                  <SelectItem value="prev">Previous</SelectItem>
+                  <SelectItem value="prev-n">Previous (n)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
-              {hasRHSCandleLocation && (
-                <Select
-                  value={subSection.rhs_selectedPeriod}
-                  onValueChange={(v) => {
-                    if (v === "prev-n") {
+            {subSection.rhs_selectedPeriod === "prev-n" && hasRHSCandleLocation && (
+              <div className="flex items-center border rounded-lg overflow-hidden">
+                <Button
+                  onClick={() => {
+                    const currentValue = Number(subSection.rhs_nValue) || 1;
+                    if (currentValue > 1) {
                       updateSubSection(
                         nodeId,
                         subSection.id,
                         "rhs_nValue",
-                        "1"
+                        String(currentValue - 1)
                       );
                     }
-                    updateSubSection(
-                      nodeId,
-                      subSection.id,
-                      "rhs_selectedPeriod",
-                      v
-                    );
                   }}
+                  disabled={Number(subSection.rhs_nValue) <= 1}
+                  size="sm"
+                  className="bg-gray-100 hover:bg-gray-200 h-7 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 rounded-r-none dark:text-slate-400"
                 >
-                  <SelectTrigger
-                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
-                      subSection.rhs_selectedPeriod !== "prev-n"
-                        ? "rounded-r-md"
-                        : "rounded-none"
-                    }`}
-                  >
-                    <SelectValue placeholder="Period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="current">Current</SelectItem>
-                    <SelectItem value="prev">Previous</SelectItem>
-                    <SelectItem value="prev-n">Previous (n)</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              {subSection.rhs_selectedPeriod === "prev-n" &&
-                hasRHSCandleLocation && (
-                  <div className="flex items-center border rounded-lg overflow-hidden">
-                    <Button
-                      onClick={() => {
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "rhs_nValue",
-                          //@ts-ignore
-                          subSection.rhs_nValue ? subSection.rhs_nValue - 1 : 1
-                        );
-                      }}
-                      size={"sm"}
-                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 rounded-r-none dark:text-[#94a3b8]"
-                    >
-                      -
-                    </Button>
-                    <Input
-                      type="number"
-                      value={subSection.rhs_nValue}
-                      onChange={(e) =>
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "rhs_nValue",
-                          e.target.value
-                        )
-                      }
-                      className="w-12 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
-                      min="1"
-                      max="20"
-                    />
-                    <Button
-                      size={"sm"}
-                      onClick={() => {
-                        updateSubSection(
-                          nodeId,
-                          subSection.id,
-                          "rhs_nValue",
-                          //@ts-ignore
-                          subSection.rhs_nValue ? subSection.rhs_nValue + 1 : 1
-                        );
-                      }}
-                      className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                    >
-                      +
-                    </Button>
-                  </div>
-                )}
-              {subSection.rhs === "value" &&
-                getRHSOptions()?.includes("value") && (
-                  <Input
-                    type="text"
-                    value={subSection._rhsValue}
-                    onChange={(e) =>
+                  <Minus className="w-3 h-3" />
+                </Button>
+                <Input
+                  type="number"
+                  value={subSection.rhs_nValue || 1}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (!isNaN(value) && value >= 1 && value <= 20) {
                       updateSubSection(
                         nodeId,
                         subSection.id,
-                        "_rhsValue",
-                        e.target.value
-                      )
+                        "rhs_nValue",
+                        String(value)
+                      );
                     }
-                    className="w-24 rounded-l-none text-xs px-2 h-8"
-                    placeholder="Value"
-                  />
-                )}
-            </div>
+                  }}
+                  readOnly
+                  className="!text-center !text-xs h-6 px-0 w-8 ml-2 text-gray-800 dark:text-white border-none focus:ring-0"
+                  min={1}
+                  max={20}
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const currentValue = Number(subSection.rhs_nValue) || 1;
+                    if (currentValue < 20) {
+                      updateSubSection(
+                        nodeId,
+                        subSection.id,
+                        "rhs_nValue",
+                        String(currentValue + 1)
+                      );
+                    }
+                  }}
+                  className="bg-gray-100 hover:bg-gray-200 h-7 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-l-none text-gray-600 dark:text-slate-400"
+                  disabled={Number(subSection.rhs_nValue) >= 20}
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+            {subSection.rhs === "value" &&
+              getRHSOptions()?.includes("value") && (
+                <Input
+                  type="text"
+                  value={subSection._rhsValue}
+                  onChange={(e) =>
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "_rhsValue",
+                      e.target.value
+                    )
+                  }
+                  className="w-24 rounded-l-none text-xs px-2 h-8"
+                  placeholder="Value"
+                />
+              )}
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          {isLastSubSection ? (
-            <></>
-          ) : (
-            <>
-              <div className="absolute inset-x-0 -bottom-14 flex justify-center">
-                <AndOrToggle
-                  value={subSection.addBadge}
-                  onChange={() => toggleAddBadge(nodeId, subSection.id)}
-                />
-              </div>
+      </div>
+      <div className="flex items-center gap-1">
+        {!isLastSubSection &&
+          <>
+            <div className="absolute inset-x-0 -bottom-14 flex justify-center">
+              <AndOrToggle
+                value={subSection.addBadge}
+                onChange={() => toggleAddBadge(nodeId, subSection.id)}
+              />
+            </div>
+            <div className="absolute top-[40%] right-0">
               <Button
                 size="icon"
-                variant="link"
+                variant="ghost"
                 onClick={() => removeSubSection(nodeId, subSection.id)}
-                className={`${buttonClass} absolute -right-4 top-[40%] z-10  text-red-500 hover:text-red-600 hover:bg-red-900/20`}
+                className="p-1.5 h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-100/20 dark:hover:bg-red-900/20"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </Button>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        }
       </div>
     </div>
   );
@@ -494,41 +486,47 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
 export const AndOrToggle = ({
   value,
   onChange,
+  isGroup=false
 }: {
   value: "AND" | "OR";
   onChange: () => void;
+  isGroup?: boolean;
 }) => {
   return (
     <div className="relative flex flex-col items-center">
-      {/* Top vertical line */}
-      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600" />
+      <div className={` h-3
+      ${!isGroup ? "bg-gray-300 dark:bg-gray-600 w-px" : "bg-blue-500 w-0.5"
+        }
+      `}
+      />
 
       <div
         onClick={onChange}
         className="flex rounded-md overflow-hidden cursor-pointer border border-gray-300 dark:border-gray-600"
       >
         <div
-          className={`px-3 py-1 text-sm font-medium transition-colors ${
-            value === "AND"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
-          }`}
+          className={`px-3 py-1 text-sm font-medium transition-colors ${value === "AND"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+            }`}
         >
           AND
         </div>
         <div
-          className={`px-3 py-1 text-sm font-medium transition-colors ${
-            value === "OR"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
-          }`}
+          className={`px-4 py-1 text-sm font-medium transition-colors ${value === "OR"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+            }`}
         >
           OR
         </div>
       </div>
 
-      {/* Bottom vertical line */}
-      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600" />
+      <div className={`w-px h-3
+      ${!isGroup ? "bg-gray-300 dark:bg-gray-600 w-px" : "bg-blue-500 w-0.5"
+        }
+      `}
+      />
     </div>
   );
 };

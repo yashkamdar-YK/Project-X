@@ -18,6 +18,13 @@ interface ActionState {
       positions: Position[];
     };
   };
+  setActionNodes: (actionNodes: {
+    [nodeId: string]: {
+      nodeName: string;
+      actions: Action[];
+      positions: Position[];
+    };
+  }) => void;
   // Actions to modify state
   createActionNode: (nodeId: string,name:string) => void;
   copyActionNode: (nodeId: string,newNodeId:string, label:string) => void;
@@ -39,6 +46,8 @@ interface ActionState {
 // Create the store
 export const useActionStore = create<ActionState>((set) => ({
   actionNodes: {},
+  setActionNodes: (actionNodes) => set({ actionNodes: { ...actionNodes } }),
+
 
   createActionNode: (nodeId, name) =>
     set((state) => ({

@@ -4,6 +4,7 @@ import { create } from 'zustand';
 
 export const useDataPointsStore = create<DataPointsStore>((set) => ({
   dataPoints: [],
+  setDataPoints: (dataPoints) => set({ dataPoints }),
 
   addDataPoint: (dataPoint) => 
     set((state) => ({

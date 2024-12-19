@@ -5,6 +5,9 @@ export const useIndicatorStore = create<IndicatorStore>((set) => ({
   indicators: [],
   selectedIndicator: null,
 
+  setIndicators: (indicators) =>
+    set({ indicators }),
+  
   addIndicator: (indicator) =>
     set((state) => ({
       indicators: [...state.indicators, indicator]

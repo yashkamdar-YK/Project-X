@@ -72,7 +72,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center">
         <Badge>ID: {node.id}</Badge>
         <Button
           variant="ghost"
@@ -98,7 +98,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
         </div>
       </div>
 
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-4 flex justify-between items-center">
         <span>Condition Type:</span>
         <div className="flex items-center">
           <Button
@@ -125,7 +125,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
       {showSettings && currentNode.type !== "exit" && (
         <div className="space-y-4 mb-6 bg-white dark:bg-[#1a1f2e] p-4 rounded-lg border border-gray-200 dark:border-[#2a2f3d]">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 dark:text-[#94a3b8]">
+            <span className="text-gray-600 text-sm dark:text-[#94a3b8]">
               Max Entries:
             </span>
             <div className="flex items-center border rounded-lg overflow-hidden">
@@ -136,6 +136,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                     updateBlockSettings(node.id, "maxEntries", current - 1);
                   }
                 }}
+                size='sm'
                 className="bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 rounded-r-none dark:text-slate-400"
               >
                 <Minus className="w-4 h-4" />
@@ -144,10 +145,12 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                 value={
                   currentNode.maxEntries === 0 ? "∞" : currentNode.maxEntries
                 }
-                className="w-12 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
+                className="w-12 h-7 text-center bg-transparent text-gray-800 dark:text-white border-none focus:ring-0"
                 readOnly
               />
               <Button
+                size='sm'
+
                 onClick={() => {
                   const current = currentNode.maxEntries;
                   updateBlockSettings(node.id, "maxEntries", current + 1);
@@ -160,7 +163,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 dark:text-[#94a3b8]">
+            <span className="text-gray-600 text-sm dark:text-[#94a3b8]">
               Check if any position is open:
             </span>
             <div className="flex gap-2">
@@ -194,7 +197,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 dark:text-[#94a3b8]">
+            <span className="text-gray-600 text-sm dark:text-[#94a3b8]">
               Check if any order trigger is pending:
             </span>
             <div className="flex gap-2">
@@ -262,6 +265,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                   {currentNode.blockRelations[index] || "AND"}
                 </Button> */}
                 <AndOrToggle
+                isGroup
                   value={currentNode.blockRelations[index] || "AND"}
                   onChange={() => updateBlockRelation(node.id, index)}
                 />

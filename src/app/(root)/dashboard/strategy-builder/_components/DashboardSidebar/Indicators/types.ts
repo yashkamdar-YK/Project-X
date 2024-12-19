@@ -54,6 +54,7 @@ export interface IndicatorFormData {
 
 export interface IndicatorStore {
   indicators: Indicator[];
+  setIndicators: (indicators: Indicator[]) => void;
   selectedIndicator: string | null;
   addIndicator: (indicator: Indicator) => void;
   removeIndicator: (id: string) => void;

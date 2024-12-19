@@ -16,9 +16,9 @@ export const useNodeStore = create<NodeState>((set) => ({
   nodes: INITIAL_NODES,
   edges: INITIAL_EDGES,
   
-  setNodes: (nodes) => set({ nodes }),
+  setNodes: (nodes) => set({ nodes: [...nodes] }),
   
-  setEdges: (edges) => set({ edges }),
+  setEdges: (edges) => set({ edges: [...edges] }),
   
   addNode: (newNode) => set((state) => ({
     nodes: [...state.nodes, newNode],
