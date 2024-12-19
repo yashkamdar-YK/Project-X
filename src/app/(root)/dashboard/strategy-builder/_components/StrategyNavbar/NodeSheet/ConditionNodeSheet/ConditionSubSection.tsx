@@ -215,6 +215,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           nodeId,
                           subSection.id,
                           "nValue",
+                          //@ts-ignore
                           subSection.nValue ? subSection.nValue - 1 : 1
                         );
                       }}
@@ -245,6 +246,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           nodeId,
                           subSection.id,
                           "nValue",
+                          //@ts-ignore
                           subSection.nValue ? subSection.nValue  + 1 : 1
                         );
                       }}
@@ -401,6 +403,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           nodeId,
                           subSection.id,
                           "rhs_nValue",
+                          //@ts-ignore
                           subSection.rhs_nValue ? subSection.rhs_nValue - 1 : 1
                         );
                       }}
@@ -431,6 +434,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           nodeId,
                           subSection.id,
                           "rhs_nValue",
+                          //@ts-ignore
                           subSection.rhs_nValue
                             ? subSection.rhs_nValue + 1
                             : 1
