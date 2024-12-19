@@ -1,4 +1,5 @@
 import React from 'react';
+import { Globe } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -113,9 +114,12 @@ const SaveStrategyDialog = ({ isOpen, onClose, onConfirm, defaultName = '' }: Sa
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="strategy-visibility" className="cursor-pointer">
-              Make this strategy public
-            </Label>
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              <Label htmlFor="strategy-visibility" className="cursor-pointer">
+                Visibility
+              </Label>
+            </div>
             <Switch
               id="strategy-visibility"
               checked={isPublic}

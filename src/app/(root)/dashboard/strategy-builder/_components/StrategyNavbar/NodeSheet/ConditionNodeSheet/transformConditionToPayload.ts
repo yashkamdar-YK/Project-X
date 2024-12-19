@@ -7,7 +7,7 @@ interface ConditionPayload {
     node: string;
     type: "entry" | "exit" | "adjustment";
     maxentries: number;
-    conditions: Array<Array<[string, string, string | number]>>;
+    conditions: Array<Array<[string, string, string | number] | string>>;
     check_when_position_open: boolean;
     check_when_trigger_open: boolean;
     actions: string[];
@@ -41,23 +41,23 @@ export const transformConditionToPayload = (
     const nodePayload = {
       node: nodeId,
       type: nodeData.type,
-      description: nodeData.name,
       maxentries: nodeData.maxEntries,
-      conditions: [] as Array<Array<[string, string, string | number]>>,
+      conditions: [] as Array<Array<[string, string, string | number] | string>>,
       check_when_position_open: nodeData.type === "exit" ? false : nodeData.positionOpen,
       check_when_trigger_open: nodeData.type === "exit" ? false : nodeData.waitTrigger,
       actions
     };
 
     // Transform conditions
-    const compiledConditions: Array<Array<[string, string, string | number]>> = [];
-    
-    nodeData.blocks.forEach((block) => {
-      const blockConditions: Array<[string, string, string | number]> = [];
+    nodeData.blocks.forEach((block, blockIndex) => {
+      const blockConditions: Array<[string, string, string | number] | string> = [];
       
-      block.subSections.forEach((section, idx) => {
-        if (!section.lhs || !section.operator || !section.rhs) return;
+      // Filter out empty sections first
+      const validSections = block.subSections.filter(
+        section => section.lhs && section.operator && section.rhs
+      );
 
+      validSections.forEach((section, idx) => {
         // Construct the LHS part
         let lhs = section.lhs;
         if (section.column) {
@@ -76,7 +76,6 @@ export const transformConditionToPayload = (
           const numValue = parseFloat(section._rhsValue);
           rhs = isNaN(numValue) ? section._rhsValue : numValue;
         } else {
-          // Add RHS modifiers if they exist
           if (section.rhs_column) {
             rhs += `.${section.rhs_column}`;
           }
@@ -88,30 +87,37 @@ export const transformConditionToPayload = (
           }
         }
 
-        // Get mapped operator
-        const operator = section.operator;
+        // Map the operator
+        const operator = operatorMap[section.operator] || section.operator;
 
+        // Add condition
         blockConditions.push([lhs, operator, rhs]);
 
-        // Add the AND/OR operator between conditions if not the last one
-        if (idx < block.subSections.length - 1) {
-          blockConditions.push([section.addBadge.toLowerCase()] as any);
+        // Add the AND/OR operator only if there's another valid condition following
+        if (idx < validSections.length - 1) {
+          blockConditions.push(section.addBadge.toLowerCase());
         }
       });
 
       if (blockConditions.length > 0) {
-        compiledConditions.push(blockConditions);
+        nodePayload.conditions.push(blockConditions);
+
+        // Add block relation only if there's another valid block with conditions following
+        if (blockIndex < nodeData.blocks.length - 1 && 
+            nodeData.blocks[blockIndex + 1].subSections.some(s => s.lhs && s.operator && s.rhs) && 
+            nodeData.blockRelations[blockIndex]) {
+          nodePayload.conditions.push([nodeData.blockRelations[blockIndex].toLowerCase()]);
+        }
       }
     });
 
-    nodePayload.conditions = compiledConditions;
     payload[nodeId] = nodePayload;
   }
 
   return payload;
 };
 
-// Helper functions remain unchanged
+// Helper functions
 export const validateConditionBlock = (
   nodeId: string,
   block: ConditionBlockMap[string]
@@ -126,7 +132,6 @@ export const validateConditionBlock = (
     return false;
   }
 
-  // Validate each block has valid subsections
   return block.blocks.every(b => 
     b.subSections.every(s => 
       s.lhs && s.operator && (s.rhs || s._rhsValue)
