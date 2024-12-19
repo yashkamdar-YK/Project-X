@@ -228,7 +228,6 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
                   elementName: e.target.value
                 }))}
                 className="pr-10 bg-accent"
-                disabled={!!initialData} // Disable during edit mode
               />
               {!initialData && ( // Only show generate button in add mode
                 <Button

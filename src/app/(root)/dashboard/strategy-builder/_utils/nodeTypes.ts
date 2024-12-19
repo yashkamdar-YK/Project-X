@@ -215,7 +215,7 @@ const getNodeLabel = (item: any): string => {
 export const getNodeId = (item: any): string => {
   if(!item?.type) throw new Error("Item type is required to generate node id");
   const prefix = item.type === NodeTypes.ACTION ? "ac" : "ct";
-  const suffix = Date.now()?.toString().slice(-5);
+  const suffix = Date.now()?.toString().slice(-3);
   const id = `${prefix}${suffix}`;
 
   //check is already existing in nodes

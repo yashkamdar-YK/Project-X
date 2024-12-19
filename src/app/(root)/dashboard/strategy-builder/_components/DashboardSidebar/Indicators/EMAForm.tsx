@@ -263,7 +263,6 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
                   }))
                 }
                 className="pr-10 bg-accent"
-                disabled={!!initialData} // Disable during edit mode
               />
               <Button
                 type="button"
