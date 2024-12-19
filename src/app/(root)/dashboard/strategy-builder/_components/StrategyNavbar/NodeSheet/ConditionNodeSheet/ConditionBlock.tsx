@@ -114,7 +114,8 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
               <Button
                 size="sm"
                 onClick={() => addSubSection(nodeId)}
-                className="bg-blue-500 hover:bg-blue-600 w-fit mx-auto text-white"
+                variant="secondary"
+                className=" w-fit mx-auto"
               >
                 <Plus className="w-3 h-3 mr-1" />
                 Add

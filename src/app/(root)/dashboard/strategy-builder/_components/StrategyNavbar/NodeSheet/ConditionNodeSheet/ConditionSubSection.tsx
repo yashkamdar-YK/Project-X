@@ -119,7 +119,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   const buttonClass = "text-xs px-2 h-7";
 
   return (
-    <div className="py-2 border m-2 my-4 rounded-lg relative">
+    <div className="py-2 border mb-8 last:mb-3 rounded-lg relative">
       <div className="flex items-center flex-col gap-2">
         <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
           <div className=" flex items-center">
@@ -247,7 +247,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           subSection.id,
                           "nValue",
                           //@ts-ignore
-                          subSection.nValue ? subSection.nValue  + 1 : 1
+                          subSection.nValue ? subSection.nValue + 1 : 1
                         );
                       }}
                       className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
@@ -270,7 +270,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
           >
             <SelectTrigger className={`${selectClass} w-fit`}>
               <SelectValue placeholder="Operator">
-                {`${subSection.operator} ${
+                {`${subSection.operator}  (${
                   //@ts-ignore
                   typeof allowedOperations?.find(
                     //@ts-ignore
@@ -286,7 +286,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                         //@ts-ignore
                         (op) => op.value === subSection.operator
                       )?.label
-                }`}
+                })`}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -435,9 +435,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                           subSection.id,
                           "rhs_nValue",
                           //@ts-ignore
-                          subSection.rhs_nValue
-                            ? subSection.rhs_nValue + 1
-                            : 1
+                          subSection.rhs_nValue ? subSection.rhs_nValue + 1 : 1
                         );
                       }}
                       className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
@@ -481,7 +479,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 size="icon"
                 variant="link"
                 onClick={() => removeSubSection(nodeId, subSection.id)}
-                className={`${buttonClass} absolute -right-4 top-[45%]  text-red-500 hover:text-red-600 hover:bg-red-900/20`}
+                className={`${buttonClass} absolute -right-4 top-[40%] z-10  text-red-500 hover:text-red-600 hover:bg-red-900/20`}
               >
                 <Trash2 className="w-3 h-3" />
               </Button>

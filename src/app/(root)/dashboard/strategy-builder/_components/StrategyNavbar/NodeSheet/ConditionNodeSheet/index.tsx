@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X, Plus, Settings, Pencil } from "lucide-react";
+import { X, Plus, Settings, Pencil, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
@@ -14,12 +14,13 @@ import { AndOrToggle } from "./ConditionSubSection";
 import { useApplyDataStore } from "@/lib/store/applyDataStore";
 import { defaultOptionsService, UrlMapping } from "../../../../_actions";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { MinusCircle, PlusCircle } from "lucide-react";
 
 const ConditionNodeSheet = ({ node }: { node: Node }) => {
   const { closeSheet } = useSheetStore();
   const { dataPoints } = useDataPointsStore();
   const [showSettings, setShowSettings] = useState(true);
-  const {selectedTimeFrame } = useDataPointStore()
+  const { selectedTimeFrame } = useDataPointStore();
   const {
     conditionBlocks,
     addSubSection,
@@ -135,9 +136,9 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                     updateBlockSettings(node.id, "maxEntries", current - 1);
                   }
                 }}
-                className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 rounded-r-none dark:text-[#94a3b8]"
+                className="bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 rounded-r-none dark:text-slate-400"
               >
-                -
+                <Minus className="w-4 h-4" />
               </Button>
               <Input
                 value={
@@ -151,9 +152,9 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                   const current = currentNode.maxEntries;
                   updateBlockSettings(node.id, "maxEntries", current + 1);
                 }}
-                className="bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] rounded-l-none dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                className="bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-l-none text-gray-600 dark:text-slate-400"
               >
-                +
+                <Plus className="w-4 h-4" />
               </Button>
             </div>
           </div>
