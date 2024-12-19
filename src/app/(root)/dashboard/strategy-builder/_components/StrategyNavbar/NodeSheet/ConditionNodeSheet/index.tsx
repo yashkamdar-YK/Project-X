@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { NodeTypes } from "../../../../_utils/nodeTypes";
 import { useSheetStore } from "@/lib/store/SheetStore";
-import { X, Plus, WandSparkles, Pencil, Settings, Minus } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -42,34 +42,6 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
 
   const { setData, getData } = useApplyDataStore();
 
-  const [conditionType, setConditionType] = useState<
-    "Entry" | "Exit" | "Adjust"
-  >("Entry");
-  const [maxEntries, setMaxEntries] = useState<number>(0);
-  const [openPosition, setOpenPosition] = useState<"YES" | "NO" | null>(null);
-  const [isOrdePending, setIsOrdePending] = useState<"YES" | "NO" | null>(null);
-  const [isVisible, setIsVisible] = useState<boolean>(true);
-
-  const handleIncrement = () => {
-    if (maxEntries < 1000) {
-      setMaxEntries((prevCount) => prevCount + 1);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (maxEntries > 0) {
-      setMaxEntries((prevCount) => prevCount - 1);
-    }
-  };
-
-  const handleOpenPosition = (value: "YES" | "NO") => {
-    setOpenPosition(value);
-  };
-
-  const handleIsOrderPending = (value: "YES" | "NO") => {
-    setIsOrdePending(value);
-  };
-
   useEffect(() => {
     Object.keys(UrlMapping).map(async (key) => {
       //@ts-ignore
@@ -101,7 +73,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
   if (!currentNode) return null;
 
   return (
-    <div className="dark:bg-gray-900 justify-center rounded-lg overflow-y-auto">
+    <div className="dark:bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
         <Badge>ID : {node.id}</Badge>
 
@@ -115,138 +87,113 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         </Button>
       </div>
 
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <div className="relative w-70 max-w-md">
-          <input
-            id="condition-name"
-            value={currentNode.name}
-            onChange={(e) =>
-              updateBlockSettings(node.id, "name", validateName(e.target.value))
-            }
-            type="text"
-            className="w-full px-4 py-2 text-2xl font-normal text-center bg-transparent focus:border-2  rounded-lg focus:outline-none focus:border-gray-400 pr-8"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-          >
-            <Pencil className="h-5 w-5" />
-          </Button>
-        </div>
+      <div className="flex items-center justify-center">
+        <Input
+          id="condition-name"
+          value={currentNode.name}
+          onChange={(e) =>
+            updateBlockSettings(node.id, "name", validateName(e.target.value))
+          }
+          className="w-60 text-center border-none focus:ring-1 !text-lg"
+        />
       </div>
 
+      <Tabs
+        defaultValue={currentNode.type}
+        className="w-full my-4 px-4 md:px-6"
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger
+            value="entry"
+            onClick={() => updateBlockSettings(node.id, "type", "entry")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+          >
+            Entry
+          </TabsTrigger>
+          <TabsTrigger
+            onClick={() => updateBlockSettings(node.id, "type", "exit")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            value="exit"
+          >
+            Exit
+          </TabsTrigger>
+          <TabsTrigger
+            onClick={() => updateBlockSettings(node.id, "type", "adjustment")}
+            className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            value="adjustment"
+          >
+            Adjustment
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       {currentNode.type !== "exit" && (
-        <div className="space-y-4 text-base text-gray-700 dark:text-gray-300 mt-6 px-4 md:px-6">
+        <div className="space-y-4 px-4 md:px-6">
           <div className="flex items-center justify-between">
-            <h1>Condition Type:</h1>
-            <div className="flex">
-              <Button
-                onClick={() => {
-                  setConditionType((prevState) => {
-                    if (prevState === "Entry") return "Exit";
-                    if (prevState === "Exit") return "Adjust";
-                    return "Entry";
-                  });
-                }}
-                variant="ghost"
-                className="px-4 py-1 text-xs rounded-lg border-2 border-gray-600"
-              >
-                {conditionType}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`hover:bg-transparent ${
-                  isVisible ? "text-blue-500" : "text-gray-700"
-                }`} 
-                onClick={() => setIsVisible((prev) => !prev)}
-              >
-                <Settings className="h-8 w-8" />
-              </Button>
-            </div>
+            <Label htmlFor="max-entries">
+              Max Entries using this condition:
+            </Label>
+            <Input
+              id="max-entries"
+              value={
+                currentNode.maxEntries == 0
+                  ? "infinite"
+                  : currentNode.maxEntries
+              }
+              onChange={(e) => {
+                const inputValue = e.target.value;
+
+                // If input is "infinite", set value to 0
+                if (inputValue.toLowerCase() === "infinite") {
+                  updateBlockSettings(node.id, "maxEntries", 0);
+                  return;
+                }
+
+                // Remove any non-digit characters
+                const numericValue = inputValue.replace(/[^\d]/g, "");
+
+                // Convert to number or 0 if empty
+                const finalValue =
+                  numericValue === "" ? 0 : parseInt(numericValue, 10);
+
+                updateBlockSettings(node.id, "maxEntries", finalValue);
+              }}
+              className="w-20 text-right"
+            />
           </div>
 
-          
-          {isVisible && ( 
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span>Max Entries:</span>
-                <div className="flex items-center gap-1 border rounded-lg">
-                  <Button
-                    variant="ghost"
-                    className="hover:bg-transparent"
-                    size="icon"
-                    onClick={handleDecrement}
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="w-8 text-center">{maxEntries}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-transparent"
-                    onClick={handleIncrement}
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="wait-trigger">
+              Check if any Wait Trade Trigger is open:
+            </Label>
+            <Switch
+              id="wait-trigger"
+              checked={currentNode.waitTrigger}
+              className="data-[state=checked]:bg-blue-500"
+              onCheckedChange={(checked) =>
+                updateBlockSettings(node.id, "waitTrigger", checked)
+              }
+            />
+          </div>
 
-              <div className="flex items-center justify-between">
-                <span>Check if any position is open:</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handleOpenPosition("YES")}
-                    variant="ghost"
-                    className={`border hover:bg-transparent text-xs ${
-                      openPosition === "YES" ? "bg-green-500 text-white" : ""
-                    }`}
-                  >
-                    YES
-                  </Button>
-                  <Button
-                    onClick={() => handleOpenPosition("NO")}
-                    variant="ghost"
-                    className={`border hover:bg-transparent text-xs ${
-                      openPosition === "NO" ? "bg-red-500 text-white" : ""
-                    }`}
-                  >
-                    NO
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span>Check if any order trigger is pending:</span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handleIsOrderPending("YES")}
-                    variant="ghost"
-                    className={`border hover:bg-transparent text-xs ${
-                      isOrdePending === "YES" ? "bg-green-500 text-white" : ""
-                    }`}
-                  >
-                    YES
-                  </Button>
-                  <Button
-                    onClick={() => handleIsOrderPending("NO")}
-                    variant="ghost"
-                    className={`border hover:bg-transparent text-xs ${
-                      isOrdePending === "NO" ? "bg-red-500 text-white" : ""
-                    }`}
-                  >
-                    NO
-                  </Button>
-                </div>
-              </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="position-open">
+              Check if any Position is Open:
+            </Label>
+            <div className="h-12">
+              <Switch
+                id="position-open"
+                checked={currentNode.positionOpen}
+                className="data-[state=checked]:bg-blue-500"
+                onCheckedChange={(checked) =>
+                  updateBlockSettings(node.id, "positionOpen", checked)
+                }
+              />
             </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* Condition Block */}
-      <div className="space-y-8 mt-8 ">
+      <div className="space-y-8  mt-8 -mx-4">
         {currentNode.blocks.map((block, index) => (
           <React.Fragment key={block.id}>
             <div className="relative">
@@ -266,7 +213,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                   toggleAddBadge(nodeId, block.id, subSectionId)
                 }
               />
-              {/* {currentNode.blocks.length > 1 && (
+              {currentNode.blocks.length > 1 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -275,24 +222,17 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                 >
                   <X className="w-4 h-4" />
                 </Button>
-              )} */}
+              )}
             </div>
 
             {index < currentNode.blocks.length - 1 && (
               <div className="flex justify-center">
                 <Button
-                  variant="ghost"
-                  className=" border rounded-r-none px-8"
+                  variant="secondary"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-8"
                   onClick={() => updateBlockRelation(node.id, index)}
                 >
-                  AND
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="rounded-l-none border px-8"
-                  onClick={() => updateBlockRelation(node.id, index)}
-                >
-                  OR
+                  {currentNode.blockRelations[index] || "AND"}
                 </Button>
               </div>
             )}
@@ -300,7 +240,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
         ))}
       </div>
 
-      <div className="flex justify-center mt-8 pb-4">
+      <div className="flex justify-center mt-8">
         <Button
           onClick={() => addBlock(node.id)}
           className="bg-blue-500 hover:bg-blue-600 text-white"

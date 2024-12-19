@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { SubSection } from "./types";
 import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
 import { ALLOWED_OPERATIONS, DEFAULT_OPTIONS, VALID_DAYS } from "./_const";
@@ -47,20 +47,6 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   const { indicators } = useIndicatorStore();
   const { getData } = useApplyDataStore();
 
-  const [periodVal, setPeriodVal] = useState<number>(1);
-
-  const handleIncrement = () => {
-    if (periodVal < 20) {
-      setPeriodVal((prevCount) => prevCount + 1);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (periodVal > 1) {
-      setPeriodVal((prevCount) => prevCount - 1);
-    }
-  };
-
   const lhsOptions = [
     ...dataPoints.map((dp) => dp.elementName),
     ...indicators.map((ind) => ind.elementName),
@@ -71,10 +57,19 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     indicators.find((ind) => ind.elementName === subSection.lhs) ||
     subSection.lhs;
 
+  const selectedRHS =
+    dataPoints.find((dp) => dp.elementName === subSection.rhs) ||
+    indicators.find((ind) => ind.elementName === subSection.rhs) ||
+    subSection.rhs;
+
   //@ts-ignore
   const columns = selectedLHS?.options?.columnsAvailable || [];
   //@ts-ignore
+  const RHSColumns = selectedRHS?.options?.columnsAvailable || [];
+  //@ts-ignore
   const hasCandleLocation = selectedLHS?.options?.candleLocation || false;
+  //@ts-ignore
+  const hasRHSCandleLocation = selectedRHS?.options?.candleLocation || false;
 
   const operatorType =
     //@ts-ignore
@@ -125,12 +120,11 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   const buttonClass = "text-xs px-2 h-7";
 
   return (
-    <div className="my-4 border-gray-700 last:border-b-0 ">
-      <div className=" flex border border-gray-700 rounded-md py-5 justify-center items-center">
-        <div className="items-center gap-2 space-y-4 justify-center ">
-          <div className="flex justify-center gap-2">
-            <div className="flex items-center gap-2">
-              {/* Variable */}
+    <div className="mb-4 pb-4 border-b border-gray-700 last:border-b-0 last:mb-0 last:pb-0">
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 items-center  gap-2 justify-between">
+          <div className=" flex items-center">
+            <div className="flex -space-x-px">
               <Select
                 value={subSection.lhs}
                 onValueChange={(v) =>
@@ -138,10 +132,10 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 }
               >
                 <SelectTrigger
-                  className={`${selectClass} max-w-32 w-fit ${
+                  className={`${selectClass} max-w-32 w-fit border-r-0 ${
                     !columns.length && !hasCandleLocation
-                      ? "rounded-md"
-                      : "rounded-md"
+                      ? "rounded-r-md"
+                      : "rounded-r-none"
                   }`}
                 >
                   <SelectValue placeholder="Variable" />
@@ -155,128 +149,96 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 </SelectContent>
               </Select>
 
-              {/* Column */}
               {columns.length > 0 && (
-                <div>
-                  <Select
-                    value={subSection.column}
-                    onValueChange={(v) =>
-                      updateSubSection(nodeId, subSection.id, "column", v)
-                    }
+                <Select
+                  value={subSection.column}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "column", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0 ${
+                      !hasCandleLocation ? "rounded-r-md" : ""
+                    }`}
                   >
-                    <SelectTrigger
-                      className={`${selectClass}  w-fit rounded-md border ${
-                        !hasCandleLocation ? "rounded-md" : ""
-                      }`}
-                    >
-                      <SelectValue placeholder="Column" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* @ts-ignore */}
-                      {columns.map((col) => (
-                        <SelectItem key={col} value={col}>
-                          {col}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <SelectValue placeholder="Column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* @ts-ignore */}
+                    {columns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
 
-              {/* Period */}
               {hasCandleLocation && (
-                <div>
-                  <Select
-                    value={subSection.selectedPeriod}
-                    onValueChange={(v) =>
-                      updateSubSection(
-                        nodeId,
-                        subSection.id,
-                        "selectedPeriod",
-                        v
-                      )
-                    }
+                <Select
+                  value={subSection.selectedPeriod}
+                  onValueChange={(v) =>
+                    updateSubSection(nodeId, subSection.id, "selectedPeriod", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
+                      subSection.selectedPeriod !== "prev-n"
+                        ? "rounded-r-md"
+                        : "rounded-none"
+                    }`}
                   >
-                    <SelectTrigger
-                      className={`${selectClass} max-w-28 w-fit ${
-                        subSection.selectedPeriod !== "prev-n"
-                          ? "rounded-md"
-                          : "rounded-md"
-                      }`}
-                    >
-                      <SelectValue placeholder="Period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="current">Current</SelectItem>
-                      <SelectItem value="prev">Previous</SelectItem>
-                      <SelectItem value="prev-n">Previous (n)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current</SelectItem>
+                    <SelectItem value="prev">Previous</SelectItem>
+                    <SelectItem value="prev-n">Previous (n)</SelectItem>
+                  </SelectContent>
+                </Select>
               )}
 
-              {subSection.selectedPeriod === "prev-n" && (
-                // <Input
-                //   type="number"
-                //   value={subSection.nValue}
-                //   onChange={(e) =>
-                //     updateSubSection(
-                //       nodeId,
-                //       subSection.id,
-                //       "nValue",
-                //       e.target.value
-                //     )
-                //   }
-                //   className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
-                //   min="1"
-                //   max="20"
-                // />
-                <div className="flex items-center h-8 border rounded-md">
-                  <Button
-                    variant="ghost"
-                    className="hover:bg-transparent p-0"
-                    size="icon"
-                    onClick={handleDecrement}
-                  >
-                    <Minus size={1} />
-                  </Button>
-                  <span className="text-sm text-center">{periodVal}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-transparent p-0"
-                    onClick={handleIncrement}
-                  >
-                    <Plus size={1} />
-                  </Button>
-                </div>
+              {hasCandleLocation && subSection.selectedPeriod === "prev-n" && (
+                <Input
+                  type="number"
+                  value={subSection.nValue}
+                  onChange={(e) =>
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                      "nValue",
+                      e.target.value
+                    )
+                  }
+                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                  min="1"
+                  max="20"
+                />
               )}
             </div>
           </div>
 
-          <div className="flex justify-center">
-            <Select
-              value={subSection.operator}
-              onValueChange={(v) =>
-                updateSubSection(nodeId, subSection.id, "operator", v)
-              }
-            >
-              <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
-                <SelectValue placeholder="Operator" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* @ts-ignore */}
-                {allowedOperations.map((op) => (
-                  <SelectItem key={op.value} value={op.value}>
-                    {typeof op.label === "function" ? op.label() : op.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={subSection.operator}
+            onValueChange={(v) =>
+              updateSubSection(nodeId, subSection.id, "operator", v)
+            }
+          >
+            <SelectTrigger className={`${selectClass} max-w-24 w-fit`}>
+              <SelectValue placeholder="Operator" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* @ts-ignore */}
+              {allowedOperations.map((op) => (
+                <SelectItem key={op.value} value={op.value}>
+                  {typeof op.label === "function" ? op.label() : op.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-          <div className="flex items-center justify-center">
-            <div className="flex justify-center -space-x-px">
+          <div className="flex items-center">
+            <div className="flex -space-x-px">
               <Select
                 value={subSection.rhs}
                 onValueChange={(v) =>
@@ -310,6 +272,81 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
                 </SelectContent>
               </Select>
 
+              {RHSColumns.length > 0 && (
+                <Select
+                  // @ts-ignore
+                  value={subSection.rhs_column}
+                  onValueChange={(v) =>
+                    //@ts-ignore
+                    updateSubSection(nodeId, subSection.id, "rhs_column", v)
+                  }
+                >
+                  <SelectTrigger
+                    className={`${selectClass} max-w-28 w-fit rounded-none border-x-0`}
+                  >
+                    <SelectValue placeholder="Column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* @ts-ignore */}
+                    {RHSColumns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {hasRHSCandleLocation && (
+                <Select
+                // @ts-ignore
+                  value={subSection.rhs_selectedPeriod}
+                  onValueChange={(v) =>
+                // @ts-ignore
+
+                    updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", v)
+                  }
+                >
+                  <SelectTrigger
+                // @ts-ignore
+                    className={`${selectClass} max-w-28 w-fit border-x-0 ${
+                // @ts-ignore
+                      subSection.rhs_selectedPeriod !== "prev-n"
+                        ? "rounded-r-md"
+                        : "rounded-none"
+                    }`}
+                  >
+                    <SelectValue placeholder="Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current</SelectItem>
+                    <SelectItem value="prev">Previous</SelectItem>
+                    <SelectItem value="prev-n">Previous (n)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+
+               {/* @ts-ignore */}
+              {subSection.rhs_selectedPeriod === "prev-n" && hasRHSCandleLocation && (
+                <Input
+                  type="number"
+                // @ts-ignore
+                  value={subSection.rhs_nValue}
+                  onChange={(e) =>
+                    updateSubSection(
+                      nodeId,
+                      subSection.id,
+                // @ts-ignore
+                      "rhs_nValue",
+                      e.target.value
+                    )
+                  }
+                  className="max-w-16 w-fit rounded-l-none text-xs px-2 h-8"
+                  min="1"
+                  max="20"
+                />
+              )}
+
               {subSection.rhs === "value" &&
                 getRHSOptions()?.includes("value") && (
                   <Input
@@ -330,48 +367,37 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="flex justify-center my-4 items-center gap-1">
-        {isLastSubSection ? (
-          <Button
-            size="sm"
-            onClick={() => addSubSection(nodeId)}
-            className={`${buttonClass} bg-blue-500 hover:bg-blue-600 text-white`}
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Add
-          </Button>
-        ) : (
-          <>
-            <div className="">
+        <div className="flex items-center gap-1">
+          {isLastSubSection ? (
             <Button
               size="sm"
-              variant="secondary"
-              onClick={() => toggleAddBadge(nodeId, subSection.id)}
-              className={`${buttonClass} bg-gray-700 mr-2 hover:bg-gray-600 min-w-[60px]`}
+              onClick={() => addSubSection(nodeId)}
+              className={`${buttonClass} bg-blue-500 hover:bg-blue-600 text-white`}
             >
-              AND
+              <Plus className="w-3 h-3 mr-1" />
+              Add
             </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => toggleAddBadge(nodeId, subSection.id)}
-              className={`${buttonClass} bg-gray-700 hover:bg-gray-600 min-w-[60px]`}
-            >
-              OR
-            </Button>
-            </div>
-            {/* <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => removeSubSection(nodeId, subSection.id)}
-              className={`${buttonClass} text-red-500 hover:text-red-600 hover:bg-red-900/20`}
-            >
-              <Trash2 className="w-3 h-3" />
-            </Button> */}
-          </>
-        )}
+          ) : (
+            <>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => toggleAddBadge(nodeId, subSection.id)}
+                className={`${buttonClass} bg-gray-700 hover:bg-gray-600 min-w-[60px]`}
+              >
+                {subSection.addBadge}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => removeSubSection(nodeId, subSection.id)}
+                className={`${buttonClass} text-red-500 hover:text-red-600 hover:bg-red-900/20`}
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
