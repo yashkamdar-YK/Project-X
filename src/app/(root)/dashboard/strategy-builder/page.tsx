@@ -7,43 +7,43 @@ import CustomSheet from '@/components/shared/custom-sheet';
 import NodeSheet from './_components/StrategyNavbar/NodeSheet';
 import { withAuth } from '@/components/shared/hoc/withAuth';
 
-function StrategyBuilder() {
+function StrategyBuilderPage() {
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-      {/* Strategy Navbar */}
-      <div
-        className={`
+      <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+        {/* Strategy Navbar */}
+        <div
+          className={`
           transition-all duration-300 ease-in-out
         `}
-      >
-        <StrategyNavbar />
-      </div>
+        >
+          <StrategyNavbar />
+        </div>
 
-      {/* Flex container for sidebar and canvas */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Fixed width dashboard sidebar */}
-        <DashboardSidebar />
+        {/* Flex container for sidebar and canvas */}
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Fixed width dashboard sidebar */}
+          <DashboardSidebar />
 
-        {/* Flexible width canvas container */}
-        <div className="flex-1 relative">
-          {/* Canvas with dynamic width */}
-          <div
-            className={`
+          {/* Flexible width canvas container */}
+          <div className="flex-1 relative">
+            {/* Canvas with dynamic width */}
+            <div
+              className={`
               w-full h-full
               transition-all duration-300 ease-in-out
             `}
-          >
-            <StrategyCanvas />
-          </div>
+            >
+              <StrategyCanvas />
+            </div>
 
-          {/* Sheet */}
-          <CustomSheet />
-          <NodeSheet/>
+            {/* Sheet */}
+            <CustomSheet />
+            <NodeSheet />
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
-export default withAuth(StrategyBuilder);
+export default withAuth(StrategyBuilderPage);

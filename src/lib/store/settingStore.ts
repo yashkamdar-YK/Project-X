@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 
 interface OrderOperation {
   timeLimit: string;
@@ -43,54 +44,75 @@ interface SettingState {
   setExitOperation: (operation: Partial<OrderOperation>) => void;
 }
 
-export const useSettingStore = create<SettingState>((set) => ({
-  // Strategy Type
-  strategyType: "Intraday",
-  setStrategyType: (type) => set({ strategyType: type }),
+export const useSettingStore = create<SettingState>()(
+  devtools(
+    persist(
+      (set) => ({
+        // Strategy Type
+        strategyType: "Intraday",
+        setStrategyType: (type) => set({ strategyType: type }),
 
-  // Product Type
-  productType: "Intraday",
-  setProductType: (type) => set({ productType: type }),
+        // Product Type
+        productType: "Intraday",
+        setProductType: (type) => set({ productType: type }),
 
-  // Order Type
-  orderType: "Market",
-  setOrderType: (type) => set({ orderType: type }),
+        // Order Type
+        orderType: "Market",
+        setOrderType: (type) => set({ orderType: type }),
 
-  // Square Off Time
-  squareOffTime: "",
-  setSquareOffTime: (time) => set({ squareOffTime: time }),
+        // Square Off Time
+        squareOffTime: "",
+        setSquareOffTime: (time) => set({ squareOffTime: time }),
 
-  // Selected Days
-  selectedDays: [],
-  setSelectedDays: (days) => set({ selectedDays: days }),
+        // Selected Days
+        selectedDays: [],
+        setSelectedDays: (days) => set({ selectedDays: days }),
 
-  // Selected Expiry Days
-  selectedExp: [],
-  setSelectedExp: (days) => set({ selectedExp: days }),
+        // Selected Expiry Days
+        selectedExp: [],
+        setSelectedExp: (days) => set({ selectedExp: days }),
 
-  // Day Selector State
-  selectorState: "daily",
-  setSelectorState: (state) => set({ selectorState: state }),
+        // Day Selector State
+        selectorState: "daily",
+        setSelectorState: (state) => set({ selectorState: state }),
 
-  // Entry Operation
-  entryOperation: {
-    timeLimit: "10",
-    priceBuffer: "0",
-    shouldExecute: true,
-  },
-  setEntryOperation: (operation) =>
-    set((state) => ({
-      entryOperation: { ...state.entryOperation, ...operation },
-    })),
+        // Entry Operation
+        entryOperation: {
+          timeLimit: "10",
+          priceBuffer: "0",
+          shouldExecute: true,
+        },
+        setEntryOperation: (operation) =>
+          set((state) => ({
+            entryOperation: { ...state.entryOperation, ...operation },
+          })),
 
-  // Exit Operation
-  exitOperation: {
-    timeLimit: "10",
-    priceBuffer: "0",
-    shouldExecute: true,
-  },
-  setExitOperation: (operation) =>
-    set((state) => ({
-      exitOperation: { ...state.exitOperation, ...operation },
-    })),
-}));
+        // Exit Operation
+        exitOperation: {
+          timeLimit: "10",
+          priceBuffer: "0",
+          shouldExecute: true,
+        },
+        setExitOperation: (operation) =>
+          set((state) => ({
+            exitOperation: { ...state.exitOperation, ...operation },
+          })),
+      }),
+      {
+        name: 'strategy-setting-store',
+        storage: createJSONStorage(() => sessionStorage),
+        partialize: (state) => ({
+          strategyType: state.strategyType,
+          productType: state.productType,
+          orderType: state.orderType,
+          squareOffTime: state.squareOffTime,
+          selectedDays: state.selectedDays,
+          selectedExp: state.selectedExp,
+          selectorState: state.selectorState,
+          entryOperation: state.entryOperation,
+          exitOperation: state.exitOperation,
+        })
+      }
+    )
+  )
+);

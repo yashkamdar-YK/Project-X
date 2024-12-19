@@ -5,18 +5,19 @@ import {
   ConditionNode,
 } from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
 import { create } from "zustand";
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
   setConditionBlocks: (conditionBlocks: ConditionBlockMap) => void;
   createConditionBlock: (nodeId: string, name: string) => void;
-  copyConditionBlock: (nodeId: string, newNodeId:string, label:string) => void;
+  copyConditionBlock: (nodeId: string, newNodeId: string, label: string) => void;
   updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) => void;
   removeConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
   addSubSection: (nodeId: string, blockId: string) => void;
-  clearConditionNodes: () => void
+  clearConditionNodes: () => void;
   updateSubSection: (
     nodeId: string,
     blockId: string,
@@ -37,274 +38,287 @@ interface ConditionStore {
   updateBlockRelation: (nodeId: string, index: number) => void;
 }
 
-export const useConditionStore = create<ConditionStore>((set) => ({
-  conditionBlocks: {},
-  setConditionBlocks: (conditionBlocks) => set({ conditionBlocks: { ...conditionBlocks } }),
+export const useConditionStore = create<ConditionStore>()(
+  devtools(
+    persist(
+      (set) => ({
+        conditionBlocks: {},
+        setConditionBlocks: (conditionBlocks) => set({ conditionBlocks: { ...conditionBlocks } }),
 
-  createConditionBlock: (nodeId: string, name: string) =>
-    set((state) => ({
-      conditionBlocks: {
-        ...state.conditionBlocks,
-        [nodeId]: {
-          name,
-          maxEntries: 0,
-          waitTrigger: false,
-          positionOpen: false,
-          type:"entry",
-          blocks: [
-            {
-              id: `block-${Date.now()}`,
-              subSections: [
-                {
-                  id: 0,
-                  addBadge: "AND",
-                  lhs: "",
-                  operator: "",
-                  rhs: "",
-                },
-              ],
-              relation: "AND",
-            },
-          ],
-          blockRelations: [],
-        },
-      },
-    })),
-  copyConditionBlock: (nodeId, newNodeId, label) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [newNodeId]: {
-            name: label,
-            maxEntries: currentNode.maxEntries,
-            waitTrigger: currentNode.waitTrigger,
-            positionOpen: currentNode.positionOpen,
-            type: currentNode.type,
-            blocks: currentNode.blocks,
-            blockRelations: currentNode.blockRelations,
-          },
-        },
-      };
-    }),
-  updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            [field]: value,
-          },
-        },
-      };
-    }),
-  removeConditionBlock: (nodeId: string) =>
-    set((state) => {
-      const { [nodeId]: _, ...conditionBlocks } = state.conditionBlocks;
-      return { conditionBlocks };
-    }),
-
-  addBlock: (nodeId: string) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: [
-              ...currentNode.blocks,
-              {
-                id: `block-${Date.now()}`,
-                subSections: [
+        createConditionBlock: (nodeId: string, name: string) =>
+          set((state) => ({
+            conditionBlocks: {
+              ...state.conditionBlocks,
+              [nodeId]: {
+                name,
+                maxEntries: 0,
+                waitTrigger: false,
+                positionOpen: false,
+                type: "entry",
+                blocks: [
                   {
-                    id: 0,
-                    addBadge: "AND",
-                    lhs: "",
-                    operator: "",
-                    rhs: "",
+                    id: `block-${Date.now()}`,
+                    subSections: [
+                      {
+                        id: 0,
+                        addBadge: "AND",
+                        lhs: "",
+                        operator: "",
+                        rhs: "",
+                      },
+                    ],
+                    relation: "AND",
                   },
                 ],
-                relation: "AND",
+                blockRelations: [],
               },
-            ],
-            blockRelations: [...currentNode.blockRelations, "AND"],
-          },
-        },
-      };
-    }),
+            },
+          })),
 
-  removeBlock: (nodeId: string, blockId: string) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
+        copyConditionBlock: (nodeId, newNodeId, label) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-      const blockIndex = currentNode.blocks.findIndex(
-        (block) => block.id === blockId
-      );
-      const newBlocks = currentNode.blocks.filter(
-        (block) => block.id !== blockId
-      );
-      const newBlockRelations = [...currentNode.blockRelations];
-      if (blockIndex !== -1) {
-        newBlockRelations.splice(blockIndex - 1, 1);
-      }
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [newNodeId]: {
+                  name: label,
+                  maxEntries: currentNode.maxEntries,
+                  waitTrigger: currentNode.waitTrigger,
+                  positionOpen: currentNode.positionOpen,
+                  type: currentNode.type,
+                  blocks: currentNode.blocks,
+                  blockRelations: currentNode.blockRelations,
+                },
+              },
+            };
+          }),
 
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: newBlocks,
-            blockRelations: newBlockRelations,
-          },
-        },
-      };
-    }),
+        updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-  addSubSection: (nodeId: string, blockId: string) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  [field]: value,
+                },
+              },
+            };
+          }),
 
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: currentNode.blocks.map((block) =>
-              block.id === blockId
-                ? {
-                  ...block,
-                  subSections: [
-                    ...block.subSections,
+        removeConditionBlock: (nodeId: string) =>
+          set((state) => {
+            const { [nodeId]: _, ...conditionBlocks } = state.conditionBlocks;
+            return { conditionBlocks };
+          }),
+
+        addBlock: (nodeId: string) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: [
+                    ...currentNode.blocks,
                     {
-                      id: block.subSections.length,
-                      addBadge: "AND",
-                      lhs: "",
-                      operator: "",
-                      rhs: "",
+                      id: `block-${Date.now()}`,
+                      subSections: [
+                        {
+                          id: 0,
+                          addBadge: "AND",
+                          lhs: "",
+                          operator: "",
+                          rhs: "",
+                        },
+                      ],
+                      relation: "AND",
                     },
                   ],
-                }
-                : block
-            ),
-          },
-        },
-      };
-    }),
+                  blockRelations: [...currentNode.blockRelations, "AND"],
+                },
+              },
+            };
+          }),
 
-  updateSubSection: (nodeId, blockId, subSectionId, field, value) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
+        removeBlock: (nodeId: string, blockId: string) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: currentNode.blocks.map((block) =>
-              block.id === blockId
-                ? {
-                  ...block,
-                  subSections: block.subSections.map((subSection) =>
-                    subSection.id === subSectionId
-                      ? { ...subSection, [field]: value }
-                      : subSection
-                  ),
-                }
-                : block
-            ),
-          },
-        },
-      };
-    }),
+            const blockIndex = currentNode.blocks.findIndex(
+              (block) => block.id === blockId
+            );
+            const newBlocks = currentNode.blocks.filter(
+              (block) => block.id !== blockId
+            );
+            const newBlockRelations = [...currentNode.blockRelations];
+            if (blockIndex !== -1) {
+              newBlockRelations.splice(blockIndex - 1, 1);
+            }
 
-  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: newBlocks,
+                  blockRelations: newBlockRelations,
+                },
+              },
+            };
+          }),
 
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: currentNode.blocks.map((block) =>
-              block.id === blockId
-                ? {
-                  ...block,
-                  subSections: block.subSections.filter(
-                    (subSection) => subSection.id !== subSectionId
-                  ),
-                }
-                : block
-            ),
-          },
-        },
-      };
-    }),
+        addSubSection: (nodeId: string, blockId: string) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blocks: currentNode.blocks.map((block) =>
-              block.id === blockId
-                ? {
-                  ...block,
-                  subSections: block.subSections.map((subSection) =>
-                    subSection.id === subSectionId
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) =>
+                    block.id === blockId
                       ? {
-                        ...subSection,
-                        addBadge:
-                          subSection.addBadge === "AND" ? "OR" : "AND",
-                      }
-                      : subSection
+                          ...block,
+                          subSections: [
+                            ...block.subSections,
+                            {
+                              id: block.subSections.length,
+                              addBadge: "AND",
+                              lhs: "",
+                              operator: "",
+                              rhs: "",
+                            },
+                          ],
+                        }
+                      : block
                   ),
-                }
-                : block
-            ),
-          },
-        },
-      };
-    }),
+                },
+              },
+            };
+          }),
 
-  updateBlockRelation: (nodeId: string, index: number) =>
-    set((state) => {
-      const currentNode = state.conditionBlocks[nodeId];
-      if (!currentNode) return state;
+        updateSubSection: (nodeId, blockId, subSectionId, field, value) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-      const newBlockRelations = [...currentNode.blockRelations];
-      newBlockRelations[index] =
-        newBlockRelations[index] === "AND" ? "OR" : "AND";
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) =>
+                    block.id === blockId
+                      ? {
+                          ...block,
+                          subSections: block.subSections.map((subSection) =>
+                            subSection.id === subSectionId
+                              ? { ...subSection, [field]: value }
+                              : subSection
+                          ),
+                        }
+                      : block
+                  ),
+                },
+              },
+            };
+          }),
 
-      return {
-        conditionBlocks: {
-          ...state.conditionBlocks,
-          [nodeId]: {
-            ...currentNode,
-            blockRelations: newBlockRelations,
-          },
-        },
-      };
-    }),
+        removeSubSection: (nodeId: string, blockId: string, subSectionId: number) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
 
-    clearConditionNodes: () => set({ conditionBlocks: {} }),
-}));
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) =>
+                    block.id === blockId
+                      ? {
+                          ...block,
+                          subSections: block.subSections.filter(
+                            (subSection) => subSection.id !== subSectionId
+                          ),
+                        }
+                      : block
+                  ),
+                },
+              },
+            };
+          }),
+
+        toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) =>
+                    block.id === blockId
+                      ? {
+                          ...block,
+                          subSections: block.subSections.map((subSection) =>
+                            subSection.id === subSectionId
+                              ? {
+                                  ...subSection,
+                                  addBadge:
+                                    subSection.addBadge === "AND" ? "OR" : "AND",
+                                }
+                              : subSection
+                          ),
+                        }
+                      : block
+                  ),
+                },
+              },
+            };
+          }),
+
+        updateBlockRelation: (nodeId: string, index: number) =>
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            const newBlockRelations = [...currentNode.blockRelations];
+            newBlockRelations[index] =
+              newBlockRelations[index] === "AND" ? "OR" : "AND";
+
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blockRelations: newBlockRelations,
+                },
+              },
+            };
+          }),
+
+        clearConditionNodes: () => set({ conditionBlocks: {} }),
+      }),
+      {
+        name: 'strategy-condition-store',
+        storage: createJSONStorage(() => sessionStorage),
+      }
+    )
+  )
+);
