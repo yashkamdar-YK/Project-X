@@ -266,7 +266,7 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                   toggleAddBadge(nodeId, block.id, subSectionId)
                 }
               />
-              {currentNode.blocks.length > 1 && (
+              {/* {currentNode.blocks.length > 1 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -275,17 +275,24 @@ const ConditionNodeSheet: React.FC<ConditionNodeSheetProps> = ({ node }) => {
                 >
                   <X className="w-4 h-4" />
                 </Button>
-              )}
+              )} */}
             </div>
 
             {index < currentNode.blocks.length - 1 && (
               <div className="flex justify-center">
                 <Button
-                  variant="secondary"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-8"
+                  variant="ghost"
+                  className=" border rounded-r-none px-8"
                   onClick={() => updateBlockRelation(node.id, index)}
                 >
-                  {currentNode.blockRelations[index] || "AND"}
+                  AND
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="rounded-l-none border px-8"
+                  onClick={() => updateBlockRelation(node.id, index)}
+                >
+                  OR
                 </Button>
               </div>
             )}
