@@ -12,6 +12,9 @@ interface OrderOperationProps {
   disabled?: boolean;
 }
 
+const MAX_TIME_LIMIT = 3600; // Maximum time limit in seconds
+const MAX_PRICE_BUFFER = 50; // Maximum price buffer
+
 const OrderOperation: React.FC<OrderOperationProps> = ({
   type = "entry",
   disabled = false
@@ -35,19 +38,41 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
     field: 'timeLimit' | 'priceBuffer'
   ) => {
     const value = e.target.value;
+    
+    // Allow any numeric input initially
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      if (field === 'priceBuffer' && currentSymbolInfo?.tickSize) {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-          const roundedValue = Math.round(numValue / currentSymbolInfo.tickSize) * currentSymbolInfo.tickSize;
-          setOperation({
-            [field]: roundedValue.toFixed(String(currentSymbolInfo.tickSize).split('.')[1]?.length || 0)
-          });
-        } else {
+      const numValue = parseFloat(value);
+
+      // Handle time limit validation
+      if (field === 'timeLimit') {
+        if (value === '' || isNaN(numValue)) {
           setOperation({ [field]: value });
+        } else {
+          const clampedValue = Math.min(Math.max(0, numValue), MAX_TIME_LIMIT);
+          setOperation({ [field]: clampedValue.toString() });
         }
-      } else {
-        setOperation({ [field]: value });
+        return;
+      }
+
+      // Handle price buffer validation
+      if (field === 'priceBuffer') {
+        if (value === '') {
+          setOperation({ [field]: value });
+        } else if (!isNaN(numValue)) {
+          // First clamp the value to the allowed range
+          const clampedValue = Math.min(Math.max(0, numValue), MAX_PRICE_BUFFER);
+          
+          if (currentSymbolInfo?.tickSize) {
+            const roundedValue = Math.round(clampedValue / currentSymbolInfo.tickSize) * currentSymbolInfo.tickSize;
+            // Only format with fixed decimal places if the value contains a decimal point
+            const formattedValue = value.includes('.') 
+              ? roundedValue.toFixed(String(currentSymbolInfo.tickSize).split('.')[1]?.length || 0)
+              : roundedValue.toString();
+            setOperation({ [field]: formattedValue });
+          } else {
+            setOperation({ [field]: clampedValue.toString() });
+          }
+        }
       }
     }
   };
@@ -62,7 +87,7 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <Clock className="w-4 h-4 text-gray-500" />
-            Time Limit
+            Time Limit (max {MAX_TIME_LIMIT} sec)
           </Label>
           <div className="relative">
             <Input
@@ -71,7 +96,7 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
               value={operation.timeLimit}
               onChange={(e) => handleNumberInput(e, 'timeLimit')}
               className="h-10 pl-4 pr-12 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter time"
+              placeholder="Enter time (0-3600)"
               disabled={disabled}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400">
@@ -84,18 +109,18 @@ const OrderOperation: React.FC<OrderOperationProps> = ({
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <IndianRupee className="w-4 h-4 text-gray-500" />
-            Price Buffer {currentSymbolInfo?.tickSize && `(tick: ${currentSymbolInfo.tickSize})`}
+            Price Buffer (max {MAX_PRICE_BUFFER}) {currentSymbolInfo?.tickSize && `(tick: ${currentSymbolInfo.tickSize})`}
           </Label>
           <div className="relative">
             <Input
-              type="text"
+              type="number"
               inputMode="decimal"
               value={operation.priceBuffer}
               onChange={(e) => handleNumberInput(e, 'priceBuffer')}
-              className="h-10 pl-4 pr-12 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter price"
+              className="h-10 pl-4   bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Enter price (0-50)"
               disabled={disabled}
-              step={currentSymbolInfo?.tickSize}
+              step={Number(currentSymbolInfo?.tickSize) || undefined}
             />
           </div>
         </div>

@@ -7,7 +7,7 @@ interface ConditionPayload {
     node: string;
     type: "entry" | "exit" | "adjustment";
     maxentries: number;
-    conditions: Array<Array<[string, string, string | number] | string>>;
+    conditions: Array<Array<[string, string, string | number] | string> | string>;
     check_when_position_open: boolean;
     check_when_trigger_open: boolean;
     actions: string[];
@@ -23,6 +23,17 @@ const operatorMap: Record<string, string> = {
   "equals": "equal_to",
   "cross_above": "crosses_above",
   "cross_below": "crosses_below"
+};
+
+// Format time to remove seconds
+const formatTime = (time: string) => {
+  if (time.includes(':')) {
+    const parts = time.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
+    }
+  }
+  return time;
 };
 
 export const transformConditionToPayload = (
@@ -42,7 +53,7 @@ export const transformConditionToPayload = (
       node: nodeId,
       type: nodeData.type,
       maxentries: nodeData.maxEntries,
-      conditions: [] as Array<Array<[string, string, string | number] | string>>,
+      conditions: [] as Array<Array<[string, string, string | number] | string> | string>,
       check_when_position_open: nodeData.type === "exit" ? false : nodeData.positionOpen,
       check_when_trigger_open: nodeData.type === "exit" ? false : nodeData.waitTrigger,
       actions
@@ -73,8 +84,13 @@ export const transformConditionToPayload = (
         // Construct the RHS part
         let rhs: string | number = section.rhs;
         if (section.rhs === "value" && section._rhsValue) {
-          const numValue = parseFloat(section._rhsValue);
-          rhs = isNaN(numValue) ? section._rhsValue : numValue;
+          // Format time if the lhs is candle_close_time
+          if (section.lhs === "candle_close_time") {
+            rhs = formatTime(section._rhsValue);
+          } else {
+            const numValue = parseFloat(section._rhsValue);
+            rhs = isNaN(numValue) ? section._rhsValue : numValue;
+          }
         } else {
           if (section.rhs_column) {
             rhs += `.${section.rhs_column}`;
@@ -88,7 +104,8 @@ export const transformConditionToPayload = (
         }
 
         // Map the operator
-        const operator = operatorMap[section.operator] || section.operator;
+        // const operator = operatorMap[section.operator] || section.operator;
+        const operator = section.operator;
 
         // Add condition
         blockConditions.push([lhs, operator, rhs]);
@@ -102,11 +119,11 @@ export const transformConditionToPayload = (
       if (blockConditions.length > 0) {
         nodePayload.conditions.push(blockConditions);
 
-        // Add block relation only if there's another valid block with conditions following
+        // Add block relation if there's another block with conditions following
         if (blockIndex < nodeData.blocks.length - 1 && 
             nodeData.blocks[blockIndex + 1].subSections.some(s => s.lhs && s.operator && s.rhs) && 
             nodeData.blockRelations[blockIndex]) {
-          nodePayload.conditions.push([nodeData.blockRelations[blockIndex].toLowerCase()]);
+          nodePayload.conditions.push(nodeData.blockRelations[blockIndex].toLowerCase());
         }
       }
     });
@@ -115,33 +132,4 @@ export const transformConditionToPayload = (
   }
 
   return payload;
-};
-
-// Helper functions
-export const validateConditionBlock = (
-  nodeId: string,
-  block: ConditionBlockMap[string]
-): boolean => {
-  if (!block.type || !["entry", "exit", "adjustment"].includes(block.type)) {
-    console.warn(`Invalid block type for node ${nodeId}`);
-    return false;
-  }
-
-  if (!Array.isArray(block.blocks)) {
-    console.warn(`Invalid blocks array for node ${nodeId}`);
-    return false;
-  }
-
-  return block.blocks.every(b => 
-    b.subSections.every(s => 
-      s.lhs && s.operator && (s.rhs || s._rhsValue)
-    )
-  );
-};
-
-export const transformSingleCondition = (
-  nodeId: string,
-  block: ConditionBlockMap[string]
-): ConditionPayload => {
-  return transformConditionToPayload({ [nodeId]: block });
 };

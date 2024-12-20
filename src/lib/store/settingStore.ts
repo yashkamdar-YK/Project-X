@@ -78,7 +78,7 @@ export const useSettingStore = create<SettingState>()(
 
         // Entry Operation
         entryOperation: {
-          timeLimit: "10",
+          timeLimit: "5",
           priceBuffer: "0",
           shouldExecute: true,
         },
@@ -89,7 +89,7 @@ export const useSettingStore = create<SettingState>()(
 
         // Exit Operation
         exitOperation: {
-          timeLimit: "10",
+          timeLimit: "5",
           priceBuffer: "0",
           shouldExecute: true,
         },

@@ -18,7 +18,7 @@ interface SettingsPayload {
     priceBuffer: number;
   } | {};
   orderType: "Limit" | "Market";
-  squareoffTime: string;
+  squareoffTime: string | null;
 }
 
 export const transformSettingsToPayload = (
@@ -74,8 +74,8 @@ export const transformSettingsToPayload = (
   }
 
   // Format time to include seconds
-  const formatTime = (time: string): string => {
-    return time ? `${time}` : "15:30:00"; // Default to market closing time if not set
+  const formatTime = (time: string): string | null=> {
+    return time ? `${time}` : null
   };
 
   return {
