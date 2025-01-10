@@ -26,7 +26,7 @@ const DaySelector: React.FC = () => {
   const itemsPerPage = 4;
   const totalPages = Math.ceil(allExpDays.length / itemsPerPage);
 
-  const buttonClass = 'transition-colors font-medium bg-blue-500 hover:bg-blue-600 text-white';
+  const buttonClass = 'transition-colors font-medium bg-blue-500 hover:bg-blue-600 hover:text-white text-white';
   
   const dayButtonClass = (isSelected: boolean) => cn(
     "px-3 py-1.5 h-8 text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0",

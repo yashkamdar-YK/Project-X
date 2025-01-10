@@ -39,8 +39,8 @@ export interface SymbolInfo {
 // Data Point Types
 export type DataType = "SPOT" | "FUT" | "OPT";
 export type SelectedOption = "candle-data" | "days-to-expire" | null;
-export type StrikeMode = "strike-at"
-export type StrikePosition = "ATM" | `ITM_${number}` | `OTM_${number}`;
+export type StrikeMode = "strike"
+export type StrikePosition = "atm" | `itm${number}` | `otm${number}`;
 
 export interface StrikeSelection {
   mode: StrikeMode;
@@ -60,6 +60,7 @@ export interface DataPoint {
   type: "candle-data" | "days-to-expire";
   elementName: string;
   dataType?: DataType;
+  optionType?:"CE" | "PE"
   candleType?: string;
   duration?: string;
   expiryType?: string;
@@ -70,9 +71,11 @@ export interface DataPoint {
 
 export interface DataPointsStore {
   dataPoints: DataPoint[];
+  setDataPoints: (dataPoints: DataPoint[]) => void;
   addDataPoint: (dataPoint: DataPoint) => void;
   removeDataPoint: (id: string) => void;
   updateDataPoint: (id: string, dataPoint: Partial<DataPoint>) => void;
+  clearDataPoints: () => void;
 }
 
 export interface DataPointDialogProps {

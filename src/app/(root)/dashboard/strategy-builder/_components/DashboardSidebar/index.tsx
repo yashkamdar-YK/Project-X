@@ -175,12 +175,12 @@ const DashboardSidebar: React.FC = () => {
       return { isValid: false, error: "Symbol information not available" };
     }
 
-    if (dataPoint.duration && !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))) {
-      return {
-        isValid: false,
-        error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`,
-      };
-    }
+    // if (dataPoint.duration && !currentSymbolInfo.timeFrame.includes(Number(dataPoint.duration))) {
+    //   return {
+    //     isValid: false,
+    //     error: `Time frame ${dataPoint.duration} is not supported for ${currentSymbolInfo.symbol}`,
+    //   };
+    // }
 
     switch (dataPoint.dataType) {
       case "OPT":
@@ -211,7 +211,7 @@ const DashboardSidebar: React.FC = () => {
         }
 
         if (dataPoint.strikeSelection) {
-          if (dataPoint.strikeSelection.mode !== "strike-at") {
+          if (dataPoint.strikeSelection.mode !== "strike") {
             return {
               isValid: false,
               error: "Invalid strike selection mode",
@@ -219,10 +219,12 @@ const DashboardSidebar: React.FC = () => {
           }
 
           const position = dataPoint.strikeSelection.position;
-          if (position !== "ATM") {
-            const [type, number] = position.split("_");
+          if (position !== "atm") {
+            // const [type, number] = position.split("_");
+            const type = position.slice(0,3);
+            const number = position.slice(3,position.length)
             if (
-              !["ITM", "OTM"].includes(type) ||
+              !["itm", "otm"].includes(type) ||
               isNaN(Number(number)) ||
               Number(number) > 10
             ) {
@@ -281,7 +283,7 @@ const DashboardSidebar: React.FC = () => {
 
   const renderDataPoints = () => {
     return Object.entries(groupedDataPoints).map(([type, points]) => (
-      <div key={type} className="space-y-1">
+      <div key={type} className="space-y-1 mb-2">
         <h4 className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400 pl-2">
           {type === "candle-data" ? "Candle Data" : "Days to Expire"}
         </h4>
@@ -402,7 +404,7 @@ const DashboardSidebar: React.FC = () => {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-[80%] sm:w-[385px] p-0 !pt-10 bg-gray-50 dark:bg-gray-900"
+            className="w-[80%] sm:w-[385px] p-0 !pt-10"
           >
             <SidebarContent />
           </SheetContent>

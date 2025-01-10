@@ -1,100 +1,146 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Highlight, themes } from "prism-react-renderer";
-import { useDataPointsStore } from "@/lib/store/dataPointsStore";
-import { useIndicatorStore } from "@/lib/store/IndicatorStore";
-import { useActionStore } from "@/lib/store/actionStore";
-import { useConditionStore } from "@/lib/store/conditionStore";
-import {transformConditionToPayload} from "./NodeSheet/ConditionNodeSheet/transformConditionToPayload";
-import { transformToActionPayload } from "./NodeSheet/ActionNodeSheet/transformToActionPayload";
+import { useSearchParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { strategyService } from "../../_actions";
+import { Button } from "@/components/ui/button";
+import { Copy, Check, FileCode2 } from "lucide-react";
+import { useUnsavedChangesStore } from "@/lib/store/unsavedChangesStore";
+import { toast } from "@/hooks/use-toast";
 import { transformSettingsToPayload } from "./SettingSheet/transformSettingsToPayload";
-import { useDataPointStore } from "@/lib/store/dataPointStore";
-import { convertToMinutes } from "@/lib/utils";
 import { transformDataPointsToPayload } from "../DashboardSidebar/DatapointDialog/transformDataPointsToPayload";
 import { transformIndicatorsToPayload } from "../DashboardSidebar/Indicators/transformIndicatorsToPayload";
+import { transformToActionPayload } from "./NodeSheet/ActionNodeSheet/transformToActionPayload";
+import { transformConditionToPayload } from "./NodeSheet/ConditionNodeSheet/transformConditionToPayload";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { useConditionStore } from "@/lib/store/conditionStore";
+import { useActionStore } from "@/lib/store/actionStore";
+import { useNodeStore } from "@/lib/store/nodeStore";
+import { NodeTypes } from "../../_utils/nodeTypes";
+import { getSaveStrategyData } from "../../_utils/utils";
 
 interface StrategyCodeSheetProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const _DEMO_CODE = `import pandas as pd
-import numpy as np
-
-def calculate_strategy(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate trading signals based on moving average crossover
-    """
-    # Calculate moving averages
-    data['SMA_20'] = data['close'].rolling(window=20).mean()
-    data['SMA_50'] = data['close'].rolling(window=50).mean()
-    
-    # Generate signals
-    data['signal'] = np.where(
-        data['SMA_20'] > data['SMA_50'], 
-        1,  # Buy signal
-        -1  # Sell signal
-    )
-    
-    # Calculate strategy returns
-    data['returns'] = data['close'].pct_change()
-    data['strategy_returns'] = data['signal'].shift(1) * data['returns']
-    
-    return data
-
-def backtest_strategy(data: pd.DataFrame) -> dict:
-    """
-    Backtest the strategy and calculate performance metrics
-    """
-    results = {
-        'total_return': data['strategy_returns'].sum(),
-        'sharpe_ratio': data['strategy_returns'].mean() / data['strategy_returns'].std(),
-        'max_drawdown': (data['strategy_returns'].cumsum().cummax() - 
-                        data['strategy_returns'].cumsum()).max()
-    }
-    return results`;
-
 const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
   const { theme } = useTheme();
+  const searchParams = useSearchParams();
+  const name = searchParams.get("name");
   const [activeTab, setActiveTab] = React.useState("python");
+  const [copied, setCopied] = React.useState(false);
+  const { isUnsaved, setUnsaved } = useUnsavedChangesStore();
+
+  const updateStrategyMutation = useMutation({
+    mutationFn: ({ strategyName, data }: any) =>
+      strategyService.updateStrategy(strategyName, data),
+    mutationKey: ["updateStrategy"],
+    onSuccess: () => {
+      toast({
+        title: "Strategy saved successfully",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to save strategy",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  const codeM = useMutation({
+    mutationFn: strategyService.getStCode,
+    mutationKey: [`strategyCode-${name}`],
+  });
   const { dataPoints } = useDataPointsStore();
   const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
   const { indicators } = useIndicatorStore();
   const { conditionBlocks } = useConditionStore();
-
   const { actionNodes } = useActionStore();
-  
-  const DEMO_CODE = `----------------ACTIONS----------------\n ${
-    JSON.stringify(transformToActionPayload(actionNodes), null, 2)
+  const { nodes, edges } = useNodeStore();
+
+  const getConditionNodes = useCallback(() => {
+    return nodes?.filter((node) => node.type === NodeTypes.CONDITION);
+  }, [nodes]);
+
+  useEffect(() => {
+    async function fetchCode() {
+      if (name && isOpen) {
+        if (isUnsaved) {
+          setUnsaved(false);
+          await updateStrategyMutation.mutateAsync({
+            data: getSaveStrategyData(name),
+            strategyName: name,
+          });
+        }
+        codeM.mutate(name);
+      }
+    }
+    fetchCode();
+  }, [name, isOpen]);
+
+  useEffect(() => {
+    if (copied) {
+      const timeout = setTimeout(() => setCopied(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [copied]);
+
+  const handleCopyCode = () => {
+    if (codeM.data?.code) {
+      navigator.clipboard.writeText(codeM.data.code);
+      setCopied(true);
+    }
+  };
+
+  const formatCode = (code: string) => {
+    try {
+      // Parse the code if it's a JSON string
+      const parsedCode = typeof code === "string" ? JSON.parse(code) : code;
+      return parsedCode.code || "No code available";
+    } catch {
+      return code || "No code available";
+    }
+  };
+
+  if (codeM.isPending) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl">
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
   }
-  \n----------------CONDITIONS----------------\n ${JSON.stringify(transformConditionToPayload(conditionBlocks), null, 2)}
-  \n----------------DATAPOINTS----------------\n ${
-    transformDataPointsToPayload(dataPoints)?.map((v) =>
-      JSON.stringify(v, null, 2)
-    )
+
+  if (codeM.isError || codeM?.data === undefined) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side="right" className="w-full sm:max-w-xl">
+          <div className="flex flex-col items-center justify-center h-full space-y-4">
+            <FileCode2 className="w-12 h-12 text-gray-400" strokeWidth={1.5} />
+            <p className="text-gray-500 text-center">
+              First create and save your strategy to view code
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
   }
-  \n----------------INDICATORS----------------\n ${
-    transformIndicatorsToPayload(indicators)?.map((v) =>
-      JSON.stringify(v, null, 2)
-    )
-  }
-  \n----------------SETTINGS----------------\n ${JSON.stringify(
-    transformSettingsToPayload(
-      selectedSymbol || "",
-      convertToMinutes(selectedTimeFrame || "")
-    ),
-    null,
-    2
-  )}
-  `;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -107,15 +153,35 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="python">Python</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-4">
+            <TabsList>
+              <TabsTrigger value="python">Python</TabsTrigger>
+            </TabsList>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyCode}
+              className="flex items-center gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  Copy Code
+                </>
+              )}
+            </Button>
+          </div>
 
           <TabsContent value="python" className="mt-0">
-            <div className="relative rounded-md overflow-hidden">
+            <div className="relative rounded-md overflow-hidden border dark:border-gray-800">
               <Highlight
                 theme={theme === "dark" ? themes.dracula : themes.github}
-                code={DEMO_CODE}
+                code={formatCode(codeM?.data?.code)}
                 language="python"
               >
                 {({
@@ -138,7 +204,7 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
                         <span className="table-cell text-right pr-4 select-none opacity-50 text-sm">
                           {i + 1}
                         </span>
-                        <span className="table-cell">
+                        <span className="table-cell whitespace-pre">
                           {line.map((token, key) => (
                             <span key={key} {...getTokenProps({ token })} />
                           ))}

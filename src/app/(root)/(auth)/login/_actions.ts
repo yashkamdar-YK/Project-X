@@ -1,5 +1,7 @@
 import { get, post } from "@/lib/axios-factory";
 import { UserProfile } from "@/lib/store/authStore";
+import { setCookie } from "cookies-next";
+import { ApiResponse } from "../../dashboard/strategy-builder/_components/DashboardSidebar/DatapointDialog/types";
 
 interface GoogleLoginUrlResponse {
   status: boolean;
@@ -42,8 +44,7 @@ export const authService = {
       const response = await get<GoogleAuthCallbackResponse>(`/v1/auth/google/callback?${queryString}`);
       
       if (response.data.status) {
-        // Store the access token in localStorage
-        localStorage.setItem('token', response.data.data.access_token);
+        setCookie('token', response.data.data.access_token,)
         
         return response.data.data;
       } else {
@@ -64,6 +65,24 @@ export const authService = {
       } else {
         throw new Error('Failed to fetch profile');
       }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  sparkCallBack: async (code: string) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      const response = await get<ApiResponse<{
+        access_token:string
+      }>>('/v1/auth/spark/callback?code=' + code);
+
+      if (response.data.status) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Authentication failed');
+      }
+
     } catch (error) {
       throw error;
     }

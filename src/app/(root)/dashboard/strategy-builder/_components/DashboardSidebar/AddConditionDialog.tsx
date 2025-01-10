@@ -44,7 +44,7 @@ export default function ConditionDialog({ open, onOpenChange }: AddConditionDial
               size="lg"
               className="w-full sm:h-24 h-16 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
               onClick={() => {
-                handleAction('Entry_Condition')
+                handleAction('Entry Condition')
                 onOpenChange(false)
               }}
             >
@@ -55,7 +55,7 @@ export default function ConditionDialog({ open, onOpenChange }: AddConditionDial
               size="lg"
               className="w-full sm:h-24 h-16 border-2 border-dashed flex flex-col items-center justify-center hover:border-primary"
               onClick={() => {
-                handleAction('Exit_Condition')
+                handleAction('Exit Condition')
                 onOpenChange(false)
               }}
             >

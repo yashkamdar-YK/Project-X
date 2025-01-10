@@ -98,7 +98,8 @@ export function DataPointDialog({
         duration: formData.duration,
         expiryType: formData.expiryType,
         expiryOrder: formData.expiryOrder,
-        strikeSelection: formData.strikeSelection
+        strikeSelection: formData.strikeSelection,
+        optionType: formData.optionType,
       };
       addDataPoint(newDataPoint);
       const res = formData.type === 'candle-data'

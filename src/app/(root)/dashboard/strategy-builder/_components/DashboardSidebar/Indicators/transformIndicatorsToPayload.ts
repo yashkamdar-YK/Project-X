@@ -43,7 +43,7 @@ export const transformIndicatorsToPayload = (
         return {
           ...base,
           // SuperTrend always uses all OHLC columns
-          columns: ["open", "high", "low", "close"],
+          columns: ["high", "low", "close"],
           params: {
             length: parseInt(ind.settings.length) || 0,
             multiplier: parseFloat(ind.settings.multiplier) || 0

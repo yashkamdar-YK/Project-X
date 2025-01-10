@@ -67,7 +67,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
       //@ts-ignore
       isCopy: true, // Add a flag to indicate copying,
       //@ts-ignore
-      label: data?.label,
+      label:currentNode?.name || data?.label,
       id
     });
     setNodes([...nodes, newNode]);
@@ -222,7 +222,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
             type="source"
             position={Position.Right}
             id={`${id}-right`}
-            className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !cursor-cell !z-10"
+            className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !z-10"
           >
             <Zap className="!w-4 !h-5 text-white pointer-events-none" />
           </CustomHandle>

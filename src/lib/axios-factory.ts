@@ -4,13 +4,9 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-// import { getCookie } from "cookies-next"
+import { getCookie } from "cookies-next";
 
-const BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL
-    : process.env.NEXT_PUBLIC_API_BASE_URL
-    // : "http://localhost:4000/api/v1";
+const BASE_URL = 'https://apiv.buildalgos.com'
 
 // Create an Axios instance with default configurations
 const axiosInstance: AxiosInstance = axios.create({
@@ -24,8 +20,7 @@ const axiosInstance: AxiosInstance = axios.create({
 // Add an interceptor to include the Bearer token in the headers
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // const token = getCookie('x-auth-token');
-    const token = localStorage.getItem("token");
+    const token = getCookie('token');
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

@@ -26,7 +26,7 @@ export function UserToggle() {
       console.error("Logout failed:", error);
     }
   };
-
+  if (!user) return null;
   return (
     <Select onValueChange={(value) => {
       if (value === "logout") {
@@ -39,8 +39,8 @@ export function UserToggle() {
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectItem 
-            value="logout" 
+          <SelectItem
+            value="logout"
             className="flex items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <div className="flex items-center gap-2">

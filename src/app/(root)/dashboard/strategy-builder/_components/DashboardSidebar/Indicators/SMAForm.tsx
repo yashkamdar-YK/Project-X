@@ -10,7 +10,7 @@ import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
-import { convertToMinutes } from "@/lib/utils";
+import { generateIndicatorName } from "../../../_utils/elementNaming";
 
 interface SMAFormProps {
   initialData?: MovingAverageIndicator;
@@ -21,14 +21,6 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
   const { dataPoints } = useDataPointsStore();
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
-
-  // Enhanced unique element name generation
-  const generateUniqueElementName = (formData: any) => {
-    const parts = ["sma"];
-    if(formData.onData) parts.push(formData.onData);
-    if(formData.settings.source) parts.push(formData.settings.source);
-    return parts.join("_");
-  };
 
   const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "sma",
@@ -41,10 +33,11 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   });
 
   useEffect(() => {
+    if(!!initialData?.elementName) return
     if (formData) {
       setFormData((prev) => ({
         ...prev,
-        elementName: generateUniqueElementName(formData),
+        elementName: generateIndicatorName(formData, "sma"),
       }));
     }
   }, [formData?.onData, formData?.settings.source]);
@@ -103,7 +96,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
   const handleGenerateElementName = () => {
     setFormData(prev => ({
       ...prev,
-      elementName: generateUniqueElementName(formData)
+      elementName: generateIndicatorName(formData, "sma")
     }));
   };
 
@@ -115,7 +108,7 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
       type: 'sma',
       elementName: formData.elementName,
       onData: formData.onData,
-      timeFrame: convertToMinutes(selectedTimeFrame || ""),
+      timeFrame: selectedTimeFrame,
       settings: {
         length: formData.settings.length,
         source: formData.settings.source as 'high' | 'low' | 'close',
@@ -227,20 +220,19 @@ const SMAForm: React.FC<SMAFormProps> = ({ initialData, onClose }) => {
                   ...prev,
                   elementName: e.target.value
                 }))}
+                disabled={!!initialData?.elementName}
                 className="pr-10 bg-accent"
-                disabled={!!initialData} // Disable during edit mode
               />
-              {!initialData && ( // Only show generate button in add mode
                 <Button
                   type="button"
                   size="icon"
+                disabled={!!initialData?.elementName}
                   variant="ghost"
                   className="absolute right-2 top-1/2 -translate-y-1/2"
                   onClick={handleGenerateElementName}
                 >
                   <WandSparkles className="h-4 w-4" />
                 </Button>
-              )}
             </div>
           </div>
         </div>

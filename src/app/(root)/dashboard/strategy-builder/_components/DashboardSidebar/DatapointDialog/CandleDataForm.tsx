@@ -11,11 +11,11 @@ import { useDataPointStore } from "@/lib/store/dataPointStore";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { toast } from "@/hooks/use-toast";
 import Spinner from "@/components/shared/spinner";
+import { generateCandleDataName } from "../../../_utils/elementNaming";
 
 // Constants
 const CANDLE_TYPES = ["candlestick", "heikenashi"] as const;
 const DURATION_DAYS = Array.from({ length: 11 }, (_, i) => i);
-const ITM_OTM_RANGE = Array.from({ length: 11 }, (_, i) => i);
 
 type TFormData = {
   dataType: DataType;
@@ -24,6 +24,7 @@ type TFormData = {
   expiryType: "weekly" | "monthly";
   expiryOrder: string;
   elementName: string;
+  optionType?: "CE" | "PE";
   strikeSelection: {
     mode: StrikeMode;
     position: StrikePosition;
@@ -46,35 +47,21 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
   const { dataPoints } = useDataPointsStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
 
-  // Unique name generation function
-  const generateUniqueElementName = (formData: TFormData): string => {
-    const parts: string[] = [];
-    // Add data type
-    parts.push(formData.dataType.toLowerCase());
-    // Add candle type
-    parts.push(formData.candleType);
-    // Add expiry info for FUT and OPT
-    if (formData.dataType === 'FUT' || formData.dataType === 'OPT') {
-      parts.push(`${formData.expiryType}`);
-    }
-
-    return parts.join('_').toLowerCase();
-  };
-
   // Initialize the state with a unique name if it's a new data point
   const [formData, setFormData] = useState<TFormData>({
     dataType: initialData?.dataType || "SPOT" as DataType,
     candleType: initialData?.candleType || "candlestick",
-    duration: initialData?.duration || "2",
+    duration: initialData?.duration || "1",
     expiryType: initialData?.expiryType || "monthly",
     expiryOrder: initialData?.expiryOrder || "0",
     elementName: initialData
       ? initialData.elementName
       : "SPOT", // Generate unique name for new data point
     strikeSelection: initialData?.strikeSelection || {
-      mode: "strike-at" as StrikeMode,
-      position: "ATM" as StrikePosition
-    }
+      mode: "strike" as StrikeMode,
+      position: "atm" as StrikePosition
+    },
+    optionType: initialData?.optionType || "CE"
   });
 
   // Update form data method
@@ -82,22 +69,19 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-
-
   // Manually regenerate element name
   const handleGenerateElementName = () => {
-    const newName = generateUniqueElementName(formData);
+    const newName = generateCandleDataName(formData);
     updateFormData("elementName", newName);
   };
 
   // Update element name dynamically when data type changes
   useEffect(() => {
-    if (!initialData) {
-      // Generate a new unique name when data type changes
-      const newName = generateUniqueElementName(formData);
-      updateFormData("elementName", newName);
-    }
-  }, [formData?.candleType, formData?.dataType, formData?.expiryType]);
+    if(!!initialData?.elementName) return
+    // Generate a new unique name when data type changes
+    const newName = generateCandleDataName(formData);
+    updateFormData("elementName", newName);
+  }, [formData?.candleType, formData?.dataType, formData?.expiryType, formData?.expiryOrder, formData?.strikeSelection]);
 
   if (!selectedSymbol || !currentSymbolInfo) {
     return (
@@ -136,7 +120,8 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         formData.dataType === "SPOT" ? undefined : formData.expiryOrder,
       strikeSelection:
         formData.dataType === "OPT" ? formData.strikeSelection : undefined,
-      type: "candle-data"
+      type: "candle-data",
+      optionType: formData.optionType
     };
 
     //@ts-ignore
@@ -177,7 +162,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
       </div>
 
       {/* Candle Type and Duration row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className={`grid ${formData.dataType === "OPT" ? "grid-cols-3" : "grid-cols-2"}  gap-4`}>
         <div className="space-y-2">
           <label className="text-sm font-medium">Candle Type:</label>
           <Select
@@ -215,11 +200,28 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {formData.dataType == "OPT" && <div className="space-y-2">
+          <label className="text-sm font-medium">Option Type:</label>
+          <Select
+            value={formData.optionType}
+            onValueChange={(value) => updateFormData("optionType", value)}
+            disabled={formData.dataType !== "OPT"}
+          >
+            <SelectTrigger className="text-base h-11">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CE">CE</SelectItem>
+              <SelectItem value="PE">PE</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>}
       </div>
 
       {/* Conditional Expiry Fields */}
       {(formData.dataType === "FUT" || formData.dataType === "OPT") && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid grid-cols-2 gap-4`}>
           <div className="space-y-2">
             <label className="text-sm font-medium">Expiry:</label>
             <div className="flex gap-2">
@@ -287,7 +289,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                     <SelectValue placeholder="Select strike" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="strike-at">Strike at</SelectItem>
+                    <SelectItem value="strike">Strike at</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
@@ -301,21 +303,29 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectLabel>ITM</SelectLabel>
-                      {ITM_OTM_RANGE.map((num) => (
-                        <SelectItem key={`itm-${num}`} value={`ITM_${num}`}>
-                          ITM {num}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="itm10">ITM 10</SelectItem>
+                      <SelectItem value="itm9">ITM 9</SelectItem>
+                      <SelectItem value="itm8">ITM 8</SelectItem>
+                      <SelectItem value="itm7">ITM 7</SelectItem>
+                      <SelectItem value="itm6">ITM 6</SelectItem>
+                      <SelectItem value="itm5">ITM 5</SelectItem>
+                      <SelectItem value="itm4">ITM 4</SelectItem>
+                      <SelectItem value="itm3">ITM 3</SelectItem>
+                      <SelectItem value="itm2">ITM 2</SelectItem>
+                      <SelectItem value="itm1">ITM 1</SelectItem>
                     </SelectGroup>
-                    <SelectItem value="ATM">ATM</SelectItem>
+                    <SelectItem value="atm">ATM</SelectItem>
                     <SelectGroup>
-                      <SelectLabel>OTM</SelectLabel>
-                      {ITM_OTM_RANGE.map((num) => (
-                        <SelectItem key={`otm-${num}`} value={`OTM_${num}`}>
-                          OTM {num}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="otm1">OTM 1</SelectItem>
+                      <SelectItem value="otm2">OTM 2</SelectItem>
+                      <SelectItem value="otm3">OTM 3</SelectItem>
+                      <SelectItem value="otm4">OTM 4</SelectItem>
+                      <SelectItem value="otm5">OTM 5</SelectItem>
+                      <SelectItem value="otm6">OTM 6</SelectItem>
+                      <SelectItem value="otm7">OTM 7</SelectItem>
+                      <SelectItem value="otm8">OTM 8</SelectItem>
+                      <SelectItem value="otm9">OTM 9</SelectItem>
+                      <SelectItem value="otm10">OTM 10</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -330,6 +340,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
         <label className="text-sm font-medium">Element Name:</label>
         <div className="relative">
           <Input
+          disabled={!!initialData?.elementName}
             value={formData.elementName}
             onChange={(e) => updateFormData("elementName", e.target.value)}
             className="rounded-lg bg-accent pr-10"
@@ -337,6 +348,7 @@ export const CandleDataForm: React.FC<CandleDataFormProps> = ({
           <Button
             size="icon"
             variant="ghost"
+          disabled={!!initialData?.elementName}
             className="absolute right-2 top-1/2 -translate-y-1/2 hover:bg-accent"
             onClick={handleGenerateElementName}
           >

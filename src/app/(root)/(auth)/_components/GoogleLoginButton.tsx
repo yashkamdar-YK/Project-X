@@ -4,13 +4,11 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { useMutation } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { authService } from '../login/_actions'
 
 export const GoogleLoginButton: React.FC = () => {
-  const { toast } = useToast()
-  const router = useRouter()
+  const { toast } = useToast();
 
   const loginUrl = useMutation({
     mutationFn: authService.getGoogleLoginUrl,
@@ -43,7 +41,7 @@ export const GoogleLoginButton: React.FC = () => {
     <Button
       onClick={handleGoogleLogin}
       disabled={loginUrl.isPending}
-      className="w-full bg-white hover:bg-gray-50 text-gray-900 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm transition-all duration-300 ease-in-out transform hover:scale-105"
+      className="w-full bg-white hover:bg-gray-50 text-gray-900 dark:text-gray-900 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm transition-all duration-300 ease-in-out transform hover:scale-105"
     >
       {loginUrl.isPending ? (
         <>

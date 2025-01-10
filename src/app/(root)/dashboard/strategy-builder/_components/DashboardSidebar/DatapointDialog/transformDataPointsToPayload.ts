@@ -2,18 +2,19 @@ import { DataPoint } from "./types";
 
 interface DataPointPayload {
   name: string;
-  type: "candleData" | "DTE";
+  type: "candleData" | "dte";
   params: {
     dataType: "spot" | "fut" | "opt";
-    exp: {
+    opType?: "CE" | "PE";
+    exp?: {
       expType: string;
       expNo: number;
     };
     dataLength: number;
     candleType?: string;
-    strikeAt?: {
-      mode: string;
-      position: string;
+    strike?: {
+      by: string;
+      at: string;
     };
   };
 }
@@ -25,20 +26,18 @@ export const transformDataPointsToPayload = (
     // Base transformation for both types
     const base = {
       name: dp.elementName,
-      type: dp.type === "candle-data" ? "candleData" : "DTE",
+      type: dp.type === "candle-data" ? "candleData" : "dte",
     };
 
     if (dp.type === "days-to-expire") {
       return {
         ...base,
-        type: "DTE",
+        type: "dte",
+        //@ts-ignore
         params: {
-          dataType: "opt", // DTE is always for options
-          exp: {
+        //@ts-ignore
             expType: dp.expiryType || "",
             expNo: parseInt(dp.expiryOrder || "0"),
-          },
-          dataLength: 1, // DTE always has dataLength 1
         },
       };
     }
@@ -49,19 +48,22 @@ export const transformDataPointsToPayload = (
       ...base,
       params: {
         dataType: dp.dataType?.toLowerCase() as "spot" | "fut" | "opt",
-        exp: {
-          expType: dp.expiryType || "",
-          expNo: parseInt(dp.expiryOrder || "0"),
-        },
+        ...(dp.dataType === "OPT" ? { opType: dp.optionType } : {}),
+        ...(dp.dataType !== "SPOT" ? {
+          exp: {
+            expType: dp.expiryType || "",
+            expNo: parseInt(dp.expiryOrder || "0"),
+          }
+        } : {}),
         dataLength: parseInt(dp.duration || "1"),
         candleType: dp.candleType?.toLowerCase(),
         ...(dp.dataType === "OPT" && dp.strikeSelection
           ? {
-              strikeAt: {
-                mode: dp.strikeSelection.mode,
-                position: dp.strikeSelection.position,
-              },
-            }
+            strike: {
+              by: dp.strikeSelection.mode,
+              at: dp.strikeSelection.position?.toLocaleLowerCase(),
+            },
+          }
           : {}),
       },
     };

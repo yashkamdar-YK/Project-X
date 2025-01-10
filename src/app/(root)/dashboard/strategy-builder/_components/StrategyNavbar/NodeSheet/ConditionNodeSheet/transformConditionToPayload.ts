@@ -1,28 +1,106 @@
 import { Edge } from "@xyflow/react";
 import { ConditionBlockMap } from "./types";
 import { useNodeStore } from "@/lib/store/nodeStore";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { useApplyDataStore } from "@/lib/store/applyDataStore";
+import { VALID_DAYS } from "./_const";
 
 interface ConditionPayload {
   [nodeId: string]: {
     node: string;
     type: "entry" | "exit" | "adjustment";
+    description?: string;
     maxentries: number;
-    conditions: Array<Array<[string, string, string | number]>>;
+    conditions: Array<Array<[string, string, string | number] | string> | string>;
     check_when_position_open: boolean;
     check_when_trigger_open: boolean;
     actions: string[];
   };
 }
 
-// Operator mapping from UI to API format
-const operatorMap: Record<string, string> = {
-  "is_above": "greater_than",
-  "is_below": "less_than",
-  "above_or_equal": "greater_than_equal",
-  "below_or_equal": "less_than_equal",
-  "equals": "equal_to",
-  "cross_above": "crosses_above",
-  "cross_below": "crosses_below"
+// Helper function to get element options and validate type
+const getElementOptions = (
+  elementName: string,
+  datapoints: any[],
+  indicators: any[],
+  getData: any
+) => {
+  // Check in datapoints
+  const dataPoint = datapoints.find(dp => dp.elementName === elementName);
+  if (dataPoint) return dataPoint.options;
+  
+  // Check in indicators
+  const indicator = indicators.find(ind => ind.elementName === elementName);
+  if (indicator) return indicator.options;
+  
+  // Check in default options
+  return getData(elementName);
+};
+
+// Helper function to check if columns are available
+const hasColumns = (options: any) => {
+  return options?.columnsAvailable && options.columnsAvailable.length > 0;
+};
+
+// Helper function to check if candle location is available
+const hasCandleLocation = (options: any) => {
+  return options?.candleLocation === true;
+};
+
+const isTimeOrDayField = (elementName: string) => {
+  const timeFields = ['candle_time', 'candle_close_time', 'day_of_week'];
+  return timeFields.includes(elementName);
+};
+
+// Helper function to construct path with validation
+const constructPath = (
+  base: string,
+  options: any,
+  column?: string,
+  period?: string,
+  nValue?: number
+) => {
+  let path = base;
+
+  // Only add column if the element has columns available
+  if (column && (hasColumns(options) || base?.includes("ac"))) {
+    path += `.${column}`;
+  }
+
+  // Only add period if the element has candle location
+  if (period && hasCandleLocation(options)) {
+    if (period === "prev-n" && nValue) {
+      path += `.prev-${nValue}`;
+    } else {
+      path += `.${period}`;
+    }
+  }
+
+  return path;
+};
+
+// Helper function to handle RHS value based on type
+const constructRhsValue = (
+  rhs: string,
+  rhsValue: string | undefined,
+  lhsOptions: any,
+  getDataFn: any
+) => {
+  // Handle special cases first
+  if (lhsOptions?.type === "day_of_week" && VALID_DAYS.includes(rhs)) {
+    return rhs;
+  }
+
+  if (rhs === "value" && rhsValue !== undefined) {
+    if (lhsOptions?.type === "dte" || lhsOptions?.canComparedwith?.includes("int") ||  lhsOptions?.canComparedwith?.includes("values")) {
+      const numValue = Number(rhsValue);
+      return !isNaN(numValue) ? numValue : rhsValue;
+    }
+    return rhsValue;
+  }
+
+  return rhs;
 };
 
 export const transformConditionToPayload = (
@@ -30,113 +108,93 @@ export const transformConditionToPayload = (
 ): ConditionPayload => {
   const payload: ConditionPayload = {};
   const allEdges: Edge[] = useNodeStore.getState().edges;
+  const datapoints = useDataPointsStore.getState().dataPoints;
+  const indicators = useIndicatorStore.getState().indicators;
+  const getData = useApplyDataStore.getState().getData;
 
   for (const [nodeId, nodeData] of Object.entries(state)) {
-    // Get connected action nodes
     const actions = allEdges
-      .filter(e => e.source === nodeId && e.target.startsWith('ac'))
-      .map(e => e.target);
+      .filter((e) => e.source === nodeId && e.target.startsWith("ac"))
+      .map((e) => e.target);
 
-    // Initialize node data
     const nodePayload = {
       node: nodeId,
-      type: nodeData.type,
       description: nodeData.name,
+      type: nodeData.type,
       maxentries: nodeData.maxEntries,
-      conditions: [] as Array<Array<[string, string, string | number]>>,
+      conditions: [] as Array<Array<[string, string, string | number] | string> | string>,
       check_when_position_open: nodeData.type === "exit" ? false : nodeData.positionOpen,
       check_when_trigger_open: nodeData.type === "exit" ? false : nodeData.waitTrigger,
-      actions
+      actions,
     };
 
-    // Transform conditions
-    const compiledConditions: Array<Array<[string, string, string | number]>> = [];
-    
-    nodeData.blocks.forEach((block) => {
-      const blockConditions: Array<[string, string, string | number]> = [];
-      
-      block.subSections.forEach((section, idx) => {
-        if (!section.lhs || !section.operator || !section.rhs) return;
+    nodeData.blocks.forEach((block, blockIndex) => {
+      const blockConditions: Array<[string, string, string | number] | string> = [];
 
-        // Construct the LHS part
-        let lhs = section.lhs;
-        if (section.column) {
-          lhs += `.${section.column}`;
-        }
-        if (section.selectedPeriod) {
-          lhs += `.${section.selectedPeriod}`;
-          if (section.selectedPeriod === 'prev-n' && section.nValue) {
-            lhs += `.${section.nValue}`;
-          }
-        }
+      const validSections = block.subSections.filter(
+        (section) => section.lhs && section.operator && (section.rhs || section._rhsValue)
+      );
 
-        // Construct the RHS part
-        let rhs: string | number = section.rhs;
-        if (section.rhs === "value" && section._rhsValue) {
-          const numValue = parseFloat(section._rhsValue);
-          rhs = isNaN(numValue) ? section._rhsValue : numValue;
+      validSections.forEach((section, idx) => {
+        // Get options for LHS and validate
+        const lhsOptions = getElementOptions(section.lhs, datapoints, indicators, getData);
+        
+        // Handle LHS path construction with validation
+        const lhs = constructPath(
+          section.lhs,
+          lhsOptions,
+          section.column,
+          section.selectedPeriod,
+          section.nValue
+        );
+
+        // Handle RHS value/path construction
+        let rhs: string | number;
+        
+        if (section.rhs === "value") {
+          // Handle direct value input
+          rhs = constructRhsValue(section.rhs, section._rhsValue, lhsOptions, getData);
+        } else if (isTimeOrDayField(section.lhs)) {
+          // Handle time and day fields directly
+          rhs = section.rhs;
         } else {
-          // Add RHS modifiers if they exist
-          if (section.rhs_column) {
-            rhs += `.${section.rhs_column}`;
-          }
-          if (section.rhs_selectedPeriod) {
-            rhs += `.${section.rhs_selectedPeriod}`;
-            if (section.rhs_selectedPeriod === 'prev-n' && section.rhs_nValue) {
-              rhs += `.${section.rhs_nValue}`;
-            }
-          }
+          // Handle RHS path construction
+          const rhsOptions = getElementOptions(section.rhs, datapoints, indicators, getData);
+          rhs = constructPath(
+            section.rhs,
+            rhsOptions,
+            section.rhs_column,
+            section.rhs_selectedPeriod,
+            section.rhs_nValue
+          );
         }
 
-        // Get mapped operator
-        const operator = section.operator;
+        blockConditions.push([lhs, section.operator, rhs]);
 
-        blockConditions.push([lhs, operator, rhs]);
-
-        // Add the AND/OR operator between conditions if not the last one
-        if (idx < block.subSections.length - 1) {
-          blockConditions.push([section.addBadge.toLowerCase()] as any);
+        if (idx < validSections.length - 1) {
+          blockConditions.push(section.addBadge.toLowerCase());
         }
       });
 
       if (blockConditions.length > 0) {
-        compiledConditions.push(blockConditions);
+        nodePayload.conditions.push(blockConditions);
+
+        if (
+          blockIndex < nodeData.blocks.length - 1 &&
+          nodeData.blocks[blockIndex + 1].subSections.some(
+            (s) => s.lhs && s.operator && s.rhs
+          ) &&
+          nodeData.blockRelations[blockIndex]
+        ) {
+          nodePayload.conditions.push(
+            nodeData.blockRelations[blockIndex].toLowerCase()
+          );
+        }
       }
     });
 
-    nodePayload.conditions = compiledConditions;
     payload[nodeId] = nodePayload;
   }
 
   return payload;
-};
-
-// Helper functions remain unchanged
-export const validateConditionBlock = (
-  nodeId: string,
-  block: ConditionBlockMap[string]
-): boolean => {
-  if (!block.type || !["entry", "exit", "adjustment"].includes(block.type)) {
-    console.warn(`Invalid block type for node ${nodeId}`);
-    return false;
-  }
-
-  if (!Array.isArray(block.blocks)) {
-    console.warn(`Invalid blocks array for node ${nodeId}`);
-    return false;
-  }
-
-  // Validate each block has valid subsections
-  return block.blocks.every(b => 
-    b.subSections.every(s => 
-      s.lhs && s.operator && (s.rhs || s._rhsValue)
-    )
-  );
-};
-
-export const transformSingleCondition = (
-  nodeId: string,
-  block: ConditionBlockMap[string]
-): ConditionPayload => {
-  return transformConditionToPayload({ [nodeId]: block });
 };

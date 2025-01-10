@@ -1,16 +1,5 @@
 import React from "react";
 import { Panel, useReactFlow, ControlButton } from "@xyflow/react";
-import {
-  BiZoomIn,
-  BiZoomOut,
-  BiExpand,
-  BiPointer,
-  BiPlus,
-} from "react-icons/bi";
-import {
-  IoArrowUndoCircleOutline,
-  IoArrowRedoCircleOutline,
-} from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -18,20 +7,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { DEFAULT_NODE_TEMPLATES } from "../../constants/menu";
 import { handleAddNode } from "../../_utils/nodeTypes";
-import { Button } from "@/components/ui/button";
+import {
+  Undo,
+  Redo,
+  ZoomIn,
+  ZoomOut,
+  Expand,
+  Plus
+} from "lucide-react";
 
 interface CustomControlsProps {
   onAddNode?: () => void;
   onBoardAction?: () => void;
-  onUndo?: () => void; // Add prop for undo
-  onRedo?: () => void; // Add prop for redo
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
-
-const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, onRedo, }) => {
+const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, onRedo }) => {
   const { zoomIn, zoomOut, fitView, setViewport } = useReactFlow();
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
 
@@ -51,12 +52,13 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
     "border border-gray-200/50 dark:border-gray-700/50",
     "text-gray-700 dark:text-gray-200",
     "backdrop-blur-sm",
-    "group"
+    "group",
+    "cursor-pointer"
   );
 
   const controlButtonClass = cn(
     baseButtonClass,
-    "w-11 h-11 rounded-lg",
+    "w-7 h-7 rounded-lg",
     "hover:shadow-lg hover:border-blue-500/20 dark:hover:border-blue-500/20",
     "hover:translate-y-[-1px]"
   );
@@ -92,12 +94,10 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
     "focus:text-blue-600 dark:focus:text-blue-400"
   );
 
-  const largeIconClass = cn(iconClass, "w-5 h-5");
-  const smallIconClass = cn(iconClass, "w-4 h-4");
-  const actionIconClass = cn(iconClass, "w-4 h-4");
+  const actionIconClass = cn(iconClass, "w-3 h-3");
 
   return (
-    <>
+    <TooltipProvider>
       {/* Desktop Controls */}
       <Panel position="bottom-center" className="hidden sm:block mb-6">
         <div
@@ -107,75 +107,68 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
           )}
         >
           <div className="flex items-center gap-2 pr-3 border-r border-gray-200/50 dark:border-gray-700/50">
-            {/* Undo */}
-            <ControlButton
-              onClick={onUndo}
-              className={controlButtonClass}
-              title="Undo"
-            >
-              <IoArrowUndoCircleOutline size={12} className={smallIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={onUndo} className={controlButtonClass}>
+                  <Undo size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Undo</TooltipContent>
+            </Tooltip>
 
-            {/* Redo */}
-            <ControlButton
-              onClick={onRedo}
-              className={controlButtonClass}
-              title="Redo"
-            >
-              <IoArrowRedoCircleOutline size={20} className={largeIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={onRedo} className={controlButtonClass}>
+                  <Redo size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Redo</TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="flex items-center gap-2 pr-3 border-r border-gray-200/50 dark:border-gray-700/50">
-            {/* Zoom In  */}
-            <ControlButton
-              onClick={handleZoomIn}
-              className={controlButtonClass}
-              title="Zoom In"
-            >
-              <BiZoomIn size={20} className={largeIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleZoomIn} className={controlButtonClass}>
+                  <ZoomIn size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Zoom In</TooltipContent>
+            </Tooltip>
 
-            {/* Zoom Out  */}
-            <ControlButton
-              onClick={handleZoomOut}
-              className={controlButtonClass}
-              title="Zoom Out"
-            >
-              <BiZoomOut size={20} className={largeIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleZoomOut} className={controlButtonClass}>
+                  <ZoomOut size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Zoom Out</TooltipContent>
+            </Tooltip>
 
-            {/* Fit Screen  */}
-            <ControlButton
-              onClick={handleFitView}
-              className={controlButtonClass}
-              title="Fit View"
-            >
-              <BiExpand size={20} className={largeIconClass} />
-            </ControlButton>
-
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleFitView} className={controlButtonClass}>
+                  <Expand size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Fit View</TooltipContent>
+            </Tooltip>
           </div>
 
-          <Button
-            onClick={onBoardAction}
-            className={wideButtonClass}
-            title="On the Board"
-          >
-            <BiPointer size={16} className={actionIconClass} />
-            <span className="text-sm font-medium my-4 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-              On the Board
-            </span>
-          </Button>
-
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className={wideButtonClass}>
-                <BiPlus size={16} className={actionIconClass} />
-                <span className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                  Quick Add
-                </span>
-              </button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <button className={wideButtonClass}>
+                    <Plus size={16} className={actionIconClass} />
+                    <span className="text-xs font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      Quick Add
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Add New Node</TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="center" className="w-48 p-2">
               {DEFAULT_NODE_TEMPLATES.map((item, index) => (
                 <DropdownMenuItem
@@ -183,7 +176,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
                   className={dropdownItemClass}
                   onClick={() => onAdd(item)}
                 >
-                  <BiPlus size={16} className="text-blue-500" />
+                  <Plus size={16} className="text-blue-500" />
                   {/* @ts-ignore */}
                   <span>{item.data.label}</span>
                 </DropdownMenuItem>
@@ -197,65 +190,66 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
       <Panel position="bottom-right" className="sm:hidden">
         <div className={cn(containerClass, "flex gap-2 p-2 fixed bottom-6 right-2 z-50")}>
           <div className="flex gap-2">
-            {/* Undo */}
-            <ControlButton
-              onClick={onUndo}
-              className={controlButtonClass}
-              title="Undo"
-            >
-              <IoArrowUndoCircleOutline size={12} className={smallIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={onUndo} className={mobileButtonClass}>
+                  <Undo size={12} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Undo</TooltipContent>
+            </Tooltip>
 
-            {/* Redo */}
-            <ControlButton
-              onClick={onRedo}
-              className={controlButtonClass}
-              title="Redo"
-            >
-              <IoArrowRedoCircleOutline size={20} className={largeIconClass} />
-            </ControlButton>
-            <ControlButton
-              onClick={handleZoomIn}
-              className={mobileButtonClass}
-              title="Zoom In"
-            >
-              <BiZoomIn size={16} className={smallIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={onRedo} className={mobileButtonClass}>
+                  <Redo size={20} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Redo</TooltipContent>
+            </Tooltip>
 
-            <ControlButton
-              onClick={handleZoomOut}
-              className={mobileButtonClass}
-              title="Zoom Out"
-            >
-              <BiZoomOut size={16} className={smallIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleZoomIn} className={mobileButtonClass}>
+                  <ZoomIn size={16} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Zoom In</TooltipContent>
+            </Tooltip>
 
-            <ControlButton
-              onClick={handleFitView}
-              className={mobileButtonClass}
-              title="Fit View"
-            >
-              <BiExpand size={16} className={smallIconClass} />
-            </ControlButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleZoomOut} className={mobileButtonClass}>
+                  <ZoomOut size={16} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Zoom Out</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div onClick={handleFitView} className={mobileButtonClass}>
+                  <Expand size={16} className={actionIconClass} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Fit View</TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="w-px bg-gray-200/50 dark:bg-gray-700/50" />
 
           <div className="flex gap-2">
-            <ControlButton
-              onClick={onBoardAction}
-              className={mobileButtonClass}
-              title="On the Board"
-            >
-              <BiPointer size={16} className={smallIconClass} />
-            </ControlButton>
-
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className={mobileButtonClass}>
-                  <BiPlus size={12} className={smallIconClass} />
-                </button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <button className={mobileButtonClass}>
+                      <Plus size={12} className={actionIconClass} />
+                    </button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Add New Node</TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end" className="w-48 p-2">
                 {DEFAULT_NODE_TEMPLATES.map((item, index) => (
                   <DropdownMenuItem
@@ -263,7 +257,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
                     className={dropdownItemClass}
                     onClick={() => onAdd(item)}
                   >
-                    <BiPlus size={16} className="text-blue-500" />
+                    <Plus size={16} className="text-blue-500" />
                     {/* @ts-ignore */}
                     <span>{item.data.label}</span>
                   </DropdownMenuItem>
@@ -273,7 +267,7 @@ const CustomControls: React.FC<CustomControlsProps> = ({ onBoardAction, onUndo, 
           </div>
         </div>
       </Panel>
-    </>
+    </TooltipProvider>
   );
 };
 

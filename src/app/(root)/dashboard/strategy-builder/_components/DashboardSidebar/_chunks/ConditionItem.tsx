@@ -12,7 +12,7 @@ export const ConditionItem: React.FC<ConditionItemProps> = ({ nodeId, name, onEd
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center justify-between p-2 bg-gray-50 relative dark:bg-gray-800 rounded-md">
+        <div className="flex items-center justify-between p-2 bg-gray-100 shadow-sm relative dark:bg-gray-800 rounded-md">
           <div className="flex items-center gap-2">
             <span className="text-sm">{name}</span>
           </div>
