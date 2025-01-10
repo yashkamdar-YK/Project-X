@@ -24,7 +24,7 @@ export const IndicatorItem: React.FC<IndicatorItemProps> = ({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md relative border 
+          className={`flex items-center justify-between p-2 bg-gray-100 shadow-sm dark:bg-gray-800 rounded-md relative border 
           ${isMissing ? "border-red-500" : "border-transparent"}`}
         >
           <div className="flex items-center gap-2">

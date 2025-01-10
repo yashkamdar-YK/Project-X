@@ -8,6 +8,7 @@ import { WandSparkles } from "lucide-react";
 import { DataPoint } from './types';
 import { AlertCircle } from 'lucide-react';
 import Spinner from '@/components/shared/spinner';
+import { generateDTEName } from '../../../_utils/elementNaming';
 
 interface DaysToExpireProps {
   initialData?: DataPoint;
@@ -24,11 +25,6 @@ const DaysToExpire = ({
 }: DaysToExpireProps) => {
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
-
-  // Unique name generation function
-  const generateUniqueElementName = (formData:any): string => {
-    return `dte_${formData?.expiryType}_${formData?.expiryOrder}`;
-  };
 
   // Initialize form data with default values
   const [formData, setFormData] = useState({
@@ -57,10 +53,9 @@ const DaysToExpire = ({
 
   // Regenerate element name when expiry type changes
   useEffect(() => {
-    if (!initialData) {
-      const newName = generateUniqueElementName(formData);
+    if (!!initialData?.elementName) return
+      const newName = generateDTEName(formData);
       updateFormData("elementName", newName);
-    }
   }, [formData?.expiryType, formData?.expiryOrder]);
 
     // Handle form submission and pass data back to parent
@@ -78,7 +73,7 @@ const DaysToExpire = ({
 
     // Manually regenerate element name
   const handleGenerateElementName = () => {
-    const newName = generateUniqueElementName(formData);
+    const newName = generateDTEName(formData);
     updateFormData("elementName", newName);
   };
   
@@ -147,11 +142,13 @@ const DaysToExpire = ({
         <div className="relative">
           <Input
             value={formData.elementName}
+            disabled={!!initialData?.elementName}
             onChange={(e) => updateFormData("elementName", e.target.value)}
             className="rounded-lg bg-accent pr-10"
           />
           {/* Generate Unique Name Button */}
           <Button
+          disabled={!!initialData?.elementName}
             size="icon"
             variant="ghost"
             className="absolute right-2 top-1/2 -translate-y-1/2"

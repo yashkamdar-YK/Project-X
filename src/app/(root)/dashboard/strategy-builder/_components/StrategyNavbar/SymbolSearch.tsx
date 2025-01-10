@@ -1,54 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Loader2, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useDebounce } from '@/hooks/useDebounce';
-import { symbolService } from '../../_actions';
-import { cn } from '@/lib/utils';
-import { useDataPointStore } from '@/lib/store/dataPointStore';
+import React, { useEffect, useState } from "react";
+import { Search, Loader2, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
+import { symbolService } from "../../_actions";
+import { cn } from "@/lib/utils";
+import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { markUnsavedChanges } from "@/lib/store/unsavedChangesStore";
 
-const SymbolSearch: React.FC = () => {
+const SymbolSearch = () => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  // const [isInitialized, setIsInitialized] = useState(false);
   const debouncedSearch = useDebounce(searchValue, 300);
-  
+
   // Get store actions
-  const { setSelectedSymbol, setSymbolInfo } = useDataPointStore();
+  const { setSelectedSymbol, setSymbolInfo, selectedSymbol } = useDataPointStore();
 
   // Query for symbols list
-  const { data: symbolsData, isLoading: isLoadingSymbols, error: symbolsError } = useQuery({
-    queryKey: ['symbols'],
+  const {
+    data: symbolsData,
+    isLoading: isLoadingSymbols,
+    error: symbolsError,
+  } = useQuery({
+    queryKey: ["symbols"],
     queryFn: () => symbolService.getSymbols(),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
-  
+
   // Query for symbol info
   const symbolInfoMutation = useMutation({
-    mutationFn: () => symbolService.getSymbolInfo(searchValue),
-    onSuccess: (data) => {
-      setSymbolInfo(searchValue, data);
+    mutationFn: (symbol: string) => symbolService.getSymbolInfo(symbol),
+    onSuccess: (data, symbol) => {
+      if (data) setSymbolInfo(symbol, data);
     },
-    mutationKey: ['symbolInfo'],
-  })
-  
-    useEffect(() => {
-      if (symbolsData) {
-        setSelectedSymbol(Object.entries(symbolsData)[0]?.[0]);
-        setSearchValue(Object.entries(symbolsData)[0]?.[0]);
-        symbolInfoMutation.mutateAsync();
-      }
-    },[symbolsData]);
+    mutationKey: ["symbolInfo"],
+  });
 
   const handleSelect = async (symbol: string) => {
     setSearchValue(symbol);
     setSelectedSymbol(symbol);
     setOpen(false);
-    
-    // Fetch symbol info when selected
-    await symbolInfoMutation.mutateAsync();
+    markUnsavedChanges();
+    await symbolInfoMutation.mutateAsync(symbol);
   };
+
+  useEffect(() => {
+    if(selectedSymbol || symbolsData) {
+      //@ts-ignore
+      handleSelect(selectedSymbol || Object.keys(symbolsData)[0]);
+    }
+  },[selectedSymbol, symbolsData]);
 
   const clearSearch = () => {
     setSearchValue("");
@@ -62,7 +71,6 @@ const SymbolSearch: React.FC = () => {
     const filteredSymbols: typeof symbolsData = {};
 
     Object.entries(symbolsData).forEach(([symbol, data]) => {
-      // Check if symbol or exchange matches search term
       if (
         symbol.toLowerCase().includes(searchTerm) ||
         data.exchange.toLowerCase().includes(searchTerm)
@@ -90,7 +98,9 @@ const SymbolSearch: React.FC = () => {
           <div className="rounded-full bg-red-100 dark:bg-red-900/20 p-3">
             <X className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
-          <p className="text-sm text-red-600 dark:text-red-400">Failed to load symbols</p>
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Failed to load symbols
+          </p>
         </div>
       );
     }
@@ -125,7 +135,7 @@ const SymbolSearch: React.FC = () => {
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
-                  {symbolInfoMutation.isPending ? 'Loading...' : 'Select'}
+                  {symbolInfoMutation.isPending ? "Loading..." : "Select"}
                 </span>
               </div>
             </div>
@@ -136,17 +146,17 @@ const SymbolSearch: React.FC = () => {
   };
 
   return (
-    <div className="relative w-28 sm:w-40 md:w-48">
+    <div className="relative w-[100px] sm:w-40 md:w-48">
       <div className="relative">
-        <Search 
-          size={16} 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" 
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
         />
         <Input
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className={cn(
-            "pl-10 pr-4 py-2 rounded-lg transition-all duration-200",
+            "pl-9 pr-3 py-2 rounded-lg transition-all duration-200 text-sm sm:text-base",
             "bg-white dark:bg-gray-800",
             "border-gray-200 dark:border-gray-700",
             "hover:border-gray-300 dark:hover:border-gray-600",
@@ -166,9 +176,9 @@ const SymbolSearch: React.FC = () => {
           </DialogHeader>
           <div className="p-4 pb-2">
             <div className="relative">
-              <Search 
-                size={16} 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" 
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
               />
               <Input
                 value={searchValue}

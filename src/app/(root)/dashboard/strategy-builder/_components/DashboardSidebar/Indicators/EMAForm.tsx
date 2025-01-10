@@ -21,7 +21,7 @@ import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { useQuery } from "@tanstack/react-query";
 import { symbolService } from "../../../_actions";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
-import { convertToMinutes } from "@/lib/utils";
+import { generateIndicatorName } from "../../../_utils/elementNaming";
 
 interface EMAFormProps {
   initialData?: MovingAverageIndicator;
@@ -32,14 +32,6 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
   const { dataPoints } = useDataPointsStore();
   const { addIndicator, updateIndicator, indicators } = useIndicatorStore();
-
-  // Generate initial element name
-  const generateUniqueElementName = (formData:any) => {
-    const parts = ["ema"];
-    if(formData.onData) parts.push(formData.onData);
-    if(formData.settings.source) parts.push(formData.settings.source);
-    return parts.join("_");
-  };
 
   const [formData, setFormData] = useState<IndicatorFormData>({
     elementName: initialData?.elementName || "ema",
@@ -117,18 +109,19 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
   const handleGenerateElementName = () => {
     setFormData((prev) => ({
       ...prev,
-      elementName: generateUniqueElementName(formData),
+      elementName: generateIndicatorName(formData , "ema"),
     }));
   };
 
   useEffect(() => {
+    if(!!initialData?.elementName) return
     if (formData) {
       setFormData((prev) => ({
         ...prev,
-        elementName: generateUniqueElementName(formData),
+        elementName: generateIndicatorName(formData , "ema"),
       }));
     }
-  }, [formData?.onData, formData?.settings.source]);
+  }, [formData?.onData, formData?.settings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +130,7 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
       type: "ema",
       elementName: formData.elementName,
       onData: formData?.onData,
-      timeFrame: convertToMinutes(selectedTimeFrame || ""),
+      timeFrame: selectedTimeFrame,
       settings: {
         length: formData.settings.length,
         source: formData.settings.source as "high" | "low" | "close",
@@ -256,17 +249,18 @@ const EMAForm: React.FC<EMAFormProps> = ({ initialData, onClose }) => {
             <div className="relative">
               <Input
                 value={formData.elementName}
-                onChange={(e) =>
+          disabled={!!initialData?.elementName}
+          onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
                     elementName: e.target.value,
                   }))
                 }
                 className="pr-10 bg-accent"
-                disabled={!!initialData} // Disable during edit mode
               />
               <Button
                 type="button"
+          disabled={!!initialData?.elementName}
                 size="icon"
                 variant="ghost"
                 className="absolute right-2 top-1/2 -translate-y-1/2"

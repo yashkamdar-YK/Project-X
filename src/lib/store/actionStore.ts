@@ -3,24 +3,33 @@ import {
   PositionSettings,
 } from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ActionNodeSheet/types";
 import { create } from "zustand";
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
+import { markUnsavedChanges } from "./unsavedChangesStore";
 
 // Define action types
 export interface Action {
   func: "squareoff_all" | "stop_WaitTrade_triggers";
 }
 
+// Define item types that can be in a node
+export type NodeItem = {
+  id: string;
+  type: 'action' | 'position';
+  data: Action | Position;
+  order: number;
+};
+
 // Define the store state interface
 interface ActionState {
   actionNodes: {
     [nodeId: string]: {
       nodeName: string;
-      actions: Action[];
-      positions: Position[];
+      items: NodeItem[];
     };
   };
-  // Actions to modify state
-  createActionNode: (nodeId: string,name:string) => void;
-  copyActionNode: (nodeId: string,newNodeId:string, label:string) => void;
+  setActionNodes: (actionNodes: ActionState['actionNodes']) => void;
+  createActionNode: (nodeId: string, name: string) => void;
+  copyActionNode: (nodeId: string, newNodeId: string, label: string) => void;
   updateNodeName: (nodeId: string, name: string) => void;
   addAction: (nodeId: string, action: Action) => void;
   removeAction: (nodeId: string, actionFunc: string) => void;
@@ -34,215 +43,335 @@ interface ActionState {
     field: keyof PositionSettings,
     value: any
   ) => void;
+  moveItemUp: (nodeId: string, itemId: string) => void;
+  moveItemDown: (nodeId: string, itemId: string) => void;
+  duplicatePosition: (nodeId: string, positionId: string) => void;
 }
 
-// Create the store
-export const useActionStore = create<ActionState>((set) => ({
-  actionNodes: {},
+const generateLegID = (items: NodeItem[]) => {
+  const positions = items
+    .filter((item): item is NodeItem & { data: Position } => 
+      item.type === 'position')
+    .map(item => item.data);
 
-  createActionNode: (nodeId, name) =>
-    set((state) => ({
-      actionNodes: {
-        ...state.actionNodes,
-        [nodeId]: {
-          nodeName: name,
-          actions: [],
-          positions: [],
-        },
-      },
-    })),
-
-  copyActionNode: (nodeId,newNodeId,label) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [newNodeId]: {
-            nodeName: label,
-            actions: currentNode.actions,
-            positions: currentNode.positions,
-          },
-        },
-      };
-    }),
-
-  updateNodeName: (nodeId: string, name: string) =>
-    set((state) => ({
-      actionNodes: {
-        ...state.actionNodes,
-        [nodeId]: {
-          ...state.actionNodes[nodeId],
-          nodeName: name,
-        },
-      },
-    })),
-
-  addAction: (nodeId: string, action: Action) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      // Don't add duplicate actions
-      if (currentNode.actions.some((a) => a.func === action.func)) {
-        return state;
-      }
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [nodeId]: {
-            ...currentNode,
-            actions: [...currentNode.actions, action],
-          },
-        },
-      };
-    }),
-
-  removeAction: (nodeId: string, actionFunc: string) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [nodeId]: {
-            ...currentNode,
-            actions: currentNode.actions.filter(
-              (action) => action.func !== actionFunc
-            ),
-          },
-        },
-      };
-    }),
-
-  removeActionNode: (nodeId: string) =>
-    set((state: { actionNodes: { [x: string]: any } }) => {
-      const { [nodeId]: _, ...rest } = state.actionNodes;
-      return {
-        actionNodes: rest,
-      };
-    }),
-
-  addPosition: (nodeId: string) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      const newPosition: Position = {
-        id: `position-${Date.now()}`,
-        type: "Add Position",
-        settings: {
-          legID: generateLegID(currentNode.positions),
-          transactionType: "buy",
-          segment: "OPT",
-          optionType: "CE",
-          qty: 0,
-          expType: "weekly",
-          expNo: 0,
-          strikeBy: "moneyness",
-          strikeVal: 0,
-          isTarget: false,
-          targetOn: "%",
-          targetValue: 0,
-          isSL: false,
-          SLon: "%",
-          SLvalue: 0,
-          isTrailSL: false,
-          trailSLon: "%",
-          trailSL_X: 0,
-          trailSL_Y: 0,
-          isWT: false,
-          wtOn: "val-up",
-          wtVal: 0,
-          isReEntryTg: false,
-          reEntryTgOn: "asap",
-          reEntryTgVal: 0,
-          reEntryTgMaxNo: 1,
-          isReEntrySL: false,
-          reEntrySLOn: "asap",
-          reEntrySLVal: 0,
-          reEntrySLMaxNo: 1,
-        },
-      };
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [nodeId]: {
-            ...currentNode,
-            positions: [...currentNode.positions, newPosition],
-          },
-        },
-      };
-    }),
-
-  removePosition: (nodeId: string, positionId: string) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [nodeId]: {
-            ...currentNode,
-            positions: currentNode.positions.filter(
-              (position) => position.id !== positionId
-            ),
-          },
-        },
-      };
-    }),
-
-  updatePositionSetting: (
-    nodeId: string,
-    positionId: string,
-    field: keyof PositionSettings,
-    value: any
-  ) =>
-    set((state) => {
-      const currentNode = state.actionNodes[nodeId];
-      if (!currentNode) return state;
-
-      return {
-        actionNodes: {
-          ...state.actionNodes,
-          [nodeId]: {
-            ...currentNode,
-            positions: currentNode.positions.map((position) =>
-              position.id === positionId
-                ? {
-                    ...position,
-                    settings: {
-                      ...position.settings,
-                      [field]: value,
-                    },
-                  }
-                : position
-            ),
-          },
-        },
-      };
-    }),
-
-    clearActionNodes: () => set({ actionNodes: {} }),
-}));
-
-const generateLegID = (positions: Position[]) => {
-  if (!positions || positions.length === 0) {
-    return 1;
-  }
+  if (!positions || positions.length === 0) return 1;
+  
   const legIDs = positions.map((position) => position.settings.legID);
-  // Filter out any undefined or invalid values
   const validLegIDs = legIDs.filter(id => typeof id === 'number' && Number.isFinite(id));
   
-  if (validLegIDs.length === 0) {
-    return 1; // Return 1 if no valid legIDs found
-  }
-  
-  return Math.max(...validLegIDs) + 1;
+  return validLegIDs.length === 0 ? 1 : Math.max(...validLegIDs) + 1;
 };
+
+// Create the store with middleware
+export const useActionStore = create<ActionState>()(
+  devtools(
+    persist(
+      (set) => ({
+        actionNodes: {},
+        setActionNodes: (actionNodes) => set({ actionNodes }),
+        createActionNode: (nodeId, name) => {
+          markUnsavedChanges();
+          set((state) => ({
+            actionNodes: {
+              ...state.actionNodes,
+              [nodeId]: {
+                nodeName: name,
+                items: [],
+              },
+            },
+          }));
+        },
+        copyActionNode: (nodeId, newNodeId, label) =>
+          set((state) => {
+            markUnsavedChanges();
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [newNodeId]: {
+                  nodeName: label,
+                  items: [...currentNode.items],
+                },
+              },
+            };
+          }),
+        updateNodeName: (nodeId, name) =>
+          set((state) => {
+            markUnsavedChanges();
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...state.actionNodes[nodeId],
+                  nodeName: name,
+                },
+              },
+            };
+          }),
+        addAction: (nodeId, action) =>
+          set((state) => {
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+            
+            // Check if action already exists
+            if (currentNode.items.some(
+              item => item.type === 'action' && 
+              (item.data as Action).func === action.func
+            )) {
+              return state;
+            }
+
+            markUnsavedChanges();
+            const newItem: NodeItem = {
+              id: `action-${Date.now()}`,
+              type: 'action',
+              data: action,
+              order: currentNode.items.length
+            };
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: [...currentNode.items, newItem],
+                },
+              },
+            };
+          }),
+        removeAction: (nodeId, actionFunc) =>
+          set((state) => {
+            markUnsavedChanges();
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: currentNode.items.filter(
+                    item => !(item.type === 'action' && 
+                    (item.data as Action).func === actionFunc)
+                  ),
+                },
+              },
+            };
+          }),
+        removeActionNode: (nodeId) =>
+          set((state) => {
+            markUnsavedChanges();
+            const { [nodeId]: _, ...rest } = state.actionNodes;
+            return {
+              actionNodes: rest,
+            };
+          }),
+        clearActionNodes: () => set({ actionNodes: {} }),
+        addPosition: (nodeId) =>
+          set((state) => {
+            markUnsavedChanges();
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+
+            const newPosition: Position = {
+              id: `position-${Date.now()}`,
+              settings: {
+                legID: generateLegID(currentNode.items),
+                transactionType: "buy",
+                segment: "OPT",
+                optionType: "CE",
+                qty: 0,
+                expType: "weekly",
+                expNo: 0,
+                strikeBy: "moneyness",
+                strikeVal: 0,
+                isTarget: false,
+                targetOn: "%",
+                targetValue: 0,
+                isSL: false,
+                SLon: "%",
+                SLvalue: 0,
+                isTrailSL: false,
+                trailSLon: "%",
+                trailSL_X: 0,
+                trailSL_Y: 0,
+                isWT: false,
+                wtOn: "val-up",
+                wtVal: 0,
+                isReEntryTg: false,
+                reEntryTgOn: "asap",
+                reEntryTgVal: 0,
+                reEntryTgMaxNo: 1,
+                isReEntrySL: false,
+                reEntrySLOn: "asap",
+                reEntrySLVal: 0,
+                reEntrySLMaxNo: 1,
+              },
+            };
+
+            const newItem: NodeItem = {
+              id: newPosition.id,
+              type: 'position',
+              data: newPosition,
+              order: currentNode.items.length
+            };
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: [...currentNode.items, newItem],
+                },
+              },
+            };
+          }),
+        removePosition: (nodeId, positionId) =>
+          set((state) => {
+            markUnsavedChanges();
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: currentNode.items.filter(
+                    item => !(item.type === 'position' && item.id === positionId)
+                  ),
+                },
+              },
+            };
+          }),
+        updatePositionSetting: (nodeId, positionId, field, value) =>
+          set((state) => {
+            markUnsavedChanges();
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: currentNode.items.map(item => 
+                    item.type === 'position' && item.id === positionId
+                      ? {
+                          ...item,
+                          data: {
+                            ...item.data as Position,
+                            settings: {
+                              ...(item.data as Position).settings,
+                              [field]: value,
+                            },
+                          },
+                        }
+                      : item
+                  ),
+                },
+              },
+            };
+          }),
+          moveItemUp: (nodeId, itemId) =>
+            set((state) => {
+              const currentNode = state.actionNodes[nodeId];
+              if (!currentNode) return state;
+  
+              const items = [...currentNode.items];
+              const currentIndex = items.findIndex(item => item.id === itemId);
+              if (currentIndex <= 0) return state;
+  
+              markUnsavedChanges();
+              // Swap items
+              const temp = items[currentIndex];
+              items[currentIndex] = items[currentIndex - 1];
+              items[currentIndex - 1] = temp;
+  
+              // Update order property
+              items[currentIndex].order = currentIndex;
+              items[currentIndex - 1].order = currentIndex - 1;
+  
+              return {
+                actionNodes: {
+                  ...state.actionNodes,
+                  [nodeId]: {
+                    ...currentNode,
+                    items,
+                  },
+                },
+              };
+            }),
+  
+          moveItemDown: (nodeId, itemId) =>
+            set((state) => {
+              const currentNode = state.actionNodes[nodeId];
+              if (!currentNode) return state;
+  
+              const items = [...currentNode.items];
+              const currentIndex = items.findIndex(item => item.id === itemId);
+              if (currentIndex === -1 || currentIndex >= items.length - 1) return state;
+  
+              markUnsavedChanges();
+              // Swap items
+              const temp = items[currentIndex];
+              items[currentIndex] = items[currentIndex + 1];
+              items[currentIndex + 1] = temp;
+  
+              // Update order property
+              items[currentIndex].order = currentIndex;
+              items[currentIndex + 1].order = currentIndex + 1;
+  
+              return {
+                actionNodes: {
+                  ...state.actionNodes,
+                  [nodeId]: {
+                    ...currentNode,
+                    items,
+                  },
+                },
+              };
+            }),
+  
+          duplicatePosition: (nodeId, positionId) =>
+            set((state) => {
+              const currentNode = state.actionNodes[nodeId];
+              if (!currentNode) return state;
+  
+              const position = currentNode.items.find(
+                item => item.type === 'position' && item.id === positionId
+              );
+              if (!position) return state;
+  
+              markUnsavedChanges();
+              const newPosition: NodeItem = {
+                id: `position-${Date.now()}`,
+                type: 'position',
+                data: {
+                  ...(position.data as Position),
+                  id: `position-${Date.now()}`,
+                  settings: {
+                    ...(position.data as Position).settings,
+                    legID: generateLegID(currentNode.items),
+                  },
+                },
+                order: currentNode.items.length,
+              };
+  
+              return {
+                actionNodes: {
+                  ...state.actionNodes,
+                  [nodeId]: {
+                    ...currentNode,
+                    items: [...currentNode.items, newPosition],
+                  },
+                },
+              };
+            }),
+      }),
+      {
+        name: 'strategy-action-store',
+        storage: createJSONStorage(() => sessionStorage),
+      }
+    )
+  )
+);

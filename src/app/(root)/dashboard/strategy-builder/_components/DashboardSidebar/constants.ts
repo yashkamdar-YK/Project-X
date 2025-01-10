@@ -34,7 +34,7 @@ export const INDICATOR_OPTIONS = [
     icon: Layers,
   },
   {
-    title:"Supper Trend",
+    title:"Super Trend",
     option: "supertrend",
     icon: Layers,
   }

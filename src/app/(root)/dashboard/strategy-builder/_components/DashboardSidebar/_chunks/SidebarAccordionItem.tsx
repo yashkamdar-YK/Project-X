@@ -9,7 +9,7 @@ interface SidebarAccordionItemProps {
 
 export const SidebarAccordionItem: React.FC<SidebarAccordionItemProps> = ({ index, item, renderContent }) => (
   <AccordionItem value={`item-${index}`}>
-    <AccordionTrigger className="flex mb-2 items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-200 group">
+    <AccordionTrigger className="flex mb-2 items-center justify-between py-2 px-4 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-900 rounded-md transition-all duration-200 group">
       <div className="flex items-center">
         {<item.icon size={16} />}
         <span className="ml-2">{item.title}</span>
@@ -25,7 +25,7 @@ export const SidebarAccordionItem: React.FC<SidebarAccordionItemProps> = ({ inde
       </div>
     </AccordionTrigger>
     <AccordionContent>
-      <div className="pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300 bg-white rounded-md dark:bg-gray-900 shadow-sm transition-all duration-200">
+      <div className="pl-4 pr-3 py-2 text-sm text-gray-600 dark:text-gray-300  shadow-sm transition-all duration-200">
         <div className="space-y-1">
           {renderContent()}
         </div>

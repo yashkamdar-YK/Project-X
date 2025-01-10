@@ -123,7 +123,7 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
               <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 Trail Stop Loss On
               </Label>
-              <div className="flex rounded-md bg-gray-100 dark:bg-gray-800 p-1">
+              <div className="flex rounded-md bg-gray-100 dark:bg-gray-800 p-1 w-fit">
                 <button
                   onClick={() => onSettingChange("trailSLon", "%")}
                   className={cn(

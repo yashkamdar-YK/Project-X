@@ -130,6 +130,12 @@ export const ALLOWED_OPERATIONS = {
       label: "=",
       value: "equals",
     },
+  ],
+  action:[
+    {
+      label: "=",
+      value: "equals",
+    },
   ]
 };
 

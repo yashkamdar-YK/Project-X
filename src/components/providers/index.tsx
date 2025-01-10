@@ -11,6 +11,16 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
         defaultOptions: {
           queries: {
             staleTime: 60 * 1000,
+            // Add retry and refetchOnWindowFocus options
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+          mutations: {
+            // Add onSettled callback for mutations
+            onSettled: () => {
+              // Ensure proper cleanup after mutations
+              queryClient.resumePausedMutations?.();
+            },
           },
         },
       })

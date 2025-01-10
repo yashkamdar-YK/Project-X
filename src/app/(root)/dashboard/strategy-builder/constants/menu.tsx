@@ -24,7 +24,7 @@ export const INITIAL_NODES: Node[] = [
     position: { x: SPACING.CONDITION_X, y: SPACING.VERTICAL },
     type: NodeTypes.CONDITION,
     data: {
-      label: "Entry_Condition",
+      label: "Entry Condition",
     },
   },
 ];
@@ -46,7 +46,7 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
     position: { x: 0, y: 0 },
     type: NodeTypes.CONDITION,
     data: {
-      label: "Entry Condition",
+      label: "Condition",
     },
   },
   {
@@ -54,23 +54,7 @@ export const DEFAULT_NODE_TEMPLATES: Node[] = [
     position: { x: 0, y: 0 },
     type: NodeTypes.ACTION,
     data: {
-      label: "Square off All",
-    },
-  },
-  {
-    id: "3",
-    position: { x: 0, y: 0 },
-    type: NodeTypes.CONDITION,
-    data: {
-      label: "Exit Condition",
-    },
-  },
-  {
-    id: "4",
-    position: { x: 0, y: 0 },
-    type: NodeTypes.ACTION,
-    data: {
-      label: "Buy",
+      label: "Action",
     },
   },
 ];
@@ -97,12 +81,6 @@ export const SIDEBAR_SECTIONS = (onDataPointAdd: (e: any) => void, onIndicatorAd
       title: "Conditions",
       icon: AlertCircle,
       onClick: onConditionAdd,
-    },
-  {
-      title: "Components",
-      icon: Layers,
-      items: DEFAULT_NODE_TEMPLATES,
-      onClick: () => { },
     },
   ];
 

@@ -15,6 +15,8 @@ export const handleNodeDeletion = (
 
   nodesToDelete.forEach((nodeToDelete) => {
 
+    if(nodeToDelete.id === "start") return
+
     //delete from there respective stores
     if (nodeToDelete.type === NodeTypes.ACTION) {
       useActionStore.getState().removeActionNode(nodeToDelete.id);

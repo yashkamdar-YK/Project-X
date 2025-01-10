@@ -1,7 +1,9 @@
-import React from 'react';
-import { ConditionSubSection } from './ConditionSubSection';
-import { SubSection } from './types';
-import { DataPoint } from '../../../DashboardSidebar/DatapointDialog/types';
+import React from "react";
+import { ConditionSubSection } from "./ConditionSubSection";
+import { ConditionNode, SubSection } from "./types";
+import { DataPoint } from "../../../DashboardSidebar/DatapointDialog/types";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface ConditionBlockProps {
   block: {
@@ -14,13 +16,15 @@ interface ConditionBlockProps {
   dataPoints: DataPoint[];
   addSubSection: (nodeId: string) => void;
   updateSubSection: (
-    nodeId: string, 
-    subSectionId: number, 
-    field: keyof SubSection, 
-    value: string
+    nodeId: string,
+    subSectionId: number,
+    field: keyof SubSection,
+    value: string | number
   ) => void;
   removeSubSection: (nodeId: string, subSectionId: number) => void;
   toggleAddBadge: (nodeId: string, subSectionId: number) => void;
+  currentNode: ConditionNode;
+  removeBlock: (id: string, _id: string) => void;
 }
 
 export const ConditionBlock: React.FC<ConditionBlockProps> = ({
@@ -34,9 +38,9 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   toggleAddBadge,
 }) => {
   return (
-    <div className="relative">
-      <div className="border dark:border-gray-800 rounded-lg p-2 dark:bg-gray-900">
-        {block.subSections.map((subSection, index) => (
+    <div>
+      <div className="grid gap-y-6 py-4">
+        {block?.subSections.map((subSection, index) => (
           <ConditionSubSection
             key={subSection.id}
             subSection={subSection}
@@ -47,10 +51,23 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
             toggleAddBadge={toggleAddBadge}
             removeSubSection={removeSubSection}
             addSubSection={addSubSection}
-            isLastSubSection={index === block.subSections.length - 1}
+            isLastSubSection={index === block?.subSections.length - 1}
           />
         ))}
+      </div>
+      <div className="flex -mt-4 justify-center">
+        <Button
+          size="sm"
+          onClick={() => addSubSection(nodeId)}
+          variant="secondary"
+          className="w-fit mx-auto"
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add
+        </Button>
       </div>
     </div>
   );
 };
+
+export default ConditionBlock;

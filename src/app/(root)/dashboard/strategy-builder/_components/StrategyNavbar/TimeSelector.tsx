@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Popover,
   PopoverContent,
@@ -8,68 +8,91 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Star } from "lucide-react";
 import { useDataPointStore } from "@/lib/store/dataPointStore";
+import { markUnsavedChanges } from "@/lib/store/unsavedChangesStore";
 
-const convertToMinutes = (timeStr: string): number => {
-  const value = parseInt(timeStr);
-  if (timeStr.endsWith("m")) return value;
-  if (timeStr.endsWith("h")) return value * 60;
-  if (timeStr.endsWith("d")) return value * 24 * 60;
-  if (timeStr.endsWith("w")) return value * 7 * 24 * 60;
-  return value;
-};
+interface TimeOption {
+  label: string;
+  value: number;
+  isStarred: boolean;
+}
 
-const sortTimeValues = (a: string, b: string): number => {
-  return convertToMinutes(a) - convertToMinutes(b);
-};
+const STORAGE_KEY = 'timepicker-starred-items';
+
+const sortTimeValues = (a: number, b: number): number => a - b;
 
 const formatTimeFrame = (minutes: number): string => {
+  if (!minutes || minutes < 0) return "0m";
+  
   if (minutes >= 1440) { // 24 * 60
-    return `${minutes / 1440}d`;
+    const days = Math.floor(minutes / 1440);
+    return `${days}d`;
   } else if (minutes >= 60) {
-    return `${minutes / 60}h`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h`;
   }
   return `${minutes}m`;
 };
 
+// Function to get starred items from localStorage
+const getStoredStarredItems = (symbol: string): number[] => {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-${symbol}`);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error reading from localStorage:', error);
+    return [];
+  }
+};
+
+// Function to store starred items in localStorage
+const storeStarredItems = (symbol: string, items: number[]) => {
+  try {
+    localStorage.setItem(`${STORAGE_KEY}-${symbol}`, JSON.stringify(items));
+  } catch (error) {
+    console.error('Error writing to localStorage:', error);
+  }
+};
 
 const TimePicker = () => {
-  const { symbolInfo, selectedSymbol } = useDataPointStore();
+  const { symbolInfo, selectedSymbol, selectedTimeFrame, setSelectedTimeFrame } = useDataPointStore();
+  const [isOpen, setIsOpen] = useState(false);
+  
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
   
-  // Convert API timeframes to our format
-  const getTimeOptions = () => {
-    if (!currentSymbolInfo?.timeFrame) {
+  const timeOptions = useMemo(() => {
+    if (!currentSymbolInfo?.timeFrame || !Array.isArray(currentSymbolInfo.timeFrame)) {
       return [];
     }
 
-    return currentSymbolInfo.timeFrame.map(minutes => ({
-      value: formatTimeFrame(minutes),
-      isStarred: false
-    })).sort((a, b) => sortTimeValues(a.value, b.value));
-  };
+    // Get starred items from localStorage for the current symbol
+    const storedStarredItems = selectedSymbol ? getStoredStarredItems(selectedSymbol) : [];
 
-  const [timeOptions, setTimeOptions] = useState(getTimeOptions());
-  const {selectedTimeFrame,setSelectedTimeFrame} = useDataPointStore();
-  const [isOpen, setIsOpen] = useState(false);
+    return currentSymbolInfo.timeFrame
+      .filter(minutes => typeof minutes === 'number' && minutes > 0)
+      .map(minutes => ({
+        label: formatTimeFrame(minutes),
+        value: minutes,
+        isStarred: storedStarredItems.includes(minutes)
+      }))
+      .sort((a, b) => sortTimeValues(a.value, b.value));
+  }, [currentSymbolInfo?.timeFrame, selectedSymbol]);
+
+  const [localTimeOptions, setLocalTimeOptions] = useState<TimeOption[]>([]);
 
   useEffect(() => {
-    if(!selectedTimeFrame){
-      setSelectedTimeFrame(timeOptions[0]?.value || "1m");
-    }
+    setLocalTimeOptions(timeOptions);
   }, [timeOptions]);
 
-  // Update options when symbol changes
   useEffect(() => {
-    const newOptions = getTimeOptions();
-    setTimeOptions(newOptions);
-    if (newOptions.length > 0) {
-      setSelectedTimeFrame(newOptions[0].value);
+    if (!selectedTimeFrame && localTimeOptions.length > 0) {
+      setSelectedTimeFrame(localTimeOptions[3].value);
     }
-  }, [selectedSymbol, currentSymbolInfo]);
+  }, [localTimeOptions]);
 
-  const getQuickSelectionOptions = () => {
-    if(!selectedTimeFrame) return [];
-    const starredOptions = timeOptions
+  const quickSelectionOptions = useMemo(() => {
+    if (!selectedTimeFrame) return [];
+    
+    const starredOptions = localTimeOptions
       .filter(option => option.isStarred)
       .map(option => option.value);
     
@@ -78,33 +101,38 @@ const TimePicker = () => {
     }
     
     return starredOptions.sort(sortTimeValues);
-  };
+  }, [localTimeOptions, selectedTimeFrame]);
 
-  const toggleStar = (timeValue: string, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    setTimeOptions(prevOptions =>
-      prevOptions.map(option =>
+  const toggleStar = (timeValue: number, event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    setLocalTimeOptions(prevOptions => {
+      const newOptions = prevOptions.map(option =>
         option.value === timeValue
           ? { ...option, isStarred: !option.isStarred }
           : option
-      )
-    );
+      );
+      
+      // Update localStorage with new starred items
+      if (selectedSymbol) {
+        const starredItems = newOptions
+          .filter(option => option.isStarred)
+          .map(option => option.value);
+        storeStarredItems(selectedSymbol, starredItems);
+      }
+      
+      return newOptions;
+    });
   };
 
-  const handleTimeSelect = (time: string) => {
+  const handleTimeSelect = (time: number) => {
+    markUnsavedChanges()
     setSelectedTimeFrame(time);
     setIsOpen(false);
   };
 
-  const sortedTimeOptions = [...timeOptions].sort((a, b) =>
-    sortTimeValues(a.value, b.value)
-  );
-  
-  const quickSelectionOptions = getQuickSelectionOptions();
-
-  if (!selectedSymbol || timeOptions.length === 0) return null
+  if (!selectedSymbol || localTimeOptions.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex items-center space-x-1">
@@ -123,7 +151,7 @@ const TimePicker = () => {
                 : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
           >
-            {time}
+            {formatTimeFrame(time)}
           </Button>
         ))}
 
@@ -139,7 +167,7 @@ const TimePicker = () => {
           </PopoverTrigger>
           <PopoverContent className="w-32 p-0">
             <div className="max-h-[300px] overflow-auto hide-scrollbar">
-              {sortedTimeOptions.map((option) => (
+              {localTimeOptions.map((option) => (
                 <div
                   key={option.value}
                   className={cn(
@@ -148,7 +176,7 @@ const TimePicker = () => {
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >
-                  <span>{option.value}</span>
+                  <span>{option.label}</span>
                   <button
                     onClick={(e) => toggleStar(option.value, e)}
                     className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-all duration-200"
@@ -175,15 +203,15 @@ const TimePicker = () => {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-fit border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200"
+              className="w-fit border-gray-300 text-sm px-2 sm:px-3 sm:text-base dark:border-gray-700 bg-white dark:bg-gray-800 transition-all duration-200"
             >
-              {selectedTimeFrame}
-              <ChevronDown className="h-4 w-4 ml-2" />
+              {formatTimeFrame(selectedTimeFrame || 0)}
+              <ChevronDown className="h-3 w-3" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-56 p-0">
             <div className="max-h-[300px] overflow-auto">
-              {sortedTimeOptions.map((option) => (
+              {localTimeOptions.map((option) => (
                 <div
                   key={option.value}
                   className={cn(
@@ -192,7 +220,7 @@ const TimePicker = () => {
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >
-                  <span>{option.value}</span>
+                  <span>{option.label}</span>
                   <button
                     onClick={(e) => toggleStar(option.value, e)}
                     className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-1 transition-all duration-200"

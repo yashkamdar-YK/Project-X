@@ -27,6 +27,7 @@ import ActionEdge from "./CanvasComponents/ActionEdge";
 
 import { debounce } from "lodash";
 import { handleNodeDeletion, handleOnConnection } from "../_utils/nodeHandling";
+import { markUnsavedChanges } from "@/lib/store/unsavedChangesStore";
 
 // Define node types mapping
 const nodeTypes = {
@@ -60,33 +61,34 @@ const StrategyCanvas = () => {
       setHistory((prevHistory) => {
         // Trim history to current index
         const trimmedHistory = prevHistory.slice(0, currentIndex + 1);
-
+        
         // Check if the new state is different from the last state
         const lastState = trimmedHistory[trimmedHistory.length - 1];
         const isNewStateDifferent =
-          !lastState ||
-          JSON.stringify(newNodes) !== JSON.stringify(lastState.nodes) ||
-          JSON.stringify(newEdges) !== JSON.stringify(lastState.edges);
-
+        !lastState ||
+        JSON.stringify(newNodes) !== JSON.stringify(lastState.nodes) ||
+        JSON.stringify(newEdges) !== JSON.stringify(lastState.edges);
+        
         // Only add new state if it's meaningfully different
         if (isNewStateDifferent) {
           const newHistory = [
             ...trimmedHistory,
             { nodes: newNodes, edges: newEdges },
           ];
-
+          
           // Limit history to last 50 states
           return newHistory.slice(-50);
         }
-
+        
         return trimmedHistory;
       });
-
+      
       // Update current index
       setCurrentIndex((prevIndex) => {
         const newIndex = Math.min(prevIndex + 1, 49);
         return newIndex;
       });
+      // markUnsavedChanges()
     }, 150), // 150ms debounce time
     [currentIndex]
   );
@@ -175,6 +177,7 @@ const StrategyCanvas = () => {
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation();
+      if(node.type === "START") return;
       setSelectedNodeId(node.id); // Set the selected node ID
       openSheet("node", node);
     },
@@ -253,10 +256,33 @@ const StrategyCanvas = () => {
     };
   }, [selectedNodeId]);
 
+  //check if the start node is deleted then add it back
+  useEffect(() => {
+    const startNode = nodes.find((node) => node.id === "start");
+    if (!startNode) {
+      //first condition node
+      const firstConditionNode = nodes.find(
+        (node) => node.type === NodeTypes.CONDITION
+      );
+      const newNode = {
+        id: "start",
+        type: NodeTypes.START,
+        position: {
+          x: firstConditionNode ? firstConditionNode.position.x : 0,
+          y: firstConditionNode ? firstConditionNode.position.y - 200 : 0,
+        },
+      };
+      const updatedNodes = [newNode, ...nodes];
+      //@ts-ignore
+      setNodes(updatedNodes);
+      //@ts-ignore
+      saveState(updatedNodes, edges);
+    }
+  }, [nodes, edges, setNodes, saveState]);
   return (
     <div className="h-full w-full bg-gray-50 dark:bg-gray-900">
-      <div className="h-full w-full border border-dashed border-gray-300 dark:border-gray-700 relative">
-        <div className="absolute inset-0 dark:text-black">
+      <div className="h-full w-full  relative">
+        <div className="w-full h-full dark:text-black">
           <ReactFlowProvider>
             <ReactFlow
               nodes={nodes}

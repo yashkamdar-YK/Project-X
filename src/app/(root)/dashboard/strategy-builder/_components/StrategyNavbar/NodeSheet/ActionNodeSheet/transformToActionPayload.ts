@@ -1,6 +1,6 @@
 import { useActionStore } from "@/lib/store/actionStore";
-
-// actionTransform.ts
+import { NodeItem, Action } from "@/lib/store/actionStore";
+import { Position} from "./types";
 interface ActionNodePayload {
   [nodeId: string]: {
     description: string;
@@ -42,66 +42,72 @@ export const transformToActionPayload = (
   const payload: ActionNodePayload = {};
 
   Object.entries(actionNodes).forEach(([nodeId, node]) => {
-    const actions: Array<{
-      func: string;
-      params?: any;
-    }> = [];
+    // Sort items by their order property to maintain sequence
+    const sortedItems = [...node.items].sort((a, b) => a.order - b.order);
 
-    // Transform positions to addLeg actions
-    node.positions.forEach((position) => {
-      const { settings } = position;
-      const baseParams = {
-        transactionType: settings.transactionType,
-        segment: settings.segment,
-        qty: settings.qty,
-        expType: settings.expType,
-        expNo: settings.expNo,
-        strikeBy: 'moneyness',
-        strikeVal: settings.strikeVal,
-        legID: settings.legID,
-      };
+    const actions = sortedItems.map((item) => {
+      if (item.type === 'position') {
+        const position = item.data as Position;
+        const { settings } = position;
+        
+        const baseParams = {
+          transactionType: settings.transactionType,
+          segment: settings.segment,
+          qty: settings.qty,
+          expType: settings.expType,
+          expNo: settings.expNo,
+          strikeBy: 'moneyness',
+          strikeVal: settings.strikeVal,
+          legID: settings.legID,
+        };
 
-      const params = {
-        ...baseParams,
-        ...(settings.segment === 'OPT' && { optionType: settings.optionType }),
-        ...(settings.isTarget && {
-          targetValue: settings.targetValue,
-          targetOn: settings.targetOn,
-        }),
-        ...(settings.isSL && {
-          SLvalue: settings.SLvalue,
-          SLon: settings.SLon,
-        }),
-        ...(settings.isTrailSL && {
-          trailSL_X: settings.trailSL_X,
-          trailSL_Y: settings.trailSL_Y,
-          trailSLon: settings.trailSLon,
-        }),
-        ...(settings.isWT && {
-          wtVal: settings.wtVal,
-          wtOn: settings.wtOn,
-        }),
-        ...(settings.isReEntryTg && {
-          reEntryTgVal: settings.reEntryTgVal,
-          reEntryTgOn: settings.reEntryTgOn,
-          reEntryTgMaxNo: settings.reEntryTgMaxNo,
-        }),
-        ...(settings.isReEntrySL && {
-          reEntrySLVal: settings.reEntrySLVal,
-          reEntrySLOn: settings.reEntrySLOn,
-          reEntrySLMaxNo: settings.reEntrySLMaxNo,
-        }),
-      };
+        const params = {
+          ...baseParams,
+          ...(settings.segment === 'OPT' && { optionType: settings.optionType }),
+          ...(settings.isTarget && {
+            isTarget: true,
+            targetValue: settings.targetValue,
+            targetOn: settings.targetOn === "₹" ? "val": settings.targetOn,
+          }),
+          ...(settings.isSL && {
+            isSL: true,
+            SLvalue: settings.SLvalue,
+            SLon: settings.SLon === "₹" ? "val": settings.SLon,
+          }),
+          ...(settings.isTrailSL && {
+            isTrailSL: true,
+            trailSL_X: settings.trailSL_X,
+            trailSL_Y: settings.trailSL_Y,
+            trailSLon: settings.trailSLon === "₹" ? "val": settings.trailSLon,
+          }),
+          ...(settings.isWT && {
+            isWT: true,
+            wtVal: settings.wtVal,
+            wtOn: settings.wtOn,
+          }),
+          ...(settings.isReEntryTg && {
+            isReEntryTg: true,
+            reEntryTgVal: settings.reEntryTgVal,
+            reEntryTgOn: settings.reEntryTgOn,
+            reEntryTgMaxNo: settings.reEntryTgMaxNo,
+          }),
+          ...(settings.isReEntrySL && {
+            isReEntrySL: true,
+            reEntrySLVal: settings.reEntrySLVal,
+            reEntrySLOn: settings.reEntrySLOn,
+            reEntrySLMaxNo: settings.reEntrySLMaxNo,
+          }),
+        };
 
-      actions.push({
-        func: 'addLeg',
-        params: cleanParams(params),
-      });
-    });
-
-    // Add other actions (squareoff_all, stop_WaitTrade_triggers)
-    node.actions.forEach((action) => {
-      actions.push({ func: action.func });
+        return {
+          func: 'addLeg',
+          params: cleanParams(params),
+        };
+      } else {
+        // Handle action items
+        const action = item.data as Action;
+        return { func: action.func };
+      }
     });
 
     payload[nodeId] = {

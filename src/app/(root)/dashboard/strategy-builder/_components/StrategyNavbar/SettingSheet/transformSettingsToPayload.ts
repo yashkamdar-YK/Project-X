@@ -18,7 +18,7 @@ interface SettingsPayload {
     priceBuffer: number;
   } | {};
   orderType: "Limit" | "Market";
-  squareoffTime: string;
+  squareoffTime?: string | null;
 }
 
 export const transformSettingsToPayload = (
@@ -73,21 +73,16 @@ export const transformSettingsToPayload = (
     }
   }
 
-  // Format time to include seconds
-  const formatTime = (time: string): string => {
-    return time ? `${time}` : "15:30:00"; // Default to market closing time if not set
-  };
-
   return {
     underlying,
     strategy_type: strategyType,
-    timeframe,
+    timeframe: Number(timeframe),
     tradingDays: selectorState === "daily" ? "all" : selectorState === "exp" ? "exp" : "days",
     tradingDaysList: getTradingDaysList(),
     productType,
     entryOperation: transformOperation(entryOperation),
     exitOperation: transformOperation(exitOperation),
     orderType,
-    squareoffTime: formatTime(squareOffTime),
+    ...( strategyType == "Intraday" ? {squareoffTime: squareOffTime || null} : {}),
   };
 };

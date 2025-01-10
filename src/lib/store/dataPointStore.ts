@@ -1,6 +1,10 @@
-// dataPointStore.ts
-import { SymbolData, SymbolInfo } from '@/app/(root)/dashboard/strategy-builder/_components/DashboardSidebar/DatapointDialog/types';
-import { create } from 'zustand';
+import {
+  SymbolData,
+  SymbolInfo,
+} from "@/app/(root)/dashboard/strategy-builder/_components/DashboardSidebar/DatapointDialog/types";
+import { create } from "zustand";
+import { devtools, persist, createJSONStorage } from "zustand/middleware";
+import { markUnsavedChanges } from "./unsavedChangesStore";
 
 interface DataPointState {
   symbols: Record<string, SymbolData>;
@@ -9,7 +13,7 @@ interface DataPointState {
   isLoadingSymbols: boolean;
   isLoadingSymbolInfo: boolean;
   error: string | null;
-  selectedTimeFrame: string | null;
+  selectedTimeFrame: number;
   setSymbols: (symbols: Record<string, SymbolData>) => void;
   setSymbolInfo: (symbol: string, info: SymbolInfo) => void;
   setSelectedSymbol: (symbol: string | null) => void;
@@ -18,38 +22,68 @@ interface DataPointState {
   setError: (error: string | null) => void;
   clearError: () => void;
   reset: () => void;
-  setSelectedTimeFrame: (timeFrame: string) => void;
+  setSelectedTimeFrame: (timeFrame: number) => void;
 }
 
-export const useDataPointStore = create<DataPointState>((set) => ({
-  symbols: {},
-  symbolInfo: {},
-  selectedSymbol: 'NIFTY',
-  isLoadingSymbols: false,
-  isLoadingSymbolInfo: false,
-  error: null,
-  selectedTimeFrame: null,
-  setSelectedTimeFrame: (timeFrame) => set({ selectedTimeFrame: timeFrame }),
-  setSymbols: (symbols) => set({ symbols, error: null }),
-  setSymbolInfo: (symbol, info) =>
-    set((state) => ({
-      symbolInfo: {
-        ...state.symbolInfo,
-        [symbol]: info
-      },
-      error: null
-    })),
-  setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
-  setIsLoadingSymbols: (isLoadingSymbols) => set({ isLoadingSymbols }),
-  setIsLoadingSymbolInfo: (isLoadingSymbolInfo) => set({ isLoadingSymbolInfo }),
-  setError: (error) => set({ error }),
-  clearError: () => set({ error: null }),
-  reset: () => set({
-    symbols: {},
-    symbolInfo: {},
-    selectedSymbol: null,
-    isLoadingSymbols: false,
-    isLoadingSymbolInfo: false,
-    error: null
-  })
-}));
+export const useDataPointStore = create<DataPointState>()(
+  devtools(
+    persist(
+      (set) => ({
+        symbols: {},
+        symbolInfo: {},
+        selectedSymbol: "NIFTY",
+        isLoadingSymbols: false,
+        isLoadingSymbolInfo: false,
+        error: null,
+        selectedTimeFrame: 0,
+        setSelectedTimeFrame: (timeFrame) =>
+          set(() => {
+            // markUnsavedChanges();
+            return { selectedTimeFrame: timeFrame };
+          }),
+        setSymbols: (symbols) => set({ symbols, error: null }),
+        setSymbolInfo: (symbol, info) =>
+          set((state) => {
+            // markUnsavedChanges();
+            return {
+              symbolInfo: {
+                ...state.symbolInfo,
+                [symbol]: info,
+              },
+              error: null,
+            };
+          }),
+        setSelectedSymbol: (symbol) =>
+          set(() => {
+            // markUnsavedChanges();
+            return { selectedSymbol: symbol };
+          }),
+        setIsLoadingSymbols: (isLoadingSymbols) => set({ isLoadingSymbols }),
+        setIsLoadingSymbolInfo: (isLoadingSymbolInfo) =>
+          set({ isLoadingSymbolInfo }),
+        setError: (error) => set({ error }),
+        clearError: () => set({ error: null }),
+        reset: () =>
+          set({
+            symbols: {},
+            symbolInfo: {},
+            selectedSymbol: null,
+            isLoadingSymbols: false,
+            isLoadingSymbolInfo: false,
+            error: null,
+            selectedTimeFrame: 0,
+          }),
+      }),
+      {
+        name: "strategy-datapoint-store",
+        storage: createJSONStorage(() => sessionStorage),
+        partialize: (state) => ({
+          symbols: state.symbols,
+          symbolInfo: state.symbolInfo,
+          selectedSymbol: state.selectedSymbol,
+          selectedTimeFrame: state.selectedTimeFrame,
+        }),
+      }
+    )
+  )
+);

@@ -70,6 +70,5 @@ export type PositionSettings = {
 
 export type Position = {
   id: string;
-  type: string;
   settings: PositionSettings;
 };

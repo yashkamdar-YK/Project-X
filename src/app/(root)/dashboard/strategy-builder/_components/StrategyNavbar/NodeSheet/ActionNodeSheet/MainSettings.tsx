@@ -203,7 +203,7 @@ const MainSettings: React.FC<MainSettingsProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.keys(availableExpiryTypes).map((expiryType: string) => (
+                {Object?.keys(availableExpiryTypes).map((expiryType: string) => (
                   <SelectItem key={expiryType} value={expiryType}>
                     {expiryType}
                   </SelectItem>

@@ -21,7 +21,7 @@ export const ActionItem: React.FC<ActionItemProps> = ({
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center justify-between p-2 relative bg-gray-50 dark:bg-gray-800 rounded-md">
+        <div className="flex items-center justify-between p-2 relative bg-gray-100 shadow-sm dark:bg-gray-800 rounded-md">
           <div className="flex items-center gap-2">
             <span className="text-sm">
               {nodeName || `Action Node ${nodeId}`}

@@ -23,7 +23,7 @@ export const GoogleCallbackPage: React.FC = () => {
       setCookie('token', data.access_token, {
         maxAge: 60 * 60 * 24 * 2, //48 hours
       });
-      router.push('/dashboard');
+      router.push('/dashboard/my-strategies');
     },
     onError: (error) => {
       toast({
