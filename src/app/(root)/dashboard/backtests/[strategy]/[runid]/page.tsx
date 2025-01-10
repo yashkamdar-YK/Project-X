@@ -44,10 +44,10 @@ function BacktestAnalyticsPage({
 }: {
   params: { strategy: string; runid: string };
 }) {
-  const [inputSlippage, setInputSlippage] = useState(() => 
+  const [inputSlippage, setInputSlippage] = useState(() =>
     getStoredSlippage(params.strategy, params.runid)
   );
-  const [debouncedSlippage, setDebouncedSlippage] = useState(() => 
+  const [debouncedSlippage, setDebouncedSlippage] = useState(() =>
     getStoredSlippage(params.strategy, params.runid)
   );
   const router = useRouter();
@@ -103,8 +103,8 @@ function BacktestAnalyticsPage({
           </AlertDescription>
         </Alert>
         <div className="flex justify-center items-center gap-2">
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             onClick={() => router.back()}
             className="gap-2"
           >
@@ -120,9 +120,9 @@ function BacktestAnalyticsPage({
     return (
       <div className="container mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => router.back()}
             className="gap-2"
           >
@@ -191,26 +191,26 @@ function BacktestAnalyticsPage({
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           <MetricCard
             title="Total Profit"
-            value={metrics.totolReturns.toLocaleString()}
+            value={metrics?.totolReturns?.toLocaleString()}
             prefix="₹"
           />
           <MetricCard
             title="Return to Max DD"
-            value={metrics.returntoMaxDD.toFixed(2)}
+            value={metrics?.returntoMaxDD?.toFixed(2)}
             suffix="x"
           />
           <MetricCard
             title="Win Rate (daily)"
-            value={metrics["winRate(daily)"].toFixed(1)}
+            value={metrics?.["winRate(daily)"]?.toFixed(1)}
             suffix="%"
           />
           <MetricCard
             title="Expectancy"
-            value={metrics.expectancy.toFixed(2)}
+            value={metrics?.expectancy?.toFixed(2)}
           />
           <MetricCard
             title="Total Trades"
-            value={metrics.totalTrades.toString()}
+            value={metrics?.totalTrades?.toString()}
           />
         </div>
 

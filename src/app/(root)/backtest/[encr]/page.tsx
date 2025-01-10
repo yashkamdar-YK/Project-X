@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { debounce } from "lodash";
@@ -29,15 +29,27 @@ import TradesTable from "../../dashboard/backtests/[strategy]/[runid]/_component
 import { MetricCard } from "../../dashboard/backtests/[strategy]/[runid]/_components/metric-card";
 import Image from "next/image";
 
+const SLIPPAGE_STORAGE_KEY = 'backtest-slippage';
+
 const PublicBacktestPage = ({
   params,
 }: {
   params: { encr: string };
 }) => {
   const { toast } = useToast();
-  const [inputSlippage, setInputSlippage] = useState<number>(0);
+  const [inputSlippage, setInputSlippage] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const savedSlippage = localStorage.getItem(SLIPPAGE_STORAGE_KEY);
+      return savedSlippage ? Number(savedSlippage) : 0;
+    }
+    return 0;
+  });
   const [debouncedSlippage, setDebouncedSlippage] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
+
+  useEffect(() => {
+    localStorage.setItem(SLIPPAGE_STORAGE_KEY, inputSlippage.toString());
+  }, [inputSlippage]);
 
   const debouncedSetSlippage = useMemo(
     () =>
@@ -166,7 +178,7 @@ const PublicBacktestPage = ({
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1 sm:flex-none gap-2">
                   <Eye className="h-4 w-4" />
-                  <span className="hidden sm:inline">View Strategy</span>
+                  <span>View Strategy</span>
                 </Button>
                 {/* <Button variant="outline" className="flex-1 sm:flex-none gap-2">
                   <Download className="h-4 w-4" />
@@ -178,7 +190,7 @@ const PublicBacktestPage = ({
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-56" align="end">
+                  <PopoverContent className="" align="end">
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <div className="flex space-x-2">
@@ -244,26 +256,26 @@ const PublicBacktestPage = ({
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           <MetricCard
             title="Total Profit"
-            value={metrics.totolReturns.toLocaleString()}
+            value={metrics?.totolReturns?.toLocaleString()}
             prefix="₹"
           />
           <MetricCard
             title="Return to Max DD"
-            value={metrics.returntoMaxDD.toFixed(2)}
+            value={metrics?.returntoMaxDD?.toFixed(2)}
             suffix="x"
           />
           <MetricCard
             title="Win Rate (daily)"
-            value={metrics["winRate(daily)"].toFixed(1)}
+            value={metrics?.["winRate(daily)"]?.toFixed(1)}
             suffix="%"
           />
           <MetricCard
             title="Expectancy"
-            value={metrics.expectancy.toFixed(2)}
+            value={metrics?.expectancy?.toFixed(2)}
           />
           <MetricCard
             title="Total Trades"
-            value={metrics.totalTrades.toString()}
+            value={metrics?.totalTrades?.toString()}
           />
         </div>
 

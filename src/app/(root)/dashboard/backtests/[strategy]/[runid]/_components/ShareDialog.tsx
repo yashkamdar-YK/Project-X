@@ -71,7 +71,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ strategy, runid, visibility }
       
       if (checked) {
         const result = await backtestService.generatePublicURL(strategy, runid);
-        const fullUrl = `${window.location.origin}/share/${result.encr}`;
+        const fullUrl = `${window.location.origin}/backtest/${result.encr}`;
         setShareableLink(fullUrl);
         toast({
           title: "Visibility changed",

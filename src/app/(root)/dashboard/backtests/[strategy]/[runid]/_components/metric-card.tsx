@@ -10,7 +10,7 @@ interface MetricCardProps {
 export function MetricCard({ title, value, prefix, suffix }: MetricCardProps) {
   const getColorForMetric = (title: string, value: string) => {
     // Parse the numeric value, removing currency symbols and other non-numeric characters
-    const numericValue = parseFloat(value.replace(/[^-\d.]/g, ''));
+    const numericValue = parseFloat(value?.replace(/[^-\d.]/g, ''));
 
     // If we can't parse the value, return no color
     if (isNaN(numericValue)) return '';

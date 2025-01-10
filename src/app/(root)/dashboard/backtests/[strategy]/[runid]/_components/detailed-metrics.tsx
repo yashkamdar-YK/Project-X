@@ -9,10 +9,10 @@ interface DetailedMetricsProps {
 
 const DetailedMetrics = ({ metrics }: DetailedMetricsProps) => {
   const formatValue = (value: number) => {
-    return value.toLocaleString('en-US', {
+    return value?.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    });
+    }) || 0;
   };
 
   const getValueColor = (value: number) => {
