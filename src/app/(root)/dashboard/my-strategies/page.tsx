@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ArrowRight, CheckCircle2, Beaker, Search } from "lucide-react";
 import StrategyCard from "./_components/StrategyCard";
 import { toast } from "@/hooks/use-toast";
@@ -40,7 +37,7 @@ const MyStrategyPage = () => {
 
   // State Management
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortType, setSortType] = useState("newest");
+  const [sortType, setSortType] = useState("bystatus");
   const [showSuccess, setShowSuccess] = useState(false);
   const [deletingStrategies, setDeletingStrategies] = useState<string[]>([]);
   const [backtestStrategies, setBacktestStrategies] = useState<string[]>([]);
@@ -57,7 +54,7 @@ const MyStrategyPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["allStrategies"],
-        exact: true
+        exact: true,
       });
       toast({
         title: "Strategy deleted successfully",
@@ -69,17 +66,21 @@ const MyStrategyPage = () => {
         title: "Error deleting strategy",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const backtestSt = useMutation({
-    mutationFn: ({ strategyName, startDate, endDate }: { 
-      strategyName: string; 
-      startDate: string; 
-      endDate: string 
+    mutationFn: ({
+      strategyName,
+      startDate,
+      endDate,
+    }: {
+      strategyName: string;
+      startDate: string;
+      endDate: string;
     }) => backtestService.startBacktest(strategyName, startDate, endDate),
     onMutate: (variables) => {
-      setBacktestStrategies(prev => [...prev, variables.strategyName]);
+      setBacktestStrategies((prev) => [...prev, variables.strategyName]);
     },
     onSuccess: () => {
       setShowSuccess(true);
@@ -91,41 +92,63 @@ const MyStrategyPage = () => {
       });
     },
     onSettled: (_, __, variables) => {
-      setBacktestStrategies(prev => 
-        prev.filter(name => name !== variables.strategyName)
+      setBacktestStrategies((prev) =>
+        prev.filter((name) => name !== variables.strategyName)
       );
-    }
+    },
   });
 
   // Sorting and Filtering Logic
   const filteredStrategies = useMemo(() => {
     if (!data) return [];
-    
+
     return data
       .filter((strategy: TStrategy) => {
-        return strategy.strategyName
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-          strategy.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return (
+          strategy.strategyName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          strategy.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
       })
       .sort((a: TStrategy, b: TStrategy) => {
         switch (sortType) {
           case "newest":
-            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+            return (
+              new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
+            );
           case "oldest":
-            return new Date(a.createdon).getTime() - new Date(b.createdon).getTime();
-          case "scheduled":
-            if (a.status === "scheduled" && b.status !== "scheduled") return -1;
-            if (a.status !== "scheduled" && b.status === "scheduled") return 1;
-            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
-          case "active":
+            return (
+              new Date(a.createdon).getTime() - new Date(b.createdon).getTime()
+            );
+          case "bystatus":
             if (a.status === "active" && b.status !== "active") return -1;
             if (a.status !== "active" && b.status === "active") return 1;
-            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
-          case "inactive":
+            if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+            if (a.status !== "scheduled" && b.status === "scheduled") return 1;
             if (a.status === "inactive" && b.status !== "inactive") return -1;
             if (a.status !== "inactive" && b.status === "inactive") return 1;
-            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+            return (
+              new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
+            );
+          // case "scheduled":
+          //   if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+          //   if (a.status !== "scheduled" && b.status === "scheduled") return 1;
+          //   return (
+          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
+          //   );
+          // case "active":
+          //   if (a.status === "active" && b.status !== "active") return -1;
+          //   if (a.status !== "active" && b.status === "active") return 1;
+          //   return (
+          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
+          //   );
+          // case "inactive":
+          //   if (a.status === "inactive" && b.status !== "inactive") return -1;
+          //   if (a.status !== "inactive" && b.status === "inactive") return 1;
+          //   return (
+          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
+          //   );
           default:
             return 0;
         }
@@ -147,16 +170,20 @@ const MyStrategyPage = () => {
 
   const handleDelete = async (name: string) => {
     try {
-      setDeletingStrategies(prev => [...prev, name]);
+      setDeletingStrategies((prev) => [...prev, name]);
       await deleteSt.mutateAsync(name);
     } catch (error) {
       console.error("Error deleting strategy:", error);
     } finally {
-      setDeletingStrategies(prev => prev.filter(n => n !== name));
+      setDeletingStrategies((prev) => prev.filter((n) => n !== name));
     }
   };
 
-  const handleBacktest = (strategyName: string, startDate: string, endDate: string) => {
+  const handleBacktest = (
+    strategyName: string,
+    startDate: string,
+    endDate: string
+  ) => {
     backtestSt.mutate({ strategyName, startDate, endDate });
   };
 
@@ -220,15 +247,16 @@ const MyStrategyPage = () => {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="bystatus">By Status</SelectItem>
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="scheduled">Scheduled First</SelectItem>
+                  {/* <SelectItem value="scheduled">Scheduled First</SelectItem>
                   <SelectItem value="active">Active First</SelectItem>
-                  <SelectItem value="inactive">Inactive First</SelectItem>
+                  <SelectItem value="inactive">Inactive First</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
-            
+
             {/* Results Summary */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{filteredStrategies.length} strategies found</span>
@@ -244,7 +272,7 @@ const MyStrategyPage = () => {
                 onEdit={() => handleEdit(strategy.strategyName)}
                 onDelete={handleDelete}
                 deletingStrategies={deletingStrategies}
-                onBacktest={(startDate, endDate) => 
+                onBacktest={(startDate, endDate) =>
                   handleBacktest(strategy.strategyName, startDate, endDate)
                 }
                 backtestStrategies={backtestStrategies}
@@ -272,10 +300,11 @@ const MyStrategyPage = () => {
                 Backtest Started Successfully!
               </h2>
               <p className="text-muted-foreground">
-                Your backtest has been initiated and is now processing. You can track its progress in the backtests section.
+                Your backtest has been initiated and is now processing. You can
+                track its progress in the backtests section.
               </p>
             </div>
-            <Button 
+            <Button
               className="w-full mt-4 group"
               onClick={handleGoToBacktests}
               size="lg"
