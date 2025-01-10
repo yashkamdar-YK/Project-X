@@ -168,10 +168,10 @@ const PublicBacktestPage = ({
                   <Eye className="h-4 w-4" />
                   <span className="hidden sm:inline">View Strategy</span>
                 </Button>
-                <Button variant="outline" className="flex-1 sm:flex-none gap-2">
+                {/* <Button variant="outline" className="flex-1 sm:flex-none gap-2">
                   <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Download</span>
-                </Button>
+                </Button> */}
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="icon">

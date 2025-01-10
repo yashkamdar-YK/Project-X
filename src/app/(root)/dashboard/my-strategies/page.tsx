@@ -38,15 +38,14 @@ const MyStrategyPage = () => {
   const setNodes = useNodeStore((state) => state.setNodes);
   const setEdges = useNodeStore((state) => state.setEdges);
 
-  // Local state
+  // State Management
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState("newest");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortType, setSortType] = useState("newest");
   const [showSuccess, setShowSuccess] = useState(false);
   const [deletingStrategies, setDeletingStrategies] = useState<string[]>([]);
   const [backtestStrategies, setBacktestStrategies] = useState<string[]>([]);
 
-  // Queries
+  // Data Fetching
   const { data, isLoading, error } = useQuery({
     queryFn: strategyService.getAllSt,
     queryKey: ["allStrategies"],
@@ -98,34 +97,42 @@ const MyStrategyPage = () => {
     }
   });
 
-  // Memoized values
+  // Sorting and Filtering Logic
   const filteredStrategies = useMemo(() => {
     if (!data) return [];
     
     return data
       .filter((strategy: TStrategy) => {
-        const matchesSearch = strategy.strategyName
+        return strategy.strategyName
           .toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
           strategy.description.toLowerCase().includes(searchQuery.toLowerCase());
-          
-        const matchesStatus = statusFilter === "all" || strategy.status === statusFilter;
-        
-        return matchesSearch && matchesStatus;
       })
       .sort((a: TStrategy, b: TStrategy) => {
-        const dateA = new Date(a.createdon).getTime();
-        const dateB = new Date(b.createdon).getTime();
-        return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+        switch (sortType) {
+          case "newest":
+            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+          case "oldest":
+            return new Date(a.createdon).getTime() - new Date(b.createdon).getTime();
+          case "scheduled":
+            if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+            if (a.status !== "scheduled" && b.status === "scheduled") return 1;
+            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+          case "active":
+            if (a.status === "active" && b.status !== "active") return -1;
+            if (a.status !== "active" && b.status === "active") return 1;
+            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+          case "inactive":
+            if (a.status === "inactive" && b.status !== "inactive") return -1;
+            if (a.status !== "inactive" && b.status === "inactive") return 1;
+            return new Date(b.createdon).getTime() - new Date(a.createdon).getTime();
+          default:
+            return 0;
+        }
       });
-  }, [data, searchQuery, sortOrder, statusFilter]);
+  }, [data, searchQuery, sortType]);
 
-  const uniqueStatuses = useMemo(() => {
-    if (!data) return [];
-    return Array.from(new Set(data.map((strategy: TStrategy) => strategy.status)));
-  }, [data]);
-
-  // Handlers
+  // Event Handlers
   const handleCreateNewSt = () => {
     clearStores();
     setNodes(INITIAL_NODES);
@@ -158,7 +165,7 @@ const MyStrategyPage = () => {
     router.push("/dashboard/backtests");
   };
 
-  // Loading and error states
+  // Loading States
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
@@ -189,12 +196,13 @@ const MyStrategyPage = () => {
     <>
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="container md:px-8 px-2 mx-auto py-8">
+          {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">My Strategies</h1>
             <Button onClick={handleCreateNewSt}>Create New Strategy</Button>
           </div>
 
-          {/* Search and Filters */}
+          {/* Sorting and Filtering Section */}
           <div className="space-y-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
@@ -206,44 +214,28 @@ const MyStrategyPage = () => {
                   className="pl-10 max-w-lg"
                 />
               </div>
-             <div className="flex gap-x-3">
-             <Select value={sortOrder} onValueChange={setSortOrder}>
+              {/* Updated Sorting Select */}
+              <Select value={sortType} onValueChange={setSortType}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="scheduled">Scheduled First</SelectItem>
+                  <SelectItem value="active">Active First</SelectItem>
+                  <SelectItem value="inactive">Inactive First</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {uniqueStatuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-             </div>
             </div>
             
-            {/* Results summary */}
+            {/* Results Summary */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{filteredStrategies.length} strategies found</span>
-              {statusFilter !== "all" && (
-                <Badge variant="secondary" className="ml-2">
-                  Status: {statusFilter}
-                </Badge>
-              )}
             </div>
           </div>
 
-          {/* Strategy cards grid */}
+          {/* Strategy Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filteredStrategies.map((strategy) => (
               <StrategyCard
@@ -262,6 +254,7 @@ const MyStrategyPage = () => {
         </div>
       </ScrollArea>
 
+      {/* Success Dialog */}
       <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
         <DialogContent className="sm:max-w-[425px] text-center p-12">
           <div className="flex flex-col items-center gap-6">

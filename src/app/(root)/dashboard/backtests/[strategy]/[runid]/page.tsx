@@ -175,14 +175,14 @@ function BacktestAnalyticsPage({
                   <span className="hidden sm:inline">View Strategy</span>
                 </Button>
               </Link>
-              <Button variant="outline" className="flex-1 sm:flex-none">
+              {/* <Button variant="outline" className="flex-1 sm:flex-none">
                 <Download className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Download</span>
-              </Button>
+              </Button> */}
               <ShareDialog
                 strategy={params.strategy}
                 runid={params.runid}
-                visibility="public"
+                visibility={data.info.visiblity}
               />
             </div>
           </div>

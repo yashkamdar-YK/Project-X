@@ -80,4 +80,5 @@ export type TBacktestResult = {
     Time_for_max_drawdown: number;
     Time_for_recovery: number;
   }[];
+  info:TBacktest
 };

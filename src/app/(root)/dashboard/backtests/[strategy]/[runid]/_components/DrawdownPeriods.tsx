@@ -63,8 +63,13 @@ const DrawdownPeriods = ({ data }: DrawdownPeriodsProps) => {
                     {format(new Date(period.Start_Date), 'dd MMM yy')} -{' '}
                     {format(new Date(period.End_Date), 'dd MMM yy')}
                   </TableCell>
-                  <TableCell className="text-right text-destructive font-medium">
-                    {period.Max_Drawdown.toFixed(2)}%
+                  <TableCell className="text-right text-red-500 font-medium">
+                  {
+                    period.Max_Drawdown.toFixed(2).split("-")[1] ? 
+                    <span>₹{period.Max_Drawdown.toFixed(2).split("-")[1]}</span> 
+                    : 
+                    <span>₹{period.Max_Drawdown.toFixed(2)}</span>
+                  }
                   </TableCell>
                   <TableCell className="text-right">
                     {period.Drawdown_days}

@@ -168,7 +168,7 @@ export function BacktestCard({ backtest }: BacktestCardProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                    className="text-red-600 focus:bg-destructive focus:text-destructive-foreground"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
