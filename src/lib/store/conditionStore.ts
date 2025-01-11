@@ -6,22 +6,14 @@ import {
 } from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ConditionNodeSheet/types";
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { markUnsavedChanges } from "./unsavedChangesStore";
+import { markUnsavedChanges, useUnsavedChangesStore } from "./unsavedChangesStore";
 
 interface ConditionStore {
   conditionBlocks: ConditionBlockMap;
   setConditionBlocks: (conditionBlocks: ConditionBlockMap) => void;
   createConditionBlock: (nodeId: string, name: string, conditionType: "entry" | "exit") => void;
-  copyConditionBlock: (
-    nodeId: string,
-    newNodeId: string,
-    label: string
-  ) => void;
-  updateBlockSettings: (
-    nodeId: string,
-    field: keyof ConditionNode,
-    value: any
-  ) => void;
+  copyConditionBlock: (nodeId: string, newNodeId: string, label: string) => void;
+  updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) => void;
   removeConditionBlock: (nodeId: string) => void;
   addBlock: (nodeId: string) => void;
   removeBlock: (nodeId: string, blockId: string) => void;
@@ -34,28 +26,33 @@ interface ConditionStore {
     field: keyof SubSection,
     value: string | number
   ) => void;
-  removeSubSection: (
-    nodeId: string,
-    blockId: string,
-    subSectionId: number
-  ) => void;
-  toggleAddBadge: (
-    nodeId: string,
-    blockId: string,
-    subSectionId: number
-  ) => void;
+  removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
+  toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => void;
   updateBlockRelation: (nodeId: string, index: number) => void;
 }
+
+const checkEditPermission = () => {
+  const canEdit = useUnsavedChangesStore.getState().canEdit;
+  if (!canEdit) {
+    console.warn('Edit operation blocked: User does not have edit permission');
+    return false;
+  }
+  return true;
+};
 
 export const useConditionStore = create<ConditionStore>()(
   devtools(
     persist(
       (set) => ({
         conditionBlocks: {},
-        setConditionBlocks: (conditionBlocks) =>
-          set({ conditionBlocks: { ...conditionBlocks } }),
+        
+        setConditionBlocks: (conditionBlocks) => {
+          if (!checkEditPermission()) return;
+          set({ conditionBlocks: { ...conditionBlocks } });
+        },
 
-        createConditionBlock: (nodeId: string, name: string, conditionType: "entry" | "exit") =>
+        createConditionBlock: (nodeId: string, name: string, conditionType: "entry" | "exit") => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
@@ -86,14 +83,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        copyConditionBlock: (nodeId, newNodeId, label) =>
+        copyConditionBlock: (nodeId, newNodeId, label) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
             markUnsavedChanges();
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -108,18 +106,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        updateBlockSettings: (
-          nodeId: string,
-          field: keyof ConditionNode,
-          value: any
-        ) =>
+        updateBlockSettings: (nodeId: string, field: keyof ConditionNode, value: any) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
             markUnsavedChanges();
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -129,21 +124,24 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        removeConditionBlock: (nodeId: string) =>
+        removeConditionBlock: (nodeId: string) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const { [nodeId]: _, ...conditionBlocks } = state.conditionBlocks;
             return { conditionBlocks };
-          }),
+          });
+        },
 
-        addBlock: (nodeId: string) =>
+        addBlock: (nodeId: string) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -169,9 +167,11 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        removeBlock: (nodeId: string, blockId: string) =>
+        removeBlock: (nodeId: string, blockId: string) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
@@ -198,14 +198,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        addSubSection: (nodeId: string, blockId: string) =>
+        addSubSection: (nodeId: string, blockId: string) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -231,14 +232,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        updateSubSection: (nodeId, blockId, subSectionId, field, value) =>
+        updateSubSection: (nodeId, blockId, subSectionId, field, value) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -259,18 +261,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        removeSubSection: (
-          nodeId: string,
-          blockId: string,
-          subSectionId: number
-        ) =>
+        removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -289,18 +288,15 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        toggleAddBadge: (
-          nodeId: string,
-          blockId: string,
-          subSectionId: number
-        ) =>
+        toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
             if (!currentNode) return state;
-
             return {
               conditionBlocks: {
                 ...state.conditionBlocks,
@@ -327,9 +323,11 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        updateBlockRelation: (nodeId: string, index: number) =>
+        updateBlockRelation: (nodeId: string, index: number) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.conditionBlocks[nodeId];
@@ -348,9 +346,13 @@ export const useConditionStore = create<ConditionStore>()(
                 },
               },
             };
-          }),
+          });
+        },
 
-        clearConditionNodes: () => set({ conditionBlocks: {} }),
+        clearConditionNodes: () => {
+          if (!checkEditPermission()) return;
+          set({ conditionBlocks: {} });
+        },
       }),
       {
         name: "strategy-condition-store",

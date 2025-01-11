@@ -1,32 +1,50 @@
 import { DataPointsStore } from "@/app/(root)/dashboard/strategy-builder/_components/DashboardSidebar/DatapointDialog/types";
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { markUnsavedChanges } from "./unsavedChangesStore";
+import { markUnsavedChanges, useUnsavedChangesStore } from "./unsavedChangesStore";
+
+const checkEditPermission = () => {
+  const canEdit = useUnsavedChangesStore.getState().canEdit;
+  if (!canEdit) {
+    console.warn('Edit operation blocked: User does not have edit permission');
+    return false;
+  }
+  return true;
+};
 
 export const useDataPointsStore = create<DataPointsStore>()(
   devtools(
     persist(
       (set) => ({
         dataPoints: [],
-        setDataPoints: (dataPoints) => set({ dataPoints }),
 
-        addDataPoint: (dataPoint) =>
+        setDataPoints: (dataPoints) => {
+          if (!checkEditPermission()) return;
+          set({ dataPoints });
+        },
+
+        addDataPoint: (dataPoint) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
               dataPoints: [...state.dataPoints, dataPoint],
             };
-          }),
+          });
+        },
 
-        removeDataPoint: (id) =>
+        removeDataPoint: (id) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
               dataPoints: state.dataPoints.filter((dp) => dp.id !== id),
             };
-          }),
+          });
+        },
 
-        updateDataPoint: (id, updatedData) =>
+        updateDataPoint: (id, updatedData) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
@@ -34,9 +52,13 @@ export const useDataPointsStore = create<DataPointsStore>()(
                 dp.id === id ? { ...dp, ...updatedData } : dp
               ),
             };
-          }),
+          });
+        },
 
-        clearDataPoints: () => set({ dataPoints: [] }),
+        clearDataPoints: () => {
+          if (!checkEditPermission()) return;
+          set({ dataPoints: [] });
+        },
       }),
       {
         name: "strategy-datapoints-store",

@@ -8,7 +8,8 @@ import Spinner from '../spinner'
 
 
 export function withAuth<P extends object>(
-  WrappedComponent: React.ComponentType<P>
+  WrappedComponent: React.ComponentType<P>,
+  redirect=true
 ) {
   return function WithAuthComponent(props: P) {
     const router = useRouter()
@@ -23,7 +24,7 @@ export function withAuth<P extends object>(
             setUser(response)
           }
         } catch (error) {
-          router.push('/login')
+          if(redirect) router.push('/login')
         } finally {
           setLoading(false)
         }

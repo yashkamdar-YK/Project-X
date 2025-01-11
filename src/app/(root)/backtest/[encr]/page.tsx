@@ -28,6 +28,7 @@ import DrawdownPeriods from "../../dashboard/backtests/[strategy]/[runid]/_compo
 import TradesTable from "../../dashboard/backtests/[strategy]/[runid]/_components/trades-table";
 import { MetricCard } from "../../dashboard/backtests/[strategy]/[runid]/_components/metric-card";
 import Image from "next/image";
+import Link from "next/link";
 
 const SLIPPAGE_STORAGE_KEY = 'backtest-slippage';
 
@@ -176,10 +177,12 @@ const PublicBacktestPage = ({
               </div>
               
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 sm:flex-none gap-2">
-                  <Eye className="h-4 w-4" />
-                  <span>View Strategy</span>
-                </Button>
+                <Link href={`/dashboard/strategy-builder?encr=${params.encr}`}>
+                  <Button variant="outline" className="flex-1 sm:flex-none gap-2">
+                    <Eye className="h-4 w-4" />
+                    <span>View Strategy</span>
+                  </Button>
+                </Link>
                 {/* <Button variant="outline" className="flex-1 sm:flex-none gap-2">
                   <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Download</span>

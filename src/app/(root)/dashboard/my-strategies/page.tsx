@@ -37,7 +37,7 @@ const MyStrategyPage = () => {
 
   // State Management
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortType, setSortType] = useState("bystatus");
+  const [sortType, setSortType] = useState("newest");
   const [showSuccess, setShowSuccess] = useState(false);
   const [deletingStrategies, setDeletingStrategies] = useState<string[]>([]);
   const [backtestStrategies, setBacktestStrategies] = useState<string[]>([]);
@@ -131,24 +131,6 @@ const MyStrategyPage = () => {
             return (
               new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
             );
-          // case "scheduled":
-          //   if (a.status === "scheduled" && b.status !== "scheduled") return -1;
-          //   if (a.status !== "scheduled" && b.status === "scheduled") return 1;
-          //   return (
-          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
-          //   );
-          // case "active":
-          //   if (a.status === "active" && b.status !== "active") return -1;
-          //   if (a.status !== "active" && b.status === "active") return 1;
-          //   return (
-          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
-          //   );
-          // case "inactive":
-          //   if (a.status === "inactive" && b.status !== "inactive") return -1;
-          //   if (a.status !== "inactive" && b.status === "inactive") return 1;
-          //   return (
-          //     new Date(b.createdon).getTime() - new Date(a.createdon).getTime()
-          //   );
           default:
             return 0;
         }
