@@ -170,7 +170,7 @@ function BacktestAnalyticsPage({
                 max={100}
                 value={inputSlippage}
                 onChange={handleSlippageChange}
-                className="w-20"
+                className="w-9 md:w-20"
               />
             </div>
             <div className="flex items-center gap-2">

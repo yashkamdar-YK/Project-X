@@ -51,7 +51,7 @@ const SettingSheet = () => {
   const buttonClass =
     "h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-blue-500/20";
   const sectionClass =
-    "space-y-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl md:border border-gray-100 dark:border-gray-800";
+    "space-y-4 md:p-6  dark:bg-gray-900 rounded-xl md:border dark:border-gray-800";
   const labelClass =
     "text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2";
 
@@ -94,16 +94,14 @@ const SettingSheet = () => {
                 Strategy Type
               </span>
               <Button
-                onClick={() =>
-                {
+                onClick={() => {
                   setStrategyType(
                     strategyType === "Intraday" ? "Positional" : "Intraday"
-                  )
-                  if(strategyType === "Intraday"){
-                    setProductType("Delivery")
+                  );
+                  if (strategyType === "Intraday") {
+                    setProductType("Delivery");
                   }
-                }
-                }
+                }}
                 className={buttonClass}
                 disabled={!selectedSymbol}
               >
@@ -154,7 +152,9 @@ const SettingSheet = () => {
                   }}
                   className={buttonClass}
                   disabled={
-                    !selectedSymbol || availableProductTypes.length <= 1 || strategyType === "Positional"
+                    !selectedSymbol ||
+                    availableProductTypes.length <= 1 ||
+                    strategyType === "Positional"
                   }
                 >
                   {productType}
