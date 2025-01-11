@@ -10,19 +10,18 @@ const StrategyDescription = ({ description }: { description: string }) => {
         {description || "No description provided"}
       </p>
       <div className="flex justify-end">
-      {description && description.length > 126 && (
-        <Button
-          variant="link"
-          size="sm"
-          onClick={() => setShowFullDescription(!showFullDescription)}
-        >
-          {showFullDescription ? "Show Less" : "View More"}
-        </Button>
-      )}
+        {description && description.length > 126 && (
+          <Button
+            variant="link"
+            size="xs"
+            onClick={() => setShowFullDescription(!showFullDescription)}
+          >
+            {showFullDescription ? "Show Less" : "View More"}
+          </Button>
+        )}
       </div>
     </div>
   );
 };
 
 export default StrategyDescription;
-

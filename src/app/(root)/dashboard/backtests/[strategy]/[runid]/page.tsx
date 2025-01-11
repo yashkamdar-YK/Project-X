@@ -29,13 +29,13 @@ import { withAuth } from "@/components/shared/hoc/withAuth";
 import ShareDialog from "./_components/ShareDialog";
 
 const getStoredSlippage = (strategy: string, runid: string): number => {
-  if (typeof window === 'undefined') return 0;
+  if (typeof window === "undefined") return 0;
   const stored = localStorage.getItem(`backtest-slippage`);
   return stored ? Number(stored) : 0;
 };
 
 const setStoredSlippage = (strategy: string, runid: string, value: number) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(`backtest-slippage`, value.toString());
 };
 
@@ -77,7 +77,12 @@ function BacktestAnalyticsPage({
   }, [params.strategy, params.runid]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["backtest-result", params.strategy, params.runid, debouncedSlippage],
+    queryKey: [
+      "backtest-result",
+      params.strategy,
+      params.runid,
+      debouncedSlippage,
+    ],
     queryFn: () =>
       backtestService.getBackTestResults(
         params.strategy,
@@ -99,15 +104,13 @@ function BacktestAnalyticsPage({
       <div className="container mx-auto p-4 sm:p-6 space-y-4">
         <Alert variant="destructive">
           <AlertDescription>
-            {error instanceof Error ? error.message : 'Failed to load backtest data. Please try again later.'}
+            {error instanceof Error
+              ? error.message
+              : "Failed to load backtest data. Please try again later."}
           </AlertDescription>
         </Alert>
         <div className="flex justify-center items-center gap-2">
-          <Button
-            size="sm"
-            onClick={() => router.back()}
-            className="gap-2"
-          >
+          <Button size="sm" onClick={() => router.back()} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Go Back
           </Button>
@@ -148,7 +151,9 @@ function BacktestAnalyticsPage({
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">{params.strategy}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">
+                {params.strategy}
+              </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {formatDate(data.metrics.period.split(" to ")[0])} TO{" "}
                 {formatDate(data.metrics.period.split(" to ")[1])}
@@ -169,7 +174,9 @@ function BacktestAnalyticsPage({
               />
             </div>
             <div className="flex items-center gap-2">
-              <Link href={"/dashboard/strategy-builder?name=" + params.strategy}>
+              <Link
+                href={"/dashboard/strategy-builder?name=" + params.strategy}
+              >
                 <Button variant="outline" className="flex-1 sm:flex-none">
                   <Eye className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">View Strategy</span>
