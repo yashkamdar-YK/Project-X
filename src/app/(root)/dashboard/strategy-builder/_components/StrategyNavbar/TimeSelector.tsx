@@ -228,9 +228,9 @@ const TimePicker = () => {
                 <div
                   key={option.value}
                   className={cn(
-                    "flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
+                    "flex items-center justify-between  px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
                     selectedTimeFrame === option.value
-                      ? "bg-grey-400"
+                      ? "bg-zinc-200"
                       : ""
                   )}
                   onClick={() => handleTimeSelect(option.value)}
