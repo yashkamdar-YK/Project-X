@@ -27,7 +27,7 @@ export const validateSubSection = (
     : selectedLHS?.options?.columnsAvailable || [];
 
   // Check if column is required and exists
-  if (columns.length > 0 && !subSection.column) {
+  if (columns?.length > 0 && !subSection?.column) {
     return false;
   }
 
@@ -55,7 +55,7 @@ export const validateSubSection = (
 
   // Special handling for integer comparison
   if (canCompareWith?.[0] === "int") {
-    return subSection._rhsValue !== undefined && subSection._rhsValue !== "";
+    return subSection._rhsValue !== undefined && subSection?._rhsValue !== "";
   }
 
   // Validate RHS based on comparison type
@@ -73,7 +73,7 @@ export const validateSubSection = (
   const RHSColumns = selectedRHS?.options?.columnsAvailable || [];
 
   // Check if RHS column is required and exists
-  if (RHSColumns.length > 0 && !subSection.rhs_column) {
+  if (RHSColumns?.length > 0 && !subSection.rhs_column) {
     return false;
   }
 

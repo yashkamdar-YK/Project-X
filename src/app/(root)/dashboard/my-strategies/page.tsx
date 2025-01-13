@@ -1,5 +1,5 @@
-"use client";
-import React, { useMemo, useState } from "react";
+'use client';
+import React, { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,10 +37,20 @@ const MyStrategyPage = () => {
 
   // State Management
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortType, setSortType] = useState("newest");
+  const [sortType, setSortType] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("sortType") || "newest";
+    }
+    return "newest";
+  });
   const [showSuccess, setShowSuccess] = useState(false);
   const [deletingStrategies, setDeletingStrategies] = useState<string[]>([]);
   const [backtestStrategies, setBacktestStrategies] = useState<string[]>([]);
+
+  // Sync sortType with local storage
+  useEffect(() => {
+    localStorage.setItem("sortType", sortType);
+  }, [sortType]);
 
   // Data Fetching
   const { data, isLoading, error } = useQuery({
@@ -232,9 +242,6 @@ const MyStrategyPage = () => {
                   <SelectItem value="bystatus">By Status</SelectItem>
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
-                  {/* <SelectItem value="scheduled">Scheduled First</SelectItem>
-                  <SelectItem value="active">Active First</SelectItem>
-                  <SelectItem value="inactive">Inactive First</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
