@@ -24,6 +24,7 @@ import {
 } from "../strategy-builder/constants/menu";
 import { useUnsavedChangesStore } from "@/lib/store/unsavedChangesStore";
 import { Badge } from "@/components/ui/badge";
+import posthog from "posthog-js";
 
 const DashboardNav: React.FC = () => {
   const pathName = usePathname();
@@ -55,6 +56,7 @@ const DashboardNav: React.FC = () => {
   };
 
   const handleNavLink = (href: string) => {
+    posthog.capture('navigating', { property: href })
     if (isUnsaved && pathName === "/dashboard/strategy-builder") {
       setPendingNavigation(href);
     } else {

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { Toaster } from "../ui/toaster";
 import { ThemeProvider } from "./theme-provider";
+import { CSPostHogProvider } from "./posthog-provider";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(
@@ -27,11 +28,13 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
+    <CSPostHogProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <Toaster />
           {children}
         </ThemeProvider>
       </QueryClientProvider>
+      </CSPostHogProvider>
   );
 };
