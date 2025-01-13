@@ -1,5 +1,7 @@
+import { SheetClose, SheetTrigger } from "@/components/ui/sheet";
 import { TooltipProvider, Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
-import { Edit2, X } from 'lucide-react';
+import { Dialog, DialogClose } from "@radix-ui/react-dialog";
+import { Edit2, Sheet, X } from 'lucide-react';
 
 interface ConditionItemProps {
   nodeId: string;
@@ -7,7 +9,7 @@ interface ConditionItemProps {
   onEdit: (nodeId: string) => void;
   onRemove: (nodeId: string) => void;
 }
-
+// /
 export const ConditionItem: React.FC<ConditionItemProps> = ({ nodeId, name, onEdit, onRemove }) => (
   <TooltipProvider>
     <Tooltip>
@@ -22,10 +24,13 @@ export const ConditionItem: React.FC<ConditionItemProps> = ({ nodeId, name, onEd
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(nodeId);
+                
               }}
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
             >
+              {/* <SheetTrigger asChild> */}
               <Edit2 className="w-4 h-4 text-blue-500" />
+              {/* </SheetTrigger> */}
             </button>
             <button
               onClick={(e) => {

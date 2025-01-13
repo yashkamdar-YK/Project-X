@@ -17,7 +17,6 @@ import ConditionDialog from "./AddConditionDialog";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useSheetStore } from "@/lib/store/SheetStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
-
 import { SidebarAccordionItem } from "./_chunks/SidebarAccordionItem";
 import { DataPointItem } from "./_chunks/DataPointItem";
 import { IndicatorItem } from "./_chunks/IndicatorItem";
@@ -131,8 +130,10 @@ const DashboardSidebar: React.FC = () => {
   };
 
   const handleEditDataPoint = (dataPoint: DataPoint) => {
+    
     setEditingDataPoint(dataPoint);
     setIsDataPointModalOpen(true);
+    
   };
 
   const handleEditActionNode = (nodeId: string) => {

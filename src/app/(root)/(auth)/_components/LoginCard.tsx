@@ -36,7 +36,7 @@ const LoginCard = () => {
       </div>
 
       <div className="space-y-4">
-        <GoogleLoginButton />
+        {/* <GoogleLoginButton /> */}
         <div className="flex items-center justify-center">
           <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700"></div>
           <p className="mx-2 text-sm text-gray-500 dark:text-gray-400">
