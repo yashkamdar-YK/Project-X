@@ -124,12 +124,9 @@ const MainSettings: React.FC<MainSettingsProps> = ({
           </Label>
           <Input
             type="number"
-            value={position.settings.qty}
+            value={position.settings.qty || ""}
             onChange={(e) => {
-              const value = parseInt(e.target.value);
-              if (value >= 0) {
-                onSettingChange(position.id, "qty", value);
-              }
+              onSettingChange(position.id, "qty", e.target.value)
             }}
             min={0}
             className="w-full bg-white dark:bg-gray-900"

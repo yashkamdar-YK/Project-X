@@ -219,7 +219,7 @@ export const useConditionStore = create<ConditionStore>()(
                           subSections: [
                             ...block.subSections,
                             {
-                              id: block.subSections.length,
+                              id: new Date().getTime(),
                               addBadge: "AND",
                               lhs: "",
                               operator: "",

@@ -18,6 +18,7 @@ import GroupedSelect from "./GroupedSelect";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useMutation } from "@tanstack/react-query";
 import { defaultOptionsService } from "../../../../_actions";
+import { validateSubSection } from "./errorPolicy";
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -274,9 +275,11 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     // Update previous canCompareWith for next comparison
     setPreviousCanCompareWith(newCanCompareWith);
   };
+  const isValid = validateSubSection(subSection, dataPoints, indicators, actionOptions);
+
 
   return (
-    <div className="py-3 border-y mb-8 last:mb-3 relative">
+    <div className={`py-3 border-y mb-8 last:mb-3 relative ${!isValid ? "border-orange-500" : ""}`}>
       <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
         <div className="flex justify-evenly gap-2">
           <GroupedSelect
@@ -458,7 +461,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             selectedLHS?.options?.canComparedwith?.[0] === "int" ? (
               <Input
                 type="number"
-                value={subSection._rhsValue}
+                value={subSection._rhsValue || ""}
                 onChange={(e) => {
                   updateSubSection(nodeId, subSection.id, "rhs", 'value')
                   if (Number(e.target.value) < 0) {

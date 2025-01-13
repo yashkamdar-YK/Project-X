@@ -16,6 +16,10 @@ import { useActionStore } from "@/lib/store/actionStore";
 import { useConditionStore } from "@/lib/store/conditionStore";
 import { handleAddNode, NodeTypes } from "../../_utils/nodeTypes";
 import { handleNodeDeletion } from "../../_utils/nodeHandling";
+import { validateConditionBlocks } from "../StrategyNavbar/NodeSheet/ConditionNodeSheet/errorPolicy";
+import { useDataPointsStore } from "@/lib/store/dataPointsStore";
+import { useIndicatorStore } from "@/lib/store/IndicatorStore";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const StartNode = () => {
   return (
@@ -36,6 +40,9 @@ export const StartNode = () => {
 export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
   const { nodes, edges, setNodes, setEdges } = useNodeStore();
   const { conditionBlocks } = useConditionStore();
+  const { dataPoints } = useDataPointsStore();
+  const { indicators } = useIndicatorStore();
+
   const conditionNodes = React.useMemo(() => {
     return nodes
       .filter((node) => node.type === "CONDITION")
@@ -67,7 +74,7 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
       //@ts-ignore
       isCopy: true, // Add a flag to indicate copying,
       //@ts-ignore
-      label:currentNode?.name || data?.label,
+      label: currentNode?.name || data?.label,
       id
     });
     setNodes([...nodes, newNode]);
@@ -156,84 +163,97 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
       setEdges(updatedEdgeConnections);
     };
 
+  const validationMessage = validateConditionBlocks(currentNode, dataPoints, indicators, null);
   return (
     <div className="group cursor-pointer">
-      <div className="relative bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px]">
-        <button
-          onClick={handleCopyActionNode}
-          className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
-        >
-          <Copy className="w-3.5 h-3.5" />
-        </button>
-        <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 ">
-
-
-          <div className="opacity-0 group-hover:opacity-100">
-            <button
-              onClick={handleDelete}
-              className="p-1.5 bg-red-500 rounded-full  absolute text-white hover:bg-red-600 bottom-6 left-2"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="lg:opacity-0 opacity-100 group-hover:opacity-100">
-            {!isFirstConditionNode && (
+      <TooltipProvider>
+        <Tooltip delayDuration={100}>
+          <TooltipTrigger asChild>
+            <div className={`relative bg-white dark:bg-gray-800 border-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px] max-w-[400px] ${validationMessage ? 'border-red-500' : 'border-indigo-200 dark:border-indigo-900'
+              }`}>
               <button
-                onClick={handleNodeSwap("up")}
-                className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
+                onClick={handleCopyActionNode}
+                className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
               >
-                <ChevronUp className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5" />
               </button>
-            )}
+              <div className="absolute right-[23px] top-1/2 -translate-y-1/2 flex flex-col gap-3 ">
 
-            {!isLastConditionNode && (
-              <button
-                onClick={handleNodeSwap("down")}
-                className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
 
-        <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
+                <div className="opacity-0 group-hover:opacity-100">
+                  <button
+                    onClick={handleDelete}
+                    className="p-1.5 bg-red-500 rounded-full  absolute text-white hover:bg-red-600 bottom-6 left-2"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
-        <CustomHandle type="target" position={Position.Top} id={`${id}-top`} />
+                <div className="lg:opacity-0 opacity-100 group-hover:opacity-100">
+                  {!isFirstConditionNode && (
+                    <button
+                      onClick={handleNodeSwap("up")}
+                      className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </button>
+                  )}
 
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-indigo-500" />
-          </div>
-          <div className="flex-1">
-            <div className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1">
-              Condition
+                  {!isLastConditionNode && (
+                    <button
+                      onClick={handleNodeSwap("down")}
+                      className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-full" />
+
+              <CustomHandle type="target" position={Position.Top} id={`${id}-top`} />
+
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-indigo-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1">
+                    Condition
+                  </div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {/* @ts-ignore */}
+                    {currentNode?.name || data.label}
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1">
+                <CustomHandle
+                  type="source"
+                  position={Position.Right}
+                  id={`${id}-right`}
+                  className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !z-10"
+                >
+                  <Zap className="!w-4 !h-5 text-white pointer-events-none" />
+                </CustomHandle>
+              </div>
+
+              <CustomHandle
+                type="source"
+                position={Position.Bottom}
+                id={`${id}-bottom`}
+              />
             </div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {/* @ts-ignore */}
-              {currentNode?.name || data.label}
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1">
-          <CustomHandle
-            type="source"
-            position={Position.Right}
-            id={`${id}-right`}
-            className="!flex items-center justify-center !w-6 !h-6 !bg-green-700 !border-none !z-10"
-          >
-            <Zap className="!w-4 !h-5 text-white pointer-events-none" />
-          </CustomHandle>
-        </div>
-
-        <CustomHandle
-          type="source"
-          position={Position.Bottom}
-          id={`${id}-bottom`}
-        />
-      </div>
+          </TooltipTrigger>
+          {validationMessage && (
+            <TooltipContent side="top" className="bg-red-500 text-white border-none">
+              <p>{validationMessage}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
