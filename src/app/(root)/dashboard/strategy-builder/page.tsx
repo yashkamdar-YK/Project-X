@@ -16,6 +16,9 @@ import { backtestService } from "../backtests/_actions";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LoginCard from "../../(auth)/_components/LoginCard";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 function StrategyBuilderPage() {
   const searchParams = useSearchParams();
@@ -53,32 +56,33 @@ function StrategyBuilderPage() {
   const { isUnsaved, setUnsaved, setCanEdit } = useUnsavedChangesStore();
 
   useEffect(() => {
-    if (data && !isLoading && (name || copy)) {
+    if (!!data?.data && !isLoading && (name || copy)) {
       reformStrategy(data);
       setUnsaved(false);
     }
   }, [data, isLoading]);
   useEffect(() => {
-    if (templateData) {
+    if (!!templateData) {
       reformStrategy(templateData);
       setUnsaved(false);
     }
   }, [templateData]);
   useEffect(() => {
-    if (strategyRules) {
+    if (!!strategyRules) {
       reformStrategy(strategyRules);
       setUnsaved(false);
       setCanEdit(false);
     }
   }, [strategyRules]);
   useEffect(() => {
-    if (backtestStData) {
+    if (!!backtestStData) {
       reformStrategy(backtestStData);
       setUnsaved(false);
     }
   }, [backtestStData]);
 
   useNavigationWarning();
+  const router = useRouter();
 
   if (loadingProfile) {
     return <div className='flex justify-center items-center h-full w-screen flex-col'>
@@ -88,6 +92,21 @@ function StrategyBuilderPage() {
       </p>
     </div>
   }
+
+  //error handling if data is empty
+  // if (!data?.data || !!templateData || !!strategyRules || !!backtestStData) {
+  //   return (
+  //     <div className="flex flex-col justify-center items-center h-full w-screen">
+  //       <p className="text-center text-gray-500">
+  //         No strategy found. Please check the URL or try again.
+  //       </p>
+  //       <Button  onClick={() => router.push("/dashboard/my-strategies")} className="mt-4">
+  //         <ArrowLeft />
+  //         Go To My Strategies
+  //       </Button>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>

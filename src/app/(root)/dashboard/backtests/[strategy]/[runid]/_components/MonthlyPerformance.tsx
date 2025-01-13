@@ -13,7 +13,7 @@ const MonthlyPerformance = ({ data }:{
   data: TBacktestResult['monthly']
 }) => {
   // Transform the nested data structure into an array format for Recharts
-  const transformedData = Object.entries(data).flatMap(([year, months]) =>
+  const transformedData = data && Object.entries(data).flatMap(([year, months]) =>
     Object.entries(months).map(([month, value]) => ({
       month: `${formatMonthName(month)} ${year}`,
       value: value,
@@ -74,7 +74,7 @@ const MonthlyPerformance = ({ data }:{
                 radius={[4, 4, 0, 0]}
                 maxBarSize={90}
               >
-                {transformedData.map((entry, index) => (
+                {transformedData?.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`}
                     fill={entry.value >= 0 ? '#22c55e' : '#ef4444'} // green-500 for positive, red-500 for negative

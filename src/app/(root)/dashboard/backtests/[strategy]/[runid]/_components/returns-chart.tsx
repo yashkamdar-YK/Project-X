@@ -59,7 +59,7 @@ export function ReturnsChart({ data }: ReturnsChartProps) {
                 // maxBarSize={15}
                 radius={[2, 2, 0, 0]}
               >
-                {data.map((entry, index) => (
+                {data?.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`}
                     fill={entry.pnl >= 0 ? '#22c55e60' : '#ef444460'}

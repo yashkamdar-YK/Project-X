@@ -24,40 +24,40 @@ const DetailedMetrics = ({ metrics }: DetailedMetricsProps) => {
       title: "Performance Metrics",
       icon: <LineChart className="h-5 w-5 text-primary" />,
       items: [
-        { label: "Total Returns", value: formatValue(metrics.totolReturns) },
-        { label: "Average Monthly", value: formatValue(metrics.avgMonthly) },
-        { label: "Return/Max DD", value: `${formatValue(metrics.returntoMaxDD)}x` },
-        { label: "Max Drawdown", value: formatValue(metrics.maxDrawdown) },
+        { label: "Total Returns", value: formatValue(metrics?.totolReturns) },
+        { label: "Average Monthly", value: formatValue(metrics?.avgMonthly) },
+        { label: "Return/Max DD", value: `${formatValue(metrics?.returntoMaxDD)}x` },
+        { label: "Max Drawdown", value: formatValue(metrics?.maxDrawdown) },
       ]
     },
     {
       title: "Trade Statistics",
       icon: <BarChart2 className="h-5 w-5 text-primary" />,
       items: [
-        { label: "Total Trades", value: metrics.totalTrades },
-        { label: "Win Rate (Trades)", value: `${formatValue(metrics["winRate(trades)"])}%` },
-        { label: "Win Rate (Daily)", value: `${formatValue(metrics["winRate(daily)"])}%` },
-        { label: "Profit Factor", value: formatValue(metrics.profitFactor) },
+        { label: "Total Trades", value: metrics?.totalTrades },
+        { label: "Win Rate (Trades)", value: `${formatValue(metrics?.["winRate(trades)"])}%` },
+        { label: "Win Rate (Daily)", value: `${formatValue(metrics?.["winRate(daily)"])}%` },
+        { label: "Profit Factor", value: formatValue(metrics?.profitFactor) },
       ]
     },
     {
       title: "Trade Analysis",
       icon: <Activity className="h-5 w-5 text-primary" />,
       items: [
-        { label: "Avg Profit/Trade", value: formatValue(metrics["avgProfit/trade"]) },
-        { label: "Avg Loss/Trade", value: formatValue(metrics["avgLoss/trade"]) },
-        { label: "Expectancy", value: formatValue(metrics.expectancy) },
-        { label: "Risk Reward Ratio", value: formatValue(metrics.rrRatio) },
+        { label: "Avg Profit/Trade", value: formatValue(metrics?.["avgProfit/trade"]) },
+        { label: "Avg Loss/Trade", value: formatValue(metrics?.["avgLoss/trade"]) },
+        { label: "Expectancy", value: formatValue(metrics?.expectancy) },
+        { label: "Risk Reward Ratio", value: formatValue(metrics?.rrRatio) },
       ]
     },
     {
       title: "Consecutive Trades",
       icon: <TimerReset className="h-5 w-5 text-primary" />,
       items: [
-        { label: "Max Consecutive Wins", value: metrics.consecutiveWinsNo },
-        { label: "Consecutive Wins P&L", value: formatValue(metrics.consecutiveWinsPnl) },
-        { label: "Max Consecutive Losses", value: metrics.consecutiveLossNo },
-        { label: "Consecutive Losses P&L", value: formatValue(metrics.consecutiveLossPnl) },
+        { label: "Max Consecutive Wins", value: metrics?.consecutiveWinsNo },
+        { label: "Consecutive Wins P&L", value: formatValue(metrics?.consecutiveWinsPnl) },
+        { label: "Max Consecutive Losses", value: metrics?.consecutiveLossNo },
+        { label: "Consecutive Losses P&L", value: formatValue(metrics?.consecutiveLossPnl) },
       ]
     }
   ];

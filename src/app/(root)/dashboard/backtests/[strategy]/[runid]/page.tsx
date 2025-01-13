@@ -141,9 +141,32 @@ function BacktestAnalyticsPage({
       </div>
     );
   }
+  //@ts-ignore
+  if(data?.length === 0){
+    return (
+      <div className="container mx-auto p-4 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+        </div>
+        <Alert>
+          <AlertDescription>
+            No backtest data found for this strategy.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
-  const metrics = data.metrics;
-  const formatDate = (date: string) => format(new Date(date), "yyyy-MM-dd");
+  const metrics = data?.metrics;
+  const formatDate = (date: string) =>date ? format(new Date(date), "yyyy-MM-dd") : "";
 
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
@@ -155,8 +178,8 @@ function BacktestAnalyticsPage({
                 {params.strategy}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {formatDate(data.metrics.period.split(" to ")[0])} TO{" "}
-                {formatDate(data.metrics.period.split(" to ")[1])}
+                {formatDate(data?.metrics?.period.split(" to ")[0])} TO{" "}
+                {formatDate(data?.metrics?.period.split(" to ")[1])}
               </p>
             </div>
           </div>
@@ -187,7 +210,7 @@ function BacktestAnalyticsPage({
               <ShareDialog
                 strategy={params.strategy}
                 runid={params.runid}
-                visibility={data.info.visiblity}
+                visibility={data?.info?.visiblity}
               />
             </div>
           </div>

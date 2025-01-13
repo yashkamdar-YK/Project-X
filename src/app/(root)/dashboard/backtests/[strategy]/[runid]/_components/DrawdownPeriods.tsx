@@ -22,10 +22,10 @@ const DrawdownPeriods = ({ data }: DrawdownPeriodsProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const totalPages = Math.ceil(data.length / pageSize);
+  const totalPages = Math.ceil(data?.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, data.length);
-  const currentData = data.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + pageSize, data?.length);
+  const currentData = data?.slice(startIndex, endIndex);
 
   const handlePageSizeChange = (value: string) => {
     const newPageSize = parseInt(value);
@@ -57,7 +57,7 @@ const DrawdownPeriods = ({ data }: DrawdownPeriodsProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentData.map((period, index) => (
+              {currentData?.map((period, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium whitespace-nowrap">
                     {format(new Date(period.Start_Date), 'dd MMM yy')} -{' '}
@@ -97,7 +97,7 @@ const DrawdownPeriods = ({ data }: DrawdownPeriodsProps) => {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="text-xs sm:text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {endIndex} of {data.length} periods
+            Showing {startIndex + 1} to {endIndex} of {data?.length} periods
           </div>
           <div className="flex items-center gap-2">
             <Button
