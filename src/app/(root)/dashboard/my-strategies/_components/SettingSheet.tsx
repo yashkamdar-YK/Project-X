@@ -121,7 +121,7 @@ const SettingSheet = ({ isOpen, onClose, strategy }: SettingSheetProps) => {
   const buttonClass =
     "h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:shadow-blue-500/20";
   const sectionClass =
-    "space-y-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl md:border border-gray-100 dark:border-gray-800";
+    "space-y-4 md:p-6 dark:bg-gray-900 rounded-xl md:border border-gray-100 dark:border-gray-800";
   const labelClass =
     "text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2";
 
@@ -179,9 +179,9 @@ const SettingSheet = ({ isOpen, onClose, strategy }: SettingSheetProps) => {
 
             {/* Strategy Type Section */}
             <div className={sectionClass}>
-              <div className="flex items-center justify-between">
+              <div className="flex bg-transperent items-center justify-between">
                 <span className={labelClass}>
-                  <Briefcase className="w-4 h-4 text-gray-500" />
+                  <Briefcase className="w-4 h-4  text-gray-500" />
                   Strategy Type
                 </span>
                 <Button
@@ -384,7 +384,7 @@ const tranformToPayload = (
       case "exp":
         //@ts-ignore
         return selectedExp.map((day) => -parseInt(day));
-        case "days":
+      case "days":
         //@ts-ignore
         return selectedDays.map((day) => {
           const dayMap: Record<string, number> = {
@@ -429,6 +429,8 @@ const tranformToPayload = (
     entryOperation: transformOperation(entryOperation),
     exitOperation: transformOperation(exitOperation),
     orderType,
-    ...( strategyType == "Intraday" ? {squareoffTime: squareOffTime || null} : {}),
+    ...(strategyType == "Intraday"
+      ? { squareoffTime: squareOffTime || null }
+      : {}),
   };
 };

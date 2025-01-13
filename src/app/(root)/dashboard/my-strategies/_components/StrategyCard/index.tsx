@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, Pencil, Play, CircleStop, FlaskConical } from 'lucide-react';
+import { Settings, Pencil, Play, CircleStop, FlaskConical } from "lucide-react";
 import { TStrategy } from "../../types";
 import StrategyHeader from "./StrategyHeader";
 import StrategyDetails from "./StrategyDetails";
@@ -17,7 +23,7 @@ export const StrategyCard = ({
   onDelete,
   deletingStrategies,
   onBacktest,
-  backtestStrategies
+  backtestStrategies,
 }: {
   strategy: TStrategy;
   onEdit: () => void;
@@ -67,10 +73,10 @@ export const StrategyCard = ({
 
       <Card className="w-full flex flex-col">
         <CardHeader>
-          <StrategyHeader 
+          <StrategyHeader
             isSettingsOpen={isSettingsOpen}
             setIsSettingsOpen={setIsSettingsOpen}
-            strategy={strategy} 
+            strategy={strategy}
             onEditInfo={() => setIsEditInfoOpen(true)}
             onDelete={onDelete}
           />
@@ -110,7 +116,7 @@ export const StrategyCard = ({
                 </>
               )}
             </Button>
-            <StrategyActions 
+            <StrategyActions
               strategy={strategy}
               isDeleting={isDeleting || false}
             />

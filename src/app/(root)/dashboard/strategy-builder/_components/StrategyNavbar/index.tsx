@@ -41,12 +41,12 @@ import { useRouter } from "next/navigation";
 
 interface StrategyNavbarProps {
   name?: string | null;
-  stratinfo: TStrategyInfo['stratinfo'];
+  stratinfo: TStrategyInfo["stratinfo"];
 }
 
 const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
   name = null,
-  stratinfo
+  stratinfo,
 }) => {
   const { openSheet, isOpen } = useSheetStore();
   const { strategyType, setStrategyType } = useSettingStore();
@@ -77,7 +77,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
 
   // Store hooks
   const queryClient = useQueryClient();
-  const router = useRouter()
+  const router = useRouter();
 
   const handleSaveStrategy = async () => {
     if (name) {
@@ -108,15 +108,15 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
   };
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+      if ((event.metaKey || event.ctrlKey) && event.key === "s") {
         event.preventDefault(); // Prevent browser's default save dialog
         handleSaveStrategy();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [name]);
 
@@ -131,7 +131,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["allStrategies"],
-        exact: true
+        exact: true,
       });
       toast({
         title: "Strategy deleted successfully",
@@ -144,7 +144,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
         title: "Error deleting strategy",
         variant: "destructive",
       });
-    }
+    },
   });
   const handleDeleteStrategy = () => {
     if (name) {
@@ -230,9 +230,13 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
 
               <div className={`flex shadow-md rounded-lg overflow-hidden `}>
                 <Button
-                  className={`transition-all duration-200 ${!!name ? "rounded-r-none" : ''
-                    } ${isUnsaved ? "bg-orange-500 hover:bg-orange-400 text-white" : ""
-                    }`}
+                  className={`transition-all duration-200 ${
+                    !!name ? "rounded-r-none" : ""
+                  } ${
+                    isUnsaved
+                      ? "bg-orange-500 hover:bg-orange-400 text-white"
+                      : ""
+                  }`}
                   onClick={handleSaveStrategy}
                   disabled={updateStrategyMutation.isPending}
                 >
@@ -255,15 +259,11 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
             {/* Mobile menu */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="sm:hidden"
-                >
+                <Button variant="secondary" className="sm:hidden">
                   <ChartNoAxesGantt className="h-4 w-4" />
                   <span>Menu</span>
                   {isUnsaved && (
-                    <span className="p-1 text-xs bg-orange-500 rounded-full">
-                    </span>
+                    <span className="p-1 text-xs bg-orange-500 rounded-full"></span>
                   )}
                 </Button>
               </SheetTrigger>
@@ -272,7 +272,9 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
                   <Button
                     variant="outline"
                     className="justify-start"
-                    onClick={() => handleMobileMenuItemClick(() => openSheet("settings"))}
+                    onClick={() =>
+                      handleMobileMenuItemClick(() => openSheet("settings"))
+                    }
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
@@ -285,7 +287,7 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
                   <Button
                     variant="outline"
                     className="justify-start"
-                    onClick={() => handleMobileMenuItemClick(() => { })}
+                    onClick={() => handleMobileMenuItemClick(() => {})}
                   >
                     <BarChart2 className="mr-2 h-4 w-4" />
                     Chart View
@@ -294,7 +296,9 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
                   <Button
                     variant="outline"
                     className="justify-start"
-                    onClick={() => handleMobileMenuItemClick(() => setIsCodeSheetOpen(true))}
+                    onClick={() =>
+                      handleMobileMenuItemClick(() => setIsCodeSheetOpen(true))
+                    }
                   >
                     <Code className="mr-2 h-4 w-4" />
                     Code
@@ -303,7 +307,9 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
                   <Button
                     variant={isUnsaved ? "destructive" : "outline"}
                     className="justify-start"
-                    onClick={() => handleMobileMenuItemClick(handleSaveStrategy)}
+                    onClick={() =>
+                      handleMobileMenuItemClick(handleSaveStrategy)
+                    }
                     disabled={updateStrategyMutation.isPending}
                   >
                     <Save className="mr-2 h-4 w-4" />
@@ -314,7 +320,9 @@ const StrategyNavbar: React.FC<StrategyNavbarProps> = ({
                     <Button
                       variant="outline"
                       className="justify-start"
-                      onClick={() => handleMobileMenuItemClick(handleEditStrategy)}
+                      onClick={() =>
+                        handleMobileMenuItemClick(handleEditStrategy)
+                      }
                     >
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit Strategy

@@ -11,7 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Share2, Download, Eye, Copy, Check, Phone, Linkedin, Twitter } from "lucide-react";
+import {
+  Share2,
+  Download,
+  Eye,
+  Copy,
+  Check,
+  Phone,
+  Linkedin,
+  Twitter,
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -30,16 +39,12 @@ import { MetricCard } from "../../dashboard/backtests/[strategy]/[runid]/_compon
 import Image from "next/image";
 import Link from "next/link";
 
-const SLIPPAGE_STORAGE_KEY = 'backtest-slippage';
+const SLIPPAGE_STORAGE_KEY = "backtest-slippage";
 
-const PublicBacktestPage = ({
-  params,
-}: {
-  params: { encr: string };
-}) => {
+const PublicBacktestPage = ({ params }: { params: { encr: string } }) => {
   const { toast } = useToast();
   const [inputSlippage, setInputSlippage] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const savedSlippage = localStorage.getItem(SLIPPAGE_STORAGE_KEY);
       return savedSlippage ? Number(savedSlippage) : 0;
     }
@@ -87,22 +92,27 @@ const PublicBacktestPage = ({
     }
   };
 
-  const shareToSocial = (platform: 'whatsapp' | 'twitter' | 'linkedin') => {
+  const shareToSocial = (platform: "whatsapp" | "twitter" | "linkedin") => {
     const text = `Check out this trading strategy backtest results!`;
     const url = encodeURIComponent(window.location.href);
-    
+
     const links = {
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + window.location.href)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${url}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(
+        text + " " + window.location.href
+      )}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        text
+      )}&url=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
     };
 
-    window.open(links[platform], '_blank', 'noopener,noreferrer');
+    window.open(links[platform], "_blank", "noopener,noreferrer");
   };
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["public-backtest", params.encr, debouncedSlippage],
-    queryFn: () => backtestService.getPublicBacktest(params.encr, debouncedSlippage),
+    queryFn: () =>
+      backtestService.getPublicBacktest(params.encr, debouncedSlippage),
   });
 
   if (isLoading) {
@@ -119,7 +129,9 @@ const PublicBacktestPage = ({
       <div className="container mx-auto p-4 sm:p-6 space-y-4">
         <Alert variant="destructive">
           <AlertDescription>
-            {error instanceof Error ? error.message : 'No backtest data found for this link.'}
+            {error instanceof Error
+              ? error.message
+              : "No backtest data found for this link."}
           </AlertDescription>
         </Alert>
       </div>
@@ -138,25 +150,36 @@ const PublicBacktestPage = ({
               <div>
                 <h1 className="text-2xl font-bold mb-2">{info.strategyName}</h1>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                  <span className="px-2 py-1 bg-muted rounded-md">{info.info.underlying}</span>
-                  <span className="px-2 py-1 bg-muted rounded-md">{info.info.productType}</span>
-                  <span className="px-2 py-1 bg-muted rounded-md">{info.info.strategyType}</span>
+                  <span className="px-2 py-1 bg-muted rounded-md">
+                    {info.info.underlying}
+                  </span>
+                  <span className="px-2 py-1 bg-muted rounded-md">
+                    {info.info.productType}
+                  </span>
+                  <span className="px-2 py-1 bg-muted rounded-md">
+                    {info.info.strategyType}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Created by</span>
-                  <span className="font-medium text-foreground">{info.creator}</span>
+                  <span className="font-medium text-foreground">
+                    {info.creator}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Created on</span>
-                  <span className="font-medium text-foreground">{formatDate(info.createdon)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatDate(info.createdon)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Backtest Period</span>
                   <span className="font-medium text-foreground">
-                    {formatDate(metrics.period.split(" to ")[0])} - {formatDate(metrics.period.split(" to ")[1])}
+                    {formatDate(metrics.period.split(" to ")[0])} -{" "}
+                    {formatDate(metrics.period.split(" to ")[1])}
                   </span>
                 </div>
               </div>
@@ -175,7 +198,7 @@ const PublicBacktestPage = ({
                   className="w-20"
                 />
               </div>
-              
+
               <div className="flex gap-2">
                 <Link href={`/dashboard/strategy-builder?encr=${params.encr}`}>
                   <Button variant="outline" className="flex-1 sm:flex-none gap-2">
@@ -220,21 +243,21 @@ const PublicBacktestPage = ({
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => shareToSocial('whatsapp')}
+                          onClick={() => shareToSocial("whatsapp")}
                           className="bg-green-50 hover:bg-green-100"
                         >
                           <Image
-                              src="/icons/whatsapp.svg"
-                              alt="WhatsApp"
-                              width={16}
-                              height={16}
-                              className="h-4 w-4 text-green-600"
-                            />
+                            src="/icons/whatsapp.svg"
+                            alt="WhatsApp"
+                            width={16}
+                            height={16}
+                            className="h-4 w-4 text-green-600"
+                          />
                         </Button>
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => shareToSocial('twitter')}
+                          onClick={() => shareToSocial("twitter")}
                           className="bg-blue-50 hover:bg-blue-100"
                         >
                           <Twitter className="h-4 w-4 text-blue-600" />
@@ -242,7 +265,7 @@ const PublicBacktestPage = ({
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => shareToSocial('linkedin')}
+                          onClick={() => shareToSocial("linkedin")}
                           className="bg-blue-50 hover:bg-blue-100"
                         >
                           <Linkedin className="h-4 w-4 text-blue-600" />

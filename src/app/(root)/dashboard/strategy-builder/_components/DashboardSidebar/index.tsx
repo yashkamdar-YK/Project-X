@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { DragEvent } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion } from "@/components/ui/accordion";
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 import { Node } from "@xyflow/react";
 import { useNodeStore } from "@/lib/store/nodeStore";
 import { DataPointDialog } from "./DatapointDialog";
@@ -32,37 +32,52 @@ const DashboardSidebar: React.FC = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>(["item-4"]);
 
   const [isDataPointModalOpen, setIsDataPointModalOpen] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | undefined>();
+  const [editingDataPoint, setEditingDataPoint] = useState<
+    DataPoint | undefined
+  >();
 
   const [isIndicatorsModalOpen, setIsIndicatorsModalOpen] = useState(false);
-  const [editingIndicator, setEditingIndicator] = useState<Indicator | undefined>();
+  const [editingIndicator, setEditingIndicator] = useState<
+    Indicator | undefined
+  >();
 
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
-  
+
   const { dataPoints, removeDataPoint } = useDataPointsStore();
   const { symbolInfo, selectedSymbol } = useDataPointStore();
   const { indicators, removeIndicator } = useIndicatorStore();
 
   const { actionNodes, removeActionNode, createActionNode } = useActionStore();
-  const { conditionBlocks, removeConditionBlock, createConditionBlock } = useConditionStore();
+  const { conditionBlocks, removeConditionBlock, createConditionBlock } =
+    useConditionStore();
 
   const { openSheet } = useSheetStore();
 
   useEffect(() => {
-    const missingActionNodes = nodes.filter(node => node.type === NodeTypes.ACTION && !actionNodes[node.id]);
-    const missingConditionNodes = nodes.filter(node => node.type === NodeTypes.CONDITION && !conditionBlocks[node.id]);
+    const missingActionNodes = nodes.filter(
+      (node) => node.type === NodeTypes.ACTION && !actionNodes[node.id]
+    );
+    const missingConditionNodes = nodes.filter(
+      (node) => node.type === NodeTypes.CONDITION && !conditionBlocks[node.id]
+    );
 
-    missingActionNodes.forEach(node => {
+    missingActionNodes.forEach((node) => {
       //@ts-ignore
       createActionNode(node.id, node.data.label);
     });
 
-    missingConditionNodes.forEach(node => {
+    missingConditionNodes.forEach((node) => {
       //@ts-ignore
       createConditionBlock(node.id, node.data.label);
     });
-  }, [nodes, actionNodes, conditionBlocks, createActionNode, createConditionBlock]);
+  }, [
+    nodes,
+    actionNodes,
+    conditionBlocks,
+    createActionNode,
+    createConditionBlock,
+  ]);
 
   const groupedDataPoints = React.useMemo(() => {
     return dataPoints.reduce((acc, dp) => {
@@ -74,7 +89,10 @@ const DashboardSidebar: React.FC = () => {
 
   const onDragStart = (event: DragEvent<HTMLDivElement>, item: Node) => {
     event.stopPropagation();
-    event.dataTransfer.setData("application/reactflow", JSON.stringify({ item }));
+    event.dataTransfer.setData(
+      "application/reactflow",
+      JSON.stringify({ item })
+    );
     event.dataTransfer.effectAllowed = "move";
   };
 
@@ -127,31 +145,31 @@ const DashboardSidebar: React.FC = () => {
   };
 
   const handleEditConditionNode = (nodeId: string) => {
-    openSheet('node', { 
-      id: nodeId, 
-      type: NodeTypes.CONDITION
+    openSheet("node", {
+      id: nodeId,
+      type: NodeTypes.CONDITION,
     });
   };
 
   useEffect(() => {
     if (dataPoints.length > 0) {
-      setExpandedItems(prev => [...new Set([...prev, "item-0"])]);
+      setExpandedItems((prev) => [...new Set([...prev, "item-0"])]);
     }
     if (indicators.length > 0) {
-      setExpandedItems(prev => [...new Set([...prev, "item-1"])]);
+      setExpandedItems((prev) => [...new Set([...prev, "item-1"])]);
     }
     if (Object.keys(actionNodes).length > 0) {
-      setExpandedItems(prev => [...new Set([...prev, "item-2"])]);
+      setExpandedItems((prev) => [...new Set([...prev, "item-2"])]);
     }
     if (Object.keys(conditionBlocks).length > 0) {
-      setExpandedItems(prev => [...new Set([...prev, "item-3"])]);
+      setExpandedItems((prev) => [...new Set([...prev, "item-3"])]);
     }
   }, [dataPoints, indicators, actionNodes, conditionBlocks]);
 
   const handleRemoveDataPoint = (id: string) => {
     removeDataPoint(id);
   };
- 
+
   const handleRemoveActionNode = (nodeId: string) => {
     const nodeToDelete = nodes.find((node) => node.id === nodeId);
     if (nodeToDelete) {
@@ -166,7 +184,9 @@ const DashboardSidebar: React.FC = () => {
     }
   };
 
-  const validateDataPoint = (dataPoint: DataPoint): { isValid: boolean; error: string } => {
+  const validateDataPoint = (
+    dataPoint: DataPoint
+  ): { isValid: boolean; error: string } => {
     if (selectedSymbol === null) {
       return { isValid: false, error: "Symbol not selected" };
     }
@@ -202,7 +222,11 @@ const DashboardSidebar: React.FC = () => {
         }
 
         if (dataPoint.expiryType === "monthly") {
-          if (!currentSymbolInfo.OptExp.monthly.includes(Number(dataPoint.expiryOrder))) {
+          if (
+            !currentSymbolInfo.OptExp.monthly.includes(
+              Number(dataPoint.expiryOrder)
+            )
+          ) {
             return {
               isValid: false,
               error: `Invalid monthly expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
@@ -221,8 +245,8 @@ const DashboardSidebar: React.FC = () => {
           const position = dataPoint.strikeSelection.position;
           if (position !== "atm") {
             // const [type, number] = position.split("_");
-            const type = position.slice(0,3);
-            const number = position.slice(3,position.length)
+            const type = position.slice(0, 3);
+            const number = position.slice(3, position.length);
             if (
               !["itm", "otm"].includes(type) ||
               isNaN(Number(number)) ||
@@ -245,7 +269,11 @@ const DashboardSidebar: React.FC = () => {
           };
         }
 
-        if (!currentSymbolInfo.FutExp.monthly.includes(Number(dataPoint.expiryOrder))) {
+        if (
+          !currentSymbolInfo.FutExp.monthly.includes(
+            Number(dataPoint.expiryOrder)
+          )
+        ) {
           return {
             isValid: false,
             error: `Invalid future expiry order ${dataPoint.expiryOrder} for ${currentSymbolInfo.symbol}`,
@@ -254,7 +282,11 @@ const DashboardSidebar: React.FC = () => {
         break;
 
       case "SPOT":
-        if (dataPoint.expiryType || dataPoint.expiryOrder || dataPoint.strikeSelection) {
+        if (
+          dataPoint.expiryType ||
+          dataPoint.expiryOrder ||
+          dataPoint.strikeSelection
+        ) {
           return {
             isValid: false,
             error: "Spot data should not have expiry or strike selection",
@@ -271,7 +303,10 @@ const DashboardSidebar: React.FC = () => {
         }
     }
 
-    if (dataPoint.candleType && !["candlestick", "heikenashi"].includes(dataPoint.candleType)) {
+    if (
+      dataPoint.candleType &&
+      !["candlestick", "heikenashi"].includes(dataPoint.candleType)
+    ) {
       return {
         isValid: false,
         error: "Invalid candle type",
@@ -402,10 +437,7 @@ const DashboardSidebar: React.FC = () => {
               <Plus className="w-5 h-5" />
             </button>
           </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="w-[80%] sm:w-[385px] p-0 !pt-10"
-          >
+          <SheetContent side="left" className="w-[80%] sm:w-[385px] p-0 !pt-10">
             <SidebarContent />
           </SheetContent>
         </Sheet>

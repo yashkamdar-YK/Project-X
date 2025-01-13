@@ -16,14 +16,15 @@ interface TimeOption {
   isStarred: boolean;
 }
 
-const STORAGE_KEY = 'timepicker-starred-items';
+const STORAGE_KEY = "timepicker-starred-items";
 
 const sortTimeValues = (a: number, b: number): number => a - b;
 
 const formatTimeFrame = (minutes: number): string => {
   if (!minutes || minutes < 0) return "0m";
-  
-  if (minutes >= 1440) { // 24 * 60
+
+  if (minutes >= 1440) {
+    // 24 * 60
     const days = Math.floor(minutes / 1440);
     return `${days}d`;
   } else if (minutes >= 60) {
@@ -39,7 +40,7 @@ const getStoredStarredItems = (symbol: string): number[] => {
     const stored = localStorage.getItem(`${STORAGE_KEY}-${symbol}`);
     return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Error reading from localStorage:', error);
+    console.error("Error reading from localStorage:", error);
     return [];
   }
 };
@@ -49,30 +50,40 @@ const storeStarredItems = (symbol: string, items: number[]) => {
   try {
     localStorage.setItem(`${STORAGE_KEY}-${symbol}`, JSON.stringify(items));
   } catch (error) {
-    console.error('Error writing to localStorage:', error);
+    console.error("Error writing to localStorage:", error);
   }
 };
 
 const TimePicker = () => {
-  const { symbolInfo, selectedSymbol, selectedTimeFrame, setSelectedTimeFrame } = useDataPointStore();
+  const {
+    symbolInfo,
+    selectedSymbol,
+    selectedTimeFrame,
+    setSelectedTimeFrame,
+  } = useDataPointStore();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const currentSymbolInfo = selectedSymbol ? symbolInfo[selectedSymbol] : null;
-  
+
   const timeOptions = useMemo(() => {
-    if (!currentSymbolInfo?.timeFrame || !Array.isArray(currentSymbolInfo.timeFrame)) {
+    if (
+      !currentSymbolInfo?.timeFrame ||
+      !Array.isArray(currentSymbolInfo.timeFrame)
+    ) {
       return [];
     }
 
     // Get starred items from localStorage for the current symbol
-    const storedStarredItems = selectedSymbol ? getStoredStarredItems(selectedSymbol) : [];
+    const storedStarredItems = selectedSymbol
+      ? getStoredStarredItems(selectedSymbol)
+      : [];
 
     return currentSymbolInfo.timeFrame
-      .filter(minutes => typeof minutes === 'number' && minutes > 0)
-      .map(minutes => ({
+      .filter((minutes) => typeof minutes === "number" && minutes > 0)
+      .map((minutes) => ({
         label: formatTimeFrame(minutes),
         value: minutes,
-        isStarred: storedStarredItems.includes(minutes)
+        isStarred: storedStarredItems.includes(minutes),
       }))
       .sort((a, b) => sortTimeValues(a.value, b.value));
   }, [currentSymbolInfo?.timeFrame, selectedSymbol]);
@@ -91,41 +102,41 @@ const TimePicker = () => {
 
   const quickSelectionOptions = useMemo(() => {
     if (!selectedTimeFrame) return [];
-    
+
     const starredOptions = localTimeOptions
-      .filter(option => option.isStarred)
-      .map(option => option.value);
-    
+      .filter((option) => option.isStarred)
+      .map((option) => option.value);
+
     if (!starredOptions.includes(selectedTimeFrame)) {
       starredOptions.push(selectedTimeFrame);
     }
-    
+
     return starredOptions.sort(sortTimeValues);
   }, [localTimeOptions, selectedTimeFrame]);
 
   const toggleStar = (timeValue: number, event?: React.MouseEvent) => {
     event?.stopPropagation();
-    setLocalTimeOptions(prevOptions => {
-      const newOptions = prevOptions.map(option =>
+    setLocalTimeOptions((prevOptions) => {
+      const newOptions = prevOptions.map((option) =>
         option.value === timeValue
           ? { ...option, isStarred: !option.isStarred }
           : option
       );
-      
+
       // Update localStorage with new starred items
       if (selectedSymbol) {
         const starredItems = newOptions
-          .filter(option => option.isStarred)
-          .map(option => option.value);
+          .filter((option) => option.isStarred)
+          .map((option) => option.value);
         storeStarredItems(selectedSymbol, starredItems);
       }
-      
+
       return newOptions;
     });
   };
 
   const handleTimeSelect = (time: number) => {
-    markUnsavedChanges()
+    markUnsavedChanges();
     setSelectedTimeFrame(time);
     setIsOpen(false);
   };
@@ -172,7 +183,9 @@ const TimePicker = () => {
                   key={option.value}
                   className={cn(
                     "flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
-                    selectedTimeFrame === option.value ? "dark:bg-gray-700 bg-gray-200" : ""
+                    selectedTimeFrame === option.value
+                      ? "dark:bg-gray-700 bg-gray-200"
+                      : ""
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >
@@ -216,7 +229,9 @@ const TimePicker = () => {
                   key={option.value}
                   className={cn(
                     "flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
-                    selectedTimeFrame === option.value ? "bg-gray-700" : ""
+                    selectedTimeFrame === option.value
+                      ? "bg-grey-400"
+                      : ""
                   )}
                   onClick={() => handleTimeSelect(option.value)}
                 >

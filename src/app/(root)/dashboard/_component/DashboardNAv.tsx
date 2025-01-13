@@ -4,19 +4,33 @@ import React, { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import DarkModeSwitch from "./DarkModeSwitch";
 import { UserToggle } from "./UserToggle";
 import { clearStores } from "../strategy-builder/_utils/utils";
 import { useNodeStore } from "@/lib/store/nodeStore";
-import { INITIAL_EDGES, INITIAL_NODES } from "../strategy-builder/constants/menu";
+import {
+  INITIAL_EDGES,
+  INITIAL_NODES,
+} from "../strategy-builder/constants/menu";
 import { useUnsavedChangesStore } from "@/lib/store/unsavedChangesStore";
 import { Badge } from "@/components/ui/badge";
 
 const DashboardNav: React.FC = () => {
   const pathName = usePathname();
   const router = useRouter();
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
+    null
+  );
 
   const navLinks = [
     { href: "/dashboard/my-strategies", label: "My Strategies" },
@@ -28,7 +42,10 @@ const DashboardNav: React.FC = () => {
   const { isUnsaved } = useUnsavedChangesStore();
 
   const handleNavigate = (href: string) => {
-    if (href === "/dashboard/strategy-builder" && pathName !== "/dashboard/strategy-builder") {
+    if (
+      href === "/dashboard/strategy-builder" &&
+      pathName !== "/dashboard/strategy-builder"
+    ) {
       clearStores();
       setNodes(INITIAL_NODES);
       setEdges(INITIAL_EDGES);
@@ -42,6 +59,7 @@ const DashboardNav: React.FC = () => {
       setPendingNavigation(href);
     } else {
       handleNavigate(href);
+      window.location.pathname = href;
     }
   };
 
@@ -55,9 +73,10 @@ const DashboardNav: React.FC = () => {
             transition-all duration-200 cursor-pointer
             hover:text-blue-600 dark:hover:text-blue-400
             font-semibold
-            ${pathName === link.href
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-700 dark:text-gray-300"
+            ${
+              pathName === link.href
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-700 dark:text-gray-300"
             }
           `}
         >
@@ -92,7 +111,10 @@ const DashboardNav: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <Badge className="border-green-500 text-green-500 rounded-full" variant='outline' >
+            <Badge
+              className="border-green-500 text-green-500 rounded-full"
+              variant="outline"
+            >
               Credits: --
             </Badge>
             <DarkModeSwitch />
@@ -122,18 +144,24 @@ const DashboardNav: React.FC = () => {
       </div>
 
       {/* Unsaved Changes Dialog */}
-      <AlertDialog open={!!pendingNavigation} onOpenChange={() => setPendingNavigation(null)}>
+      <AlertDialog
+        open={!!pendingNavigation}
+        onOpenChange={() => setPendingNavigation(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes in your strategy. If you leave this page, all unsaved changes will be lost.
+              You have unsaved changes in your strategy. If you leave this page,
+              all unsaved changes will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Stay</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => pendingNavigation && handleNavigate(pendingNavigation)}
+              onClick={() =>
+                pendingNavigation && handleNavigate(pendingNavigation)
+              }
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               Leave Anyway

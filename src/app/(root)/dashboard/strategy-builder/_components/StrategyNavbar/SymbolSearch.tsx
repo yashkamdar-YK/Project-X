@@ -21,7 +21,8 @@ const SymbolSearch = () => {
   const debouncedSearch = useDebounce(searchValue, 300);
 
   // Get store actions
-  const { setSelectedSymbol, setSymbolInfo, selectedSymbol } = useDataPointStore();
+  const { setSelectedSymbol, setSymbolInfo, selectedSymbol } =
+    useDataPointStore();
 
   // Query for symbols list
   const {
@@ -53,11 +54,11 @@ const SymbolSearch = () => {
   };
 
   useEffect(() => {
-    if(selectedSymbol || symbolsData) {
+    if (selectedSymbol || symbolsData) {
       //@ts-ignore
       handleSelect(selectedSymbol || Object.keys(symbolsData)[0]);
     }
-  },[selectedSymbol, symbolsData]);
+  }, [selectedSymbol, symbolsData]);
 
   const clearSearch = () => {
     setSearchValue("");
@@ -171,7 +172,7 @@ const SymbolSearch = () => {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
-          <DialogHeader className="p-4 border-b border-gray-100 dark:border-gray-800">
+          <DialogHeader className="p-4 border-b  border-gray-100 dark:border-gray-800">
             <DialogTitle>Select Symbol</DialogTitle>
           </DialogHeader>
           <div className="p-4 pb-2">

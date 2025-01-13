@@ -1,4 +1,4 @@
-import { IndianRupee, Clock, Calendar } from 'lucide-react';
+import { IndianRupee, Clock, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TStrategy } from "../../types";
 
@@ -27,4 +27,3 @@ const StrategyDetails = ({ strategy }: { strategy: TStrategy }) => {
 };
 
 export default StrategyDetails;
-
