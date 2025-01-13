@@ -89,7 +89,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
   if (!currentNode) return null;
 
   return (
-    <div>
+    <div className="">
       <div className="flex justify-between items-center">
         <Badge>ID: {node.id}</Badge>
         <Button
