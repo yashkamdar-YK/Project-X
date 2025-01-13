@@ -4,16 +4,20 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 
 const SparkLogin = () => {
   const { toast } = useToast();
   const router = useRouter();
+  const pathName = usePathname();
+  const searchParams = useSearchParams();
 
   const handleSparkLogin = async () => {
-    router.push("https://spark.maticalgos.com/login?redirect=buildalgo");
+    const path = pathName +"?"+searchParams.toString();
+    sessionStorage.setItem("afterAuthRedirection", pathName =="/login" ? "" : path);
+    router.push(`https://spark.maticalgos.com/login?redirect=buildalgo`);
   };
 
   return (

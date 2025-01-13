@@ -15,18 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Copy, Check, FileCode2 } from "lucide-react";
 import { useUnsavedChangesStore } from "@/lib/store/unsavedChangesStore";
 import { toast } from "@/hooks/use-toast";
-import { transformSettingsToPayload } from "./SettingSheet/transformSettingsToPayload";
-import { transformDataPointsToPayload } from "../DashboardSidebar/DatapointDialog/transformDataPointsToPayload";
-import { transformIndicatorsToPayload } from "../DashboardSidebar/Indicators/transformIndicatorsToPayload";
-import { transformToActionPayload } from "./NodeSheet/ActionNodeSheet/transformToActionPayload";
-import { transformConditionToPayload } from "./NodeSheet/ConditionNodeSheet/transformConditionToPayload";
-import { useDataPointsStore } from "@/lib/store/dataPointsStore";
-import { useDataPointStore } from "@/lib/store/dataPointStore";
-import { useIndicatorStore } from "@/lib/store/IndicatorStore";
-import { useConditionStore } from "@/lib/store/conditionStore";
-import { useActionStore } from "@/lib/store/actionStore";
-import { useNodeStore } from "@/lib/store/nodeStore";
-import { NodeTypes } from "../../_utils/nodeTypes";
 import { getSaveStrategyData } from "../../_utils/utils";
 
 interface StrategyCodeSheetProps {
@@ -64,16 +52,6 @@ const StrategyCodeSheet = ({ isOpen, onClose }: StrategyCodeSheetProps) => {
     mutationFn: strategyService.getStCode,
     mutationKey: [`strategyCode-${name}`],
   });
-  const { dataPoints } = useDataPointsStore();
-  const { selectedSymbol, selectedTimeFrame } = useDataPointStore();
-  const { indicators } = useIndicatorStore();
-  const { conditionBlocks } = useConditionStore();
-  const { actionNodes } = useActionStore();
-  const { nodes, edges } = useNodeStore();
-
-  const getConditionNodes = useCallback(() => {
-    return nodes?.filter((node) => node.type === NodeTypes.CONDITION);
-  }, [nodes]);
 
   useEffect(() => {
     async function fetchCode() {

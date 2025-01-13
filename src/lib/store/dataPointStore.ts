@@ -4,7 +4,7 @@ import {
 } from "@/app/(root)/dashboard/strategy-builder/_components/DashboardSidebar/DatapointDialog/types";
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { markUnsavedChanges } from "./unsavedChangesStore";
+import { markUnsavedChanges, useUnsavedChangesStore } from "./unsavedChangesStore";
 
 interface DataPointState {
   symbols: Record<string, SymbolData>;
@@ -25,6 +25,15 @@ interface DataPointState {
   setSelectedTimeFrame: (timeFrame: number) => void;
 }
 
+const checkEditPermission = () => {
+  const canEdit = useUnsavedChangesStore.getState().canEdit;
+  if (!canEdit) {
+    console.warn('Edit operation blocked: User does not have edit permission');
+    return false;
+  }
+  return true;
+};
+
 export const useDataPointStore = create<DataPointState>()(
   devtools(
     persist(
@@ -36,34 +45,45 @@ export const useDataPointStore = create<DataPointState>()(
         isLoadingSymbolInfo: false,
         error: null,
         selectedTimeFrame: 0,
-        setSelectedTimeFrame: (timeFrame) =>
-          set(() => {
-            // markUnsavedChanges();
-            return { selectedTimeFrame: timeFrame };
-          }),
-        setSymbols: (symbols) => set({ symbols, error: null }),
-        setSymbolInfo: (symbol, info) =>
-          set((state) => {
-            // markUnsavedChanges();
-            return {
-              symbolInfo: {
-                ...state.symbolInfo,
-                [symbol]: info,
-              },
-              error: null,
-            };
-          }),
-        setSelectedSymbol: (symbol) =>
-          set(() => {
-            // markUnsavedChanges();
-            return { selectedSymbol: symbol };
-          }),
+
+        setSelectedTimeFrame: (timeFrame) => {
+          if (!checkEditPermission()) return;
+          set(() => ({ selectedTimeFrame: timeFrame }));
+        },
+
+        setSymbols: (symbols) => {
+          if (!checkEditPermission()) return;
+          set({ symbols, error: null });
+        },
+
+        setSymbolInfo: (symbol, info) => {
+          if (!checkEditPermission()) return;
+          set((state) => ({
+            symbolInfo: {
+              ...state.symbolInfo,
+              [symbol]: info,
+            },
+            error: null,
+          }));
+        },
+
+        setSelectedSymbol: (symbol) => {
+          if (!checkEditPermission()) return;
+          set(() => ({ selectedSymbol: symbol }));
+        },
+
+        // Loading states don't require edit permission as they don't modify persisted data
         setIsLoadingSymbols: (isLoadingSymbols) => set({ isLoadingSymbols }),
-        setIsLoadingSymbolInfo: (isLoadingSymbolInfo) =>
+        
+        setIsLoadingSymbolInfo: (isLoadingSymbolInfo) => 
           set({ isLoadingSymbolInfo }),
+
+        // Error handling doesn't require edit permission
         setError: (error) => set({ error }),
         clearError: () => set({ error: null }),
-        reset: () =>
+
+        reset: () => {
+          if (!checkEditPermission()) return;
           set({
             symbols: {},
             symbolInfo: {},
@@ -72,7 +92,8 @@ export const useDataPointStore = create<DataPointState>()(
             isLoadingSymbolInfo: false,
             error: null,
             selectedTimeFrame: 0,
-          }),
+          });
+        },
       }),
       {
         name: "strategy-datapoint-store",

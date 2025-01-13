@@ -23,7 +23,9 @@ export const GoogleCallbackPage: React.FC = () => {
       setCookie('token', data.access_token, {
         maxAge: 60 * 60 * 24 * 2, //48 hours
       });
-      router.push('/dashboard/my-strategies');
+      const path = sessionStorage.getItem("afterAuthRedirection");
+      router.push(path ? path : '/dashboard/my-strategies');
+      sessionStorage.removeItem("afterAuthRedirection");
     },
     onError: (error) => {
       toast({

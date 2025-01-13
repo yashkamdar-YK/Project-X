@@ -50,6 +50,7 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   const { indicators } = useIndicatorStore();
   const { actionNodes } = useActionStore()
   const { getData } = useApplyDataStore();
+  const [previousCanCompareWith, setPreviousCanCompareWith] = React.useState<string[] | undefined>();
   const [actionOptions, setActionOptions] = React.useState<DataPointOption | null>(null)
   const actionOptionsBasedOnCol = useMutation({
     mutationKey: ['actionOptions'],
@@ -234,6 +235,46 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
 
   const selectClass = "text-sm py-1 px-2 h-8";
 
+  const handleLHSChange = (v: string) => {
+    if (ActionsOptions?.includes(v)) {
+      updateSubSection(nodeId, subSection.id, "lhs", v?.split(":")[0]);
+    } else {
+      updateSubSection(nodeId, subSection.id, "lhs", v);
+    }
+
+    // Get new canCompareWith values
+    const newSelectedLHS = dataPoints.find((dp) => dp.elementName === v) ||
+      indicators.find((ind) => ind.elementName === v) ||
+      v;
+
+
+    const newCanCompareWith =
+      (v.includes("ac") ? actionOptions?.canComparedwith :
+        //@ts-ignore
+        newSelectedLHS?.options?.canComparedwith?.map((val) => val.toLowerCase()) ||
+        //@ts-ignore
+        getData(v)?.canComparedwith?.map((val) => val.toLowerCase()));
+
+    // Compare previous and current canCompareWith arrays
+    const shouldReset = !previousCanCompareWith ||
+      !newCanCompareWith ||
+      previousCanCompareWith.length !== newCanCompareWith.length ||
+      !previousCanCompareWith.every(val => newCanCompareWith.includes(val));
+
+    // Only reset RHS values if canCompareWith has changed
+    if (shouldReset) {
+      updateSubSection(nodeId, subSection.id, "operator", "");
+      updateSubSection(nodeId, subSection.id, "rhs", "");
+      updateSubSection(nodeId, subSection.id, "_rhsValue", "");
+      updateSubSection(nodeId, subSection.id, "rhs_column", "");
+      updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", "");
+      updateSubSection(nodeId, subSection.id, "rhs_nValue", "");
+    }
+
+    // Update previous canCompareWith for next comparison
+    setPreviousCanCompareWith(newCanCompareWith);
+  };
+
   return (
     <div className="py-3 border-y mb-8 last:mb-3 relative">
       <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
@@ -242,20 +283,21 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             value={
               ActionsOptions?.find((action) => action.split(":")[0] === subSection.lhs) || subSection.lhs
             }
-            onValueChange={(v) => {
-              if (ActionsOptions?.includes(v)) {
-                updateSubSection(nodeId, subSection.id, "lhs", v?.split(":")[0])
-              } else {
-                updateSubSection(nodeId, subSection.id, "lhs", v)
-              }
+            // onValueChange={(v) => {
+            //   if (ActionsOptions?.includes(v)) {
+            //     updateSubSection(nodeId, subSection.id, "lhs", v?.split(":")[0])
+            //   } else {
+            //     updateSubSection(nodeId, subSection.id, "lhs", v)
+            //   }
 
-              updateSubSection(nodeId, subSection.id, "operator", "")
-              updateSubSection(nodeId, subSection.id, "rhs", "")
-              updateSubSection(nodeId, subSection.id, "_rhsValue", "")
-              updateSubSection(nodeId, subSection.id, "rhs_column", "")
-              updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", "")
-              updateSubSection(nodeId, subSection.id, "rhs_nValue", "")
-            }}
+            //   updateSubSection(nodeId, subSection.id, "operator", "")
+            //   updateSubSection(nodeId, subSection.id, "rhs", "")
+            //   updateSubSection(nodeId, subSection.id, "_rhsValue", "")
+            //   updateSubSection(nodeId, subSection.id, "rhs_column", "")
+            //   updateSubSection(nodeId, subSection.id, "rhs_selectedPeriod", "")
+            //   updateSubSection(nodeId, subSection.id, "rhs_nValue", "")
+            // }}
+            onValueChange={handleLHSChange}
             groupedOptions={getGroupedLhsOptions}
             placeholder="Variable"
             className={`${selectClass} max-w-32`}
@@ -636,16 +678,16 @@ export const AndOrToggle = ({
       >
         <div
           className={`px-3 py-1 text-sm font-medium transition-colors ${value?.toUpperCase() === "AND"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
             }`}
         >
           AND
         </div>
         <div
           className={`px-4 py-1 text-sm font-medium transition-colors ${value?.toUpperCase() === "OR"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
             }`}
         >
           OR

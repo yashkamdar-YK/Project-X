@@ -1,7 +1,16 @@
 import { IndicatorStore } from "@/app/(root)/dashboard/strategy-builder/_components/DashboardSidebar/Indicators/types";
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { markUnsavedChanges } from "./unsavedChangesStore";
+import { markUnsavedChanges, useUnsavedChangesStore } from "./unsavedChangesStore";
+
+const checkEditPermission = () => {
+  const canEdit = useUnsavedChangesStore.getState().canEdit;
+  if (!canEdit) {
+    console.warn('Edit operation blocked: User does not have edit permission');
+    return false;
+  }
+  return true;
+};
 
 export const useIndicatorStore = create<IndicatorStore>()(
   devtools(
@@ -10,17 +19,23 @@ export const useIndicatorStore = create<IndicatorStore>()(
         indicators: [],
         selectedIndicator: null,
 
-        setIndicators: (indicators) => set({ indicators }),
+        setIndicators: (indicators) => {
+          if (!checkEditPermission()) return;
+          set({ indicators });
+        },
 
-        addIndicator: (indicator) =>
+        addIndicator: (indicator) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
               indicators: [...state.indicators, indicator],
             };
-          }),
+          });
+        },
 
-        removeIndicator: (id) =>
+        removeIndicator: (id) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
@@ -28,11 +43,16 @@ export const useIndicatorStore = create<IndicatorStore>()(
               selectedIndicator:
                 state.selectedIndicator === id ? null : state.selectedIndicator,
             };
-          }),
+          });
+        },
 
-        setSelectedIndicator: (id) => set({ selectedIndicator: id }),
+        setSelectedIndicator: (id) => {
+          if (!checkEditPermission()) return;
+          set({ selectedIndicator: id });
+        },
 
-        updateIndicator: (id, updatedData) =>
+        updateIndicator: (id, updatedData) => {
+          if (!checkEditPermission()) return;
           //@ts-ignore
           set((state) => {
             markUnsavedChanges();
@@ -41,9 +61,13 @@ export const useIndicatorStore = create<IndicatorStore>()(
                 ind.id === id ? { ...ind, ...updatedData } : ind
               ),
             };
-          }),
+          });
+        },
 
-        clearIndicators: () => set({ indicators: [] }),
+        clearIndicators: () => {
+          if (!checkEditPermission()) return;
+          set({ indicators: [] });
+        },
       }),
       {
         name: "strategy-indicator-store",

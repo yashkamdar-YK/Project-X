@@ -174,9 +174,7 @@ function BacktestAnalyticsPage({
               />
             </div>
             <div className="flex items-center gap-2">
-              <Link
-                href={"/dashboard/strategy-builder?name=" + params.strategy}
-              >
+              <Link href={"/dashboard/strategy-builder?name=" + params.strategy}>
                 <Button variant="outline" className="flex-1 sm:flex-none">
                   <Eye className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">View Strategy</span>
@@ -203,7 +201,7 @@ function BacktestAnalyticsPage({
           />
           <MetricCard
             title="Return to Max DD"
-            value={metrics?.returntoMaxDD?.toFixed(2)}
+            value={metrics?.returntoMaxDD?.toFixed(2) || "0"}
             suffix="x"
           />
           <MetricCard

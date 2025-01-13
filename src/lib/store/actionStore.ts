@@ -4,7 +4,7 @@ import {
 } from "@/app/(root)/dashboard/strategy-builder/_components/StrategyNavbar/NodeSheet/ActionNodeSheet/types";
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { markUnsavedChanges } from "./unsavedChangesStore";
+import { markUnsavedChanges, useUnsavedChangesStore } from "./unsavedChangesStore";
 
 // Define action types
 export interface Action {
@@ -48,6 +48,15 @@ interface ActionState {
   duplicatePosition: (nodeId: string, positionId: string) => void;
 }
 
+const checkEditPermission = () => {
+  const canEdit = useUnsavedChangesStore.getState().canEdit;
+  if (!canEdit) {
+    console.warn('Edit operation blocked: User does not have edit permission');
+    return false;
+  }
+  return true;
+};
+
 const generateLegID = (items: NodeItem[]) => {
   const positions = items
     .filter((item): item is NodeItem & { data: Position } => 
@@ -68,8 +77,14 @@ export const useActionStore = create<ActionState>()(
     persist(
       (set) => ({
         actionNodes: {},
-        setActionNodes: (actionNodes) => set({ actionNodes }),
+        
+        setActionNodes: (actionNodes) => {
+          if (!checkEditPermission()) return;
+          set({ actionNodes });
+        },
+
         createActionNode: (nodeId, name) => {
+          if (!checkEditPermission()) return;
           markUnsavedChanges();
           set((state) => ({
             actionNodes: {
@@ -81,7 +96,9 @@ export const useActionStore = create<ActionState>()(
             },
           }));
         },
-        copyActionNode: (nodeId, newNodeId, label) =>
+
+        copyActionNode: (nodeId, newNodeId, label) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.actionNodes[nodeId];
@@ -96,8 +113,11 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        updateNodeName: (nodeId, name) =>
+          });
+        },
+
+        updateNodeName: (nodeId, name) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             return {
@@ -109,8 +129,11 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        addAction: (nodeId, action) =>
+          });
+        },
+
+        addAction: (nodeId, action) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             const currentNode = state.actionNodes[nodeId];
             if (!currentNode) return state;
@@ -140,8 +163,11 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        removeAction: (nodeId, actionFunc) =>
+          });
+        },
+
+        removeAction: (nodeId, actionFunc) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.actionNodes[nodeId];
@@ -158,17 +184,27 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        removeActionNode: (nodeId) =>
+          });
+        },
+
+        removeActionNode: (nodeId) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const { [nodeId]: _, ...rest } = state.actionNodes;
             return {
               actionNodes: rest,
             };
-          }),
-        clearActionNodes: () => set({ actionNodes: {} }),
-        addPosition: (nodeId) =>
+          });
+        },
+
+        clearActionNodes: () => {
+          if (!checkEditPermission()) return;
+          set({ actionNodes: {} });
+        },
+
+        addPosition: (nodeId) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.actionNodes[nodeId];
@@ -226,8 +262,11 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        removePosition: (nodeId, positionId) =>
+          });
+        },
+
+        removePosition: (nodeId, positionId) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.actionNodes[nodeId];
@@ -243,8 +282,11 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-        updatePositionSetting: (nodeId, positionId, field, value) =>
+          });
+        },
+
+        updatePositionSetting: (nodeId, positionId, field, value) => {
+          if (!checkEditPermission()) return;
           set((state) => {
             markUnsavedChanges();
             const currentNode = state.actionNodes[nodeId];
@@ -271,102 +313,110 @@ export const useActionStore = create<ActionState>()(
                 },
               },
             };
-          }),
-          moveItemUp: (nodeId, itemId) =>
-            set((state) => {
-              const currentNode = state.actionNodes[nodeId];
-              if (!currentNode) return state;
-  
-              const items = [...currentNode.items];
-              const currentIndex = items.findIndex(item => item.id === itemId);
-              if (currentIndex <= 0) return state;
-  
-              markUnsavedChanges();
-              // Swap items
-              const temp = items[currentIndex];
-              items[currentIndex] = items[currentIndex - 1];
-              items[currentIndex - 1] = temp;
-  
-              // Update order property
-              items[currentIndex].order = currentIndex;
-              items[currentIndex - 1].order = currentIndex - 1;
-  
-              return {
-                actionNodes: {
-                  ...state.actionNodes,
-                  [nodeId]: {
-                    ...currentNode,
-                    items,
-                  },
+          });
+        },
+
+        moveItemUp: (nodeId, itemId) => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+
+            const items = [...currentNode.items];
+            const currentIndex = items.findIndex(item => item.id === itemId);
+            if (currentIndex <= 0) return state;
+
+            markUnsavedChanges();
+            // Swap items
+            const temp = items[currentIndex];
+            items[currentIndex] = items[currentIndex - 1];
+            items[currentIndex - 1] = temp;
+
+            // Update order property
+            items[currentIndex].order = currentIndex;
+            items[currentIndex - 1].order = currentIndex - 1;
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items,
                 },
-              };
-            }),
-  
-          moveItemDown: (nodeId, itemId) =>
-            set((state) => {
-              const currentNode = state.actionNodes[nodeId];
-              if (!currentNode) return state;
-  
-              const items = [...currentNode.items];
-              const currentIndex = items.findIndex(item => item.id === itemId);
-              if (currentIndex === -1 || currentIndex >= items.length - 1) return state;
-  
-              markUnsavedChanges();
-              // Swap items
-              const temp = items[currentIndex];
-              items[currentIndex] = items[currentIndex + 1];
-              items[currentIndex + 1] = temp;
-  
-              // Update order property
-              items[currentIndex].order = currentIndex;
-              items[currentIndex + 1].order = currentIndex + 1;
-  
-              return {
-                actionNodes: {
-                  ...state.actionNodes,
-                  [nodeId]: {
-                    ...currentNode,
-                    items,
-                  },
+              },
+            };
+          });
+        },
+
+        moveItemDown: (nodeId, itemId) => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+
+            const items = [...currentNode.items];
+            const currentIndex = items.findIndex(item => item.id === itemId);
+            if (currentIndex === -1 || currentIndex >= items.length - 1) return state;
+
+            markUnsavedChanges();
+            // Swap items
+            const temp = items[currentIndex];
+            items[currentIndex] = items[currentIndex + 1];
+            items[currentIndex + 1] = temp;
+
+            // Update order property
+            items[currentIndex].order = currentIndex;
+            items[currentIndex + 1].order = currentIndex + 1;
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items,
                 },
-              };
-            }),
-  
-          duplicatePosition: (nodeId, positionId) =>
-            set((state) => {
-              const currentNode = state.actionNodes[nodeId];
-              if (!currentNode) return state;
-  
-              const position = currentNode.items.find(
-                item => item.type === 'position' && item.id === positionId
-              );
-              if (!position) return state;
-  
-              markUnsavedChanges();
-              const newPosition: NodeItem = {
+              },
+            };
+          });
+        },
+
+        duplicatePosition: (nodeId, positionId) => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.actionNodes[nodeId];
+            if (!currentNode) return state;
+
+            const position = currentNode.items.find(
+              item => item.type === 'position' && item.id === positionId
+            );
+            if (!position) return state;
+
+            markUnsavedChanges();
+            const newPosition: NodeItem = {
+              id: `position-${Date.now()}`,
+              type: 'position',
+              data: {
+                ...(position.data as Position),
                 id: `position-${Date.now()}`,
-                type: 'position',
-                data: {
-                  ...(position.data as Position),
-                  id: `position-${Date.now()}`,
-                  settings: {
-                    ...(position.data as Position).settings,
-                    legID: generateLegID(currentNode.items),
-                  },
+                settings: {
+                  ...(position.data as Position).settings,
+                  legID: generateLegID(currentNode.items),
                 },
-                order: currentNode.items.length,
-              };
-  
-              return {
-                actionNodes: {
-                  ...state.actionNodes,
-                  [nodeId]: {
-                    ...currentNode,
-                    items: [...currentNode.items, newPosition],
-                  },
+              },
+              order: currentNode.items.length,
+            };
+
+            return {
+              actionNodes: {
+                ...state.actionNodes,
+                [nodeId]: {
+                  ...currentNode,
+                  items: [...currentNode.items, newPosition],
                 },
-              };
-            }),
+              },
+            };
+          });
+        },
       }),
       {
         name: 'strategy-action-store',

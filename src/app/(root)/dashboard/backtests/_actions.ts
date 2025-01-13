@@ -2,6 +2,7 @@ import { del, get, post, put } from "@/lib/axios-factory";
 import { ApiResponse } from "../strategy-builder/_components/DashboardSidebar/DatapointDialog/types";
 import { TBacktest, TBacktestResult } from "./type";
 import { TPublicBacktestdata } from "../../backtest/[encr]/_type";
+import { TStrategyInfo } from "../strategy-builder/_utils/strategyTypes";
 
 export const backtestService = {
   startBacktest: async (
@@ -144,10 +145,33 @@ export const backtestService = {
   getPublicBacktestStrategyRules: async (encr: string) => {
     try {
       const url = `/v1/strategy/public-backtest/rules?encr=${encr}`;
-      const response = await get<ApiResponse<any>>(url);
+      const response = await get<ApiResponse<TStrategyInfo>>(url);
 
       if (response.data.status && !response.data.error) {
-        return response.data.data;
+        return {
+          strategyName: response.data.data.strategyName,
+          //@ts-ignore
+          ...response.data.data.strategyrules,
+        }
+      } else {
+        throw new Error(response.data.message || "Failed to fetch symbols");
+      }
+    }
+    catch (error) {
+      throw error;
+    }
+  },
+  getBackTestRules : async (strategyName: string, runId: string) => {
+    try {
+      const url = `/v1/strategy/backtest/rules?strategyName=${strategyName}&runid=${runId}`;
+      const response = await get<ApiResponse<TStrategyInfo>>(url);
+
+      if (response.data.status && !response.data.error) {
+        return {
+          strategyName: response.data.data.strategyName,
+          //@ts-ignore
+          ...response.data.data.strategyrules,
+        }
       } else {
         throw new Error(response.data.message || "Failed to fetch symbols");
       }

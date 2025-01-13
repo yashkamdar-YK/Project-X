@@ -470,8 +470,6 @@ const reformSettings = (settings: TStrategyInfo["settings"]) => {
 
 // Main reform function
 export const reformStrategy = (strategy: TStrategyInfo) => {
-  console.log("Setting underlying symbol", strategy?.settings?.underlying);
-  console.log("setting timeframe", strategy?.settings?.timeframe);
   useDataPointStore.getState().setSelectedSymbol(strategy?.settings?.underlying);
   useDataPointStore.getState().setSelectedTimeFrame(strategy?.settings?.timeframe);
   reformDataPoints(strategy.data);
