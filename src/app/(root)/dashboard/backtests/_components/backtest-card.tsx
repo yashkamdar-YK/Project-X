@@ -184,7 +184,7 @@ export function BacktestCard({ backtest }: BacktestCardProps) {
             <Badge variant="outline">{backtest.info.strategyType}</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 mt-2">
           <div className="space-y-1 text-sm">
             <div className="text-muted-foreground flex items-center gap-x-1">
               <CalendarClock size={16} />
