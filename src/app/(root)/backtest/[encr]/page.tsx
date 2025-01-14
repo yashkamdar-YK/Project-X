@@ -4,7 +4,6 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { debounce } from "lodash";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,6 +140,7 @@ const PublicBacktestPage = ({ params }: { params: { encr: string } }) => {
   const { metrics, info } = data;
   const formatDate = (date: string) => format(new Date(date), "dd MMM yyyy");
 
+ 
   return (
     <ScrollArea className="h-[calc(100vh-4rem)]">
       <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -201,9 +201,9 @@ const PublicBacktestPage = ({ params }: { params: { encr: string } }) => {
 
               <div className="flex gap-2">
                 <Link href={`/dashboard/strategy-builder?encr=${params.encr}`}>
-                  <Button variant="outline" className="flex-1 sm:flex-none gap-2">
+                  <Button   variant="outline" className="flex-1 sm:flex-none gap-2">
                     <Eye className="h-4 w-4" />
-                    <span>View Strategy</span>
+                    <span>View Strategy </span>
                   </Button>
                 </Link>
                 {/* <Button variant="outline" className="flex-1 sm:flex-none gap-2">
