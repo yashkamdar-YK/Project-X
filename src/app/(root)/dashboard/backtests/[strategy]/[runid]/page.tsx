@@ -22,11 +22,14 @@ import TradesTable from "./_components/trades-table";
 import MonthlyPerformance from "./_components/MonthlyPerformance";
 import DrawdownPeriods from "./_components/DrawdownPeriods";
 import Spinner from "@/components/shared/spinner";
+import posthog from 'posthog-js'
 
 import { Download, Eye, ArrowLeft } from "lucide-react";
+import { useAuthStore, UserProfile } from '@/lib/store/authStore'
 
 import { withAuth } from "@/components/shared/hoc/withAuth";
 import ShareDialog from "./_components/ShareDialog";
+import { authService } from "@/app/(root)/(auth)/login/_actions";
 
 const getStoredSlippage = (strategy: string, runid: string): number => {
   if (typeof window === "undefined") return 0;
@@ -70,6 +73,16 @@ function BacktestAnalyticsPage({
     [debouncedSetSlippage]
   );
 
+  
+  const handleViewStrategy = async() =>{
+    posthog.capture('View Strategy button click', { View_Strategy: 'Tracking view strategy button' })
+    try{
+      const response = await authService.getProfile()
+      posthog.identify(response.email)
+    }catch(error){
+      console.log("user email found!")
+    }
+  }
   useEffect(() => {
     const storedValue = getStoredSlippage(params.strategy, params.runid);
     setInputSlippage(storedValue);
@@ -198,7 +211,7 @@ function BacktestAnalyticsPage({
             </div>
             <div className="flex items-center gap-2">
               <Link href={"/dashboard/strategy-builder?name=" + params.strategy}>
-                <Button variant="outline" className="flex-1 sm:flex-none">
+                <Button onClick={handleViewStrategy} variant="outline" className="flex-1 sm:flex-none">
                   <Eye className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">View Strategy</span>
                 </Button>

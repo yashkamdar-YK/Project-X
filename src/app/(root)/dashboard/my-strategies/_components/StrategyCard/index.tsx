@@ -16,7 +16,8 @@ import StrategyDescription from "./StrategyDescription";
 import SettingSheet from "../SettingSheet";
 import SaveStrategyDialog from "../../../strategy-builder/_components/StrategyNavbar/SaveStrategyDialog";
 import BacktestDialog from "./BacktestDialog";
-
+import posthog from "posthog-js";
+import { authService } from "@/app/(root)/(auth)/login/_actions";
 export const StrategyCard = ({
   strategy,
   onEdit,
@@ -42,7 +43,16 @@ export const StrategyCard = ({
     onBacktest(startDate, endDate);
     setIsBacktestOpen(false);
   };
-
+  const handleBacktestClick = async()=>{
+    posthog.capture('Backtest button click', { Backtest: 'Tracking backtest button click' })
+    try{
+      const response = await authService.getProfile()
+      posthog.identify(response.email)
+    }catch(error){
+      console.log("user email found!")
+    }
+    setIsBacktestOpen(true)
+ }
   return (
     <>
       <SettingSheet
@@ -101,7 +111,7 @@ export const StrategyCard = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsBacktestOpen(true)}
+              onClick={handleBacktestClick}
               disabled={isDeleting || isBacktesting}
             >
               {isBacktesting ? (

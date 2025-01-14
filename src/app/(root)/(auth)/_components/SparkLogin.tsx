@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
-
+import posthog from "posthog-js";
 const SparkLogin = () => {
   const { toast } = useToast();
   const router = useRouter();
@@ -18,6 +18,7 @@ const SparkLogin = () => {
     const path = pathName +"?"+searchParams.toString();
     sessionStorage.setItem("afterAuthRedirection", pathName =="/login" ? "" : path);
     router.push(`https://spark.maticalgos.com/login?redirect=buildalgo`);
+    posthog.capture('Spark button click', { Spark_Login: 'Tracking spark login button' })
   };
 
   return (
