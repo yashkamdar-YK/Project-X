@@ -184,8 +184,9 @@ function BacktestAnalyticsPage({
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            
             <div className="flex items-center gap-2">
-              <span className="text-sm whitespace-nowrap">Slippage %</span>
+            <span className="text-sm whitespace-nowrap">Slippage %</span>
               <Input
                 type="number"
                 step={0.1}
@@ -195,8 +196,6 @@ function BacktestAnalyticsPage({
                 onChange={handleSlippageChange}
                 className="w-9 md:w-20"
               />
-            </div>
-            <div className="flex items-center gap-2">
               <Link href={"/dashboard/strategy-builder?name=" + params.strategy}>
                 <Button variant="outline" className="flex-1 sm:flex-none">
                   <Eye className="h-4 w-4 sm:mr-2" />
@@ -212,6 +211,7 @@ function BacktestAnalyticsPage({
                 runid={params.runid}
                 visibility={data?.info?.visiblity}
               />
+              
             </div>
           </div>
         </div>
