@@ -10,6 +10,7 @@ import { Play, CircleStop } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { myStrategyService } from "../../_actions";
 import { TStrategy } from "../../types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const StrategyActions = ({ strategy, isDeleting }: { strategy: TStrategy; isDeleting: boolean }) => {
   const [deactivate, setDeactivate] = useState(false);
@@ -79,6 +80,11 @@ const StrategyActions = ({ strategy, isDeleting }: { strategy: TStrategy; isDele
               Prevent auto-start in next trading session
             </Label>
           </div>
+          <Alert variant="default">
+            <AlertDescription>
+              Stopping the strategy manually will not allow the system to store position details.
+            </AlertDescription>
+          </Alert>
         </div>
       );
     }
@@ -102,6 +108,16 @@ const StrategyActions = ({ strategy, isDeleting }: { strategy: TStrategy; isDele
               <Label htmlFor="deploy-next">Deploy Next Trading Session</Label>
             </div>
           </RadioGroup>
+        </div>
+      );
+    }
+
+    if(strategy.status === "scheduled") {
+      return (
+        <div className="space-y-4">
+          <DialogDescription>
+            Are you sure you want to deploy this strategy now?
+          </DialogDescription>
         </div>
       );
     }
