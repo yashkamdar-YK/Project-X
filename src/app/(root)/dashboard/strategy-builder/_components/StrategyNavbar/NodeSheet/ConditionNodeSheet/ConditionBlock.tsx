@@ -25,6 +25,10 @@ interface ConditionBlockProps {
   toggleAddBadge: (nodeId: string, subSectionId: number) => void;
   currentNode: ConditionNode;
   removeBlock: (id: string, _id: string) => void;
+  moveBlock: (nodeId: string, blockId: string, direction: 'up' | 'down') => void;
+  copyBlock: (nodeId: string, blockId: string) => void;
+  moveSubSection: (nodeId: string, blockId: string, subSectionId: number, direction: 'up' | 'down') => void;
+  copySubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
 }
 
 export const ConditionBlock: React.FC<ConditionBlockProps> = ({
@@ -36,6 +40,7 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
   updateSubSection,
   removeSubSection,
   toggleAddBadge,
+  copyBlock, copySubSection, currentNode, moveBlock, moveSubSection
 }) => {
   return (
     <div>
@@ -52,6 +57,9 @@ export const ConditionBlock: React.FC<ConditionBlockProps> = ({
             removeSubSection={removeSubSection}
             addSubSection={addSubSection}
             isLastSubSection={index === block?.subSections.length - 1}
+            moveSubSection={moveSubSection}
+            copySubSection={copySubSection}
+            index={index}
           />
         ))}
       </div>

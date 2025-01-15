@@ -18,6 +18,8 @@ import GroupedSelect from "./GroupedSelect";
 import { useActionStore } from "@/lib/store/actionStore";
 import { useMutation } from "@tanstack/react-query";
 import { defaultOptionsService } from "../../../../_actions";
+import { validateSubSection } from "./errorPolicy";
+import { ArrowUp, ArrowDown, Copy } from 'lucide-react';
 
 interface ConditionSubSectionProps {
   subSection: SubSection;
@@ -34,6 +36,9 @@ interface ConditionSubSectionProps {
   removeSubSection: (nodeId: string, subSectionId: number) => void;
   addSubSection: (nodeId: string) => void;
   isLastSubSection: boolean;
+  copySubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
+  moveSubSection: (nodeId: string, blockId: string, subSectionId: number, direction: 'up' | 'down') => void;
+  index: number;
 }
 
 export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
@@ -46,6 +51,8 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
   removeSubSection,
   addSubSection,
   isLastSubSection,
+  copySubSection,
+  moveSubSection, index
 }) => {
   const { indicators } = useIndicatorStore();
   const { actionNodes } = useActionStore()
@@ -274,11 +281,11 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
     // Update previous canCompareWith for next comparison
     setPreviousCanCompareWith(newCanCompareWith);
   };
-  // const isValid = validateSubSection(subSection, dataPoints, indicators, actionOptions);
+  const isValid = validateSubSection(subSection, dataPoints, indicators, actionOptions);
 
 
   return (
-    <div className={`py-3 border-y mb-8 last:mb-3 relative `}>
+    <div className={`py-3 border-y mb-8 last:mb-3 relative ${isValid ? "border-gray-200 dark:border-gray-700" : "border-red-500 dark:border-red-500"} `}>
       <div className="flex flex-1 items-center flex-col  gap-2 justify-between">
         <div className="flex justify-evenly gap-2">
           <GroupedSelect
@@ -642,15 +649,50 @@ export const ConditionSubSection: React.FC<ConditionSubSectionProps> = ({
             </div>
           </>
         )}
-        <div className="absolute top-[40%] right-0">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => removeSubSection(nodeId, subSection.id)}
-            className="p-1.5 h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-100/20 dark:hover:bg-red-900/20"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+        <div className="absolute top-[40%] right-0 flex">
+          <div className="grid">
+            {index > 0 && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => moveSubSection(nodeId, blockId, subSection.id, 'up')}
+                className="p-1.5 h-7 w-7 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </Button>
+            )}
+
+            {/* Move Down button */}
+            {!isLastSubSection && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => moveSubSection(nodeId, blockId, subSection.id, 'down')}
+                className="p-1.5 h-7 w-7 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+          <div className="grid">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => removeSubSection(nodeId, subSection.id)}
+              className="p-1.5 h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-100/20 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+            {/* Copy button */}
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => copySubSection(nodeId, blockId, subSection.id)}
+              className="p-1.5 h-7 w-7 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

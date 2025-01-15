@@ -29,6 +29,10 @@ interface ConditionStore {
   removeSubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
   toggleAddBadge: (nodeId: string, blockId: string, subSectionId: number) => void;
   updateBlockRelation: (nodeId: string, index: number) => void;
+  copyBlock: (nodeId: string, blockId: string) => void;
+  moveBlock: (nodeId: string, blockId: string, direction: 'up' | 'down') => void;
+  copySubSection: (nodeId: string, blockId: string, subSectionId: number) => void;
+  moveSubSection: (nodeId: string, blockId: string, subSectionId: number, direction: 'up' | 'down') => void;
 }
 
 const checkEditPermission = () => {
@@ -343,6 +347,164 @@ export const useConditionStore = create<ConditionStore>()(
                 [nodeId]: {
                   ...currentNode,
                   blockRelations: newBlockRelations,
+                },
+              },
+            };
+          });
+        },
+        copyBlock: (nodeId: string, blockId: string) => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            const blockToCopy = currentNode.blocks.find((block) => block.id === blockId);
+            if (!blockToCopy) return state;
+
+            markUnsavedChanges();
+            const newBlock = {
+              ...blockToCopy,
+              id: `block-${Date.now()}`,
+              subSections: blockToCopy.subSections.map(subSection => ({
+                ...subSection,
+                id: Date.now() + Math.random()
+              }))
+            };
+
+            const blockIndex = currentNode.blocks.findIndex((block) => block.id === blockId);
+            const newBlocks = [...currentNode.blocks];
+            newBlocks.splice(blockIndex + 1, 0, newBlock);
+
+            // Add a new relation if we're inserting between blocks
+            const newBlockRelations = [...currentNode.blockRelations];
+            if (blockIndex < currentNode.blocks.length - 1) {
+              newBlockRelations.splice(blockIndex, 0, currentNode.blockRelations[blockIndex] || "AND");
+            }
+
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: newBlocks,
+                  blockRelations: newBlockRelations,
+                },
+              },
+            };
+          });
+        },
+
+        moveBlock: (nodeId: string, blockId: string, direction: 'up' | 'down') => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            const blockIndex = currentNode.blocks.findIndex((block) => block.id === blockId);
+            if (blockIndex === -1) return state;
+
+            const newIndex = direction === 'up' ? blockIndex - 1 : blockIndex + 1;
+            if (newIndex < 0 || newIndex >= currentNode.blocks.length) return state;
+
+            markUnsavedChanges();
+            const newBlocks = [...currentNode.blocks];
+            const newBlockRelations = [...currentNode.blockRelations];
+
+            // Swap blocks
+            [newBlocks[blockIndex], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[blockIndex]];
+
+            // Handle block relations
+            if (blockIndex > 0 && newIndex > 0) {
+              [newBlockRelations[blockIndex - 1], newBlockRelations[newIndex - 1]] = 
+                [newBlockRelations[newIndex - 1], newBlockRelations[blockIndex - 1]];
+            }
+
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: newBlocks,
+                  blockRelations: newBlockRelations,
+                },
+              },
+            };
+          });
+        },
+
+        copySubSection: (nodeId: string, blockId: string, subSectionId: number) => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            markUnsavedChanges();
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) => {
+                    if (block.id !== blockId) return block;
+
+                    const subSectionToCopy = block.subSections.find(
+                      (sub) => sub.id === subSectionId
+                    );
+                    if (!subSectionToCopy) return block;
+
+                    const subSectionIndex = block.subSections.findIndex(
+                      (sub) => sub.id === subSectionId
+                    );
+
+                    const newSubSections = [...block.subSections];
+                    newSubSections.splice(subSectionIndex + 1, 0, {
+                      ...subSectionToCopy,
+                      id: Date.now() + Math.random()
+                    });
+
+                    return {
+                      ...block,
+                      subSections: newSubSections,
+                    };
+                  }),
+                },
+              },
+            };
+          });
+        },
+
+        moveSubSection: (nodeId: string, blockId: string, subSectionId: number, direction: 'up' | 'down') => {
+          if (!checkEditPermission()) return;
+          set((state) => {
+            const currentNode = state.conditionBlocks[nodeId];
+            if (!currentNode) return state;
+
+            markUnsavedChanges();
+            return {
+              conditionBlocks: {
+                ...state.conditionBlocks,
+                [nodeId]: {
+                  ...currentNode,
+                  blocks: currentNode.blocks.map((block) => {
+                    if (block.id !== blockId) return block;
+
+                    const subSectionIndex = block.subSections.findIndex(
+                      (sub) => sub.id === subSectionId
+                    );
+                    if (subSectionIndex === -1) return block;
+
+                    const newIndex = direction === 'up' ? subSectionIndex - 1 : subSectionIndex + 1;
+                    if (newIndex < 0 || newIndex >= block.subSections.length) return block;
+
+                    const newSubSections = [...block.subSections];
+                    [newSubSections[subSectionIndex], newSubSections[newIndex]] = 
+                      [newSubSections[newIndex], newSubSections[subSectionIndex]];
+
+                    return {
+                      ...block,
+                      subSections: newSubSections,
+                    };
+                  }),
                 },
               },
             };

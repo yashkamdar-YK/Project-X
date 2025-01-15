@@ -28,8 +28,7 @@ import {
 import { strategyService } from "../strategy-builder/_actions";
 import { backtestService } from "../backtests/_actions";
 import { withAuth } from "@/components/shared/hoc/withAuth";
-import posthog from "posthog-js";
-import { authService } from "../../(auth)/login/_actions";
+
 const MyStrategyPage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -149,14 +148,7 @@ const MyStrategyPage = () => {
   }, [data, searchQuery, sortType]);
 
   // Event Handlers
-  const handleCreateNewSt = async() => {
-    posthog.capture('Create Strategy button click', { Create_Strategy: 'Tracking create new strategy button click' })
-    try{
-      const response = await authService.getProfile()
-      posthog.identify(response.email)
-    }catch(error){
-      console.log("user email found!")
-    }
+  const handleCreateNewSt = () => {
     clearStores();
     setNodes(INITIAL_NODES);
     setEdges(INITIAL_EDGES);

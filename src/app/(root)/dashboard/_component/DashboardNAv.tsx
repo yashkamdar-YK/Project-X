@@ -61,7 +61,6 @@ const DashboardNav: React.FC = () => {
       setPendingNavigation(href);
     } else {
       handleNavigate(href);
-      window.location.pathname = href;
     }
   };
 

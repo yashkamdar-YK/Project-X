@@ -6,7 +6,7 @@ import { useAuthStore, UserProfile } from '@/lib/store/authStore'
 import { authService } from '@/app/(root)/(auth)/login/_actions'
 import Spinner from '../spinner'
 
-     
+
 export function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   redirect=true

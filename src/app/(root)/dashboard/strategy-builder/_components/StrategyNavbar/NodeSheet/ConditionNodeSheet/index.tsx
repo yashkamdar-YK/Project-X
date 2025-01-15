@@ -10,6 +10,9 @@ import {
   Minus,
   Trash2,
   ChevronDown,
+  ArrowDown,
+  Copy,
+  ArrowUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
@@ -42,6 +45,7 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
     updateSubSection,
     removeSubSection,
     toggleAddBadge,
+    copyBlock, moveBlock,moveSubSection,copySubSection,
     addBlock,
     removeBlock,
     updateBlockSettings,
@@ -145,9 +149,8 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
               variant="link"
               size="icon"
               onClick={() => setShowSettings(!showSettings)}
-              className={`transition-transform ${
-                showSettings ? "rotate-180" : ""
-              }`}
+              className={`transition-transform ${showSettings ? "rotate-180" : ""
+                }`}
             >
               <Settings className="w-5 h-5" />
             </Button>
@@ -201,11 +204,10 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className={`w-16 transition-colors duration-200 ${
-                  currentNode.positionOpen
-                    ? "bg-green-500 dark:bg-[#22c55e] hover:bg-green-600 dark:hover:bg-[#16a34a] text-white"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                }`}
+                className={`w-16 transition-colors duration-200 ${currentNode.positionOpen
+                  ? "bg-green-500 dark:bg-[#22c55e] hover:bg-green-600 dark:hover:bg-[#16a34a] text-white"
+                  : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                  }`}
                 onClick={() =>
                   updateBlockSettings(node.id, "positionOpen", true)
                 }
@@ -214,11 +216,10 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
               </Button>
               <Button
                 size="sm"
-                className={`w-16 transition-colors duration-200 ${
-                  !currentNode.positionOpen
-                    ? "bg-red-500 dark:bg-[#ef4444] hover:bg-red-600 dark:hover:bg-[#dc2626] text-white"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                }`}
+                className={`w-16 transition-colors duration-200 ${!currentNode.positionOpen
+                  ? "bg-red-500 dark:bg-[#ef4444] hover:bg-red-600 dark:hover:bg-[#dc2626] text-white"
+                  : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                  }`}
                 onClick={() =>
                   updateBlockSettings(node.id, "positionOpen", false)
                 }
@@ -235,11 +236,10 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className={`w-16 transition-colors duration-200 ${
-                  currentNode.waitTrigger
-                    ? "bg-green-500 dark:bg-[#22c55e] hover:bg-green-600 dark:hover:bg-[#16a34a] text-white"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                }`}
+                className={`w-16 transition-colors duration-200 ${currentNode.waitTrigger
+                  ? "bg-green-500 dark:bg-[#22c55e] hover:bg-green-600 dark:hover:bg-[#16a34a] text-white"
+                  : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                  }`}
                 onClick={() =>
                   updateBlockSettings(node.id, "waitTrigger", true)
                 }
@@ -248,11 +248,10 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
               </Button>
               <Button
                 size="sm"
-                className={`w-16 transition-colors duration-200 ${
-                  !currentNode.waitTrigger
-                    ? "bg-red-500 dark:bg-[#ef4444] hover:bg-red-600 dark:hover:bg-[#dc2626] text-white"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
-                }`}
+                className={`w-16 transition-colors duration-200 ${!currentNode.waitTrigger
+                  ? "bg-red-500 dark:bg-[#ef4444] hover:bg-red-600 dark:hover:bg-[#dc2626] text-white"
+                  : "bg-gray-100 hover:bg-gray-200 dark:bg-[#2a2f3d] dark:hover:bg-[#353b4d] text-gray-600 dark:text-[#94a3b8]"
+                  }`}
                 onClick={() =>
                   updateBlockSettings(node.id, "waitTrigger", false)
                 }
@@ -288,27 +287,53 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                     }}
                   >
                     <span className="text-base font-medium">
-                      Group{" "}
-                      <span className="text-xs text-gray-500">
-                        ({block?.id})
-                      </span>
+                      Group <span className="text-xs text-gray-500">({block?.id})</span>
                     </span>
                     <div className="flex items-center gap-2">
-                      {currentNode.blocks.length > 1 && (
+                      <div className="flex gap-1">
+                        {index > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                            onClick={() => moveBlock(node.id, block?.id, 'up')}
+                          >
+                            <ArrowUp size={14} />
+                          </Button>
+                        )}
+                        {index < currentNode.blocks.length - 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                            onClick={() => moveBlock(node.id, block?.id, 'down')}
+                          >
+                            <ArrowDown size={14} />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                          onClick={() => removeBlock(node.id, block?.id)}
+                          className="h-8 w-8 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                          onClick={() => copyBlock(node.id, block?.id)}
                         >
-                          <Trash2 size={14} />
+                          <Copy size={14} />
                         </Button>
-                      )}
+                        {currentNode.blocks.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-900/20"
+                            onClick={() => removeBlock(node.id, block?.id)}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        )}
+                      </div>
                       <ChevronDown
                         size={18}
-                        className={`transition-transform duration-200 ${
-                          expandedBlock === block?.id ? "rotate-180" : ""
-                        }`}
+                        className={`transition-transform duration-200 ${expandedBlock === block?.id ? "rotate-180" : ""
+                          }`}
                       />
                     </div>
                   </AccordionTrigger>
@@ -320,17 +345,9 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                       removeBlock={removeBlock}
                       currentNode={currentNode}
                       dataPoints={dataPoints}
-                      addSubSection={(nodeId) =>
-                        addSubSection(nodeId, block?.id)
-                      }
+                      addSubSection={(nodeId) => addSubSection(nodeId, block?.id)}
                       updateSubSection={(nodeId, subSectionId, field, value) =>
-                        updateSubSection(
-                          nodeId,
-                          block?.id,
-                          subSectionId,
-                          field,
-                          value
-                        )
+                        updateSubSection(nodeId, block?.id, subSectionId, field, value)
                       }
                       removeSubSection={(nodeId, subSectionId) =>
                         removeSubSection(nodeId, block?.id, subSectionId)
@@ -338,6 +355,11 @@ const ConditionNodeSheet = ({ node }: { node: Node }) => {
                       toggleAddBadge={(nodeId, subSectionId) =>
                         toggleAddBadge(nodeId, block?.id, subSectionId)
                       }
+                      // Add new props
+                      moveBlock={moveBlock}
+                      copyBlock={copyBlock}
+                      moveSubSection={moveSubSection}
+                      copySubSection={copySubSection}
                     />
                   </AccordionContent>
                 </AccordionItem>

@@ -90,9 +90,7 @@ export const validateSubSection = (
       return false;
     }
   }
-
-  // Validate value input if RHS is "value"
-  if (subSection.rhs === "value" && subSection._rhsValue === undefined) {
+  if (subSection.rhs == "value" && !subSection._rhsValue) {
     return false;
   }
 
@@ -106,7 +104,7 @@ export const validateConditionBlocks = (
   actionOptions: any
 ): string | null => {
   // Check if node has blocks
-  if (!node.blocks?.length) {
+  if (!node?.blocks?.length) {
     return "At least one condition block is required";
   }
 

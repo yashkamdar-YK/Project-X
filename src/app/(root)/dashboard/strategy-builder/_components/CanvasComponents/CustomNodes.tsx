@@ -19,6 +19,7 @@ import { handleNodeDeletion } from "../../_utils/nodeHandling";
 import { useDataPointsStore } from "@/lib/store/dataPointsStore";
 import { useIndicatorStore } from "@/lib/store/IndicatorStore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { validateConditionBlocks } from "../StrategyNavbar/NodeSheet/ConditionNodeSheet/errorPolicy";
 
 export const StartNode = () => {
   return (
@@ -162,13 +163,13 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
       setEdges(updatedEdgeConnections);
     };
 
-  // const validationMessage = validateConditionBlocks(currentNode, dataPoints, indicators, null);
+  const validationMessage = validateConditionBlocks(currentNode, dataPoints, indicators, null);
   return (
     <div className="group cursor-pointer">
-      {/* <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger asChild> */}
-            <div className={`relative bg-white dark:bg-gray-800 border-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px] max-w-[400px] border-indigo-200 dark:border-indigo-900`}>
+      <TooltipProvider>
+        <Tooltip delayDuration={50}>
+          <TooltipTrigger asChild>
+            <div className={`relative bg-white dark:bg-gray-800 border-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 min-w-[250px] max-w-[400px] ${validationMessage ? "border-red-500" : "border-indigo-200 dark:border-indigo-900"}`}>
               <button
                 onClick={handleCopyActionNode}
                 className="absolute right-6 -top-2 p-1.5 bg-emerald-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-emerald-600"
@@ -244,14 +245,14 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
                 id={`${id}-bottom`}
               />
             </div>
-          {/* </TooltipTrigger>
+          </TooltipTrigger>
           {validationMessage && (
             <TooltipContent side="top" className="bg-red-500 text-white border-none">
               <p>{validationMessage}</p>
             </TooltipContent>
           )}
         </Tooltip>
-      </TooltipProvider> */}
+      </TooltipProvider>
     </div>
   );
 };
