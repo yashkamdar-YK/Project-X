@@ -16,9 +16,7 @@ import { backtestService } from "../backtests/_actions";
 import { useAuthStore } from "@/lib/store/authStore";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import LoginCard from "../../(auth)/_components/LoginCard";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 function StrategyBuilderPage() {
   const searchParams = useSearchParams();

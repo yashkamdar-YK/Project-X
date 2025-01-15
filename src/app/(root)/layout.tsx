@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "../globals.css";
 import { Providers } from "@/components/providers";
 import DashboardNav from "./dashboard/_component/DashboardNAv";
+import { PostHogIdentifier } from "./dashboard/_component/PostHogIdentifier";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <PostHogIdentifier/>
           <div className="flex flex-col h-screen overflow-hidden bg-white dark:bg-gray-900">
             <DashboardNav />
             <div className="flex-1">{children}</div>

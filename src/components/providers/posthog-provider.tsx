@@ -6,9 +6,13 @@ import { PostHogProvider } from 'posthog-js/react'
 if (typeof window !== 'undefined') {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+    capture_pageview: true,
+    capture_pageleave: true,
+    persistence: 'localStorage',
+    person_profiles: 'always' // This ensures we track both anonymous and identified users
   })
 }
+
 export function CSPostHogProvider({ children }:{
     children: React.ReactNode
 }) {

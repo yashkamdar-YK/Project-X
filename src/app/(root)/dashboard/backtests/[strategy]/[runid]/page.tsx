@@ -23,7 +23,7 @@ import MonthlyPerformance from "./_components/MonthlyPerformance";
 import DrawdownPeriods from "./_components/DrawdownPeriods";
 import Spinner from "@/components/shared/spinner";
 
-import { Download, Eye, ArrowLeft } from "lucide-react";
+import { Eye, ArrowLeft } from "lucide-react";
 
 import { withAuth } from "@/components/shared/hoc/withAuth";
 import ShareDialog from "./_components/ShareDialog";
