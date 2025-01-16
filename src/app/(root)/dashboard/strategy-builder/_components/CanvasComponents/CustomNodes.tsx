@@ -192,18 +192,18 @@ export const ConditionNode = ({ data, id }: { data: Node; id: string }) => {
                   {!isFirstConditionNode && (
                     <button
                       onClick={handleNodeSwap("up")}
-                      className="p-1.5 hover:bg-gray-300 hover:dark:bg-gray-700 rounded-full text-white absolute bottom-1 left-1/2 -translate-x-2/3"
+                      className="p-1.5 duration-200 hover:bg-gray-300 hover:dark:bg-gray-600 rounded-full text-white absolute -top-3 right-0 "
                     >
-                      <ChevronUp className="w-3.5 h-3.5" />
+                      <ChevronUp className="w-3.5 h-3.5 dark:text-gray-100 text-gray-900" />
                     </button>
                   )}
 
                   {!isLastConditionNode && (
                     <button
                       onClick={handleNodeSwap("down")}
-                      className="p-1.5 rounded-full text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-1 left-1/2 -translate-x-2/3"
+                      className="p-1.5   rounded-full duration-200 text-white hover:bg-gray-300 hover:dark:bg-gray-700 absolute top-4 -left-[25.5px]"
                     >
-                      <ChevronDown className="w-3.5 h-3.5" />
+                      <ChevronDown className="w-3.5 dark:text-gray-100  text-gray-900 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -300,12 +300,12 @@ export const ActionNode = ({ data, id }: { data: Node; id: string }) => {
         </button>
 
         {/* Delete button */}
-        <button
+        {/* <button
           onClick={handleDelete}
           className="absolute -right-2 -top-2 p-1.5 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
         >
           <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        </button> */}
 
         {/* Decorative elements */}
         <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-emerald-500 rounded-full" />
